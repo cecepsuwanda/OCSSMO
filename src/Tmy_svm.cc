@@ -39,33 +39,62 @@ bool Tmy_svm::cari_idx_a_lain(int idx_b,int *idx_alpha)
    return (*idx_alpha!=-1);
 }
 
+Tmy_double Tmy_svm::sum_alpha_diff_Q(Tmy_list_alpha* alpha,vector<Tmy_double> diff_Q)
+{
+   Tmy_double hasil=0.0;
+      
+   for (int i = 0; i < diff_Q.size(); ++i)
+   {
+     hasil = hasil + (alpha->get_alpha(i)*diff_Q[i]);
+   }
+
+   return hasil;
+
+}
+
 bool Tmy_svm::take_step(int idx_b,int idx_a)
 {
   if(idx_b==idx_a){
      return false;
   }else{
      Tmy_list_G* _my_list_G = _my_G->get_list_G();
-     Tmy_list_alpha* _my_list_alpha = _my_alpha->get_alpha();
+     Tmy_list_G* _my_list_G_v1 = _my_G->get_list_G_v1();
+     Tmy_list_G* _my_list_G_v2 = _my_G->get_list_G_v2();
      
-     Tmy_double Fb = _my_list_G->get_G(idx_b);
-     Tmy_double Fa = _my_list_G->get_G(idx_a);
-     //cout <<"Fb "<<Fb<<" "<<"Fa "<<Fa<<endl;
+     Tmy_list_alpha* _my_list_alpha = _my_alpha->get_alpha();
+     Tmy_list_alpha* _my_list_alpha_v1 = _my_alpha->get_alpha_v1();
+     Tmy_list_alpha* _my_list_alpha_v2 = _my_alpha->get_alpha_v2();
+
      int active_size = _my_list_G->get_active_size();
 
-     vector<Tmy_double> hsl_eta = _my_kernel->hit_eta(idx_b,idx_a,active_size);
+     vector<Tmy_double> hsl_eta = _my_kernel->hit_eta(idx_b,idx_a,active_size);     
+     vector<Tmy_double> hsl_diff = _my_kernel->get_diff_Q(idx_b,idx_a,active_size);
+
+     Tmy_double hsl_sum_v1 = sum_alpha_diff_Q(_my_list_alpha_v1,hsl_diff);
+     Tmy_double delta_v1 = hsl_eta[0]*hsl_sum_v1;     
+     Treturn_is_pass tmp_v1 = _my_list_alpha_v1->is_pass(idx_b,idx_a,delta_v1);
+          
+     Tmy_double hsl_sum_v2 = sum_alpha_diff_Q(_my_list_alpha_v2,hsl_diff);
+     Tmy_double delta_v2 = hsl_eta[0]*hsl_sum_v2;     
+     Treturn_is_pass tmp_v2 = _my_list_alpha_v2->is_pass(idx_b,idx_a,delta_v2);
      
-     Tmy_double delta = (Fa-Fb)*hsl_eta[0];
-     //cout<<"delta "<<delta<<endl;
-     vector<Tmy_double> alpha;
+     Tmy_double hsl_sum = sum_alpha_diff_Q(_my_list_alpha,hsl_diff);
+     Tmy_double delta = hsl_eta[0]*hsl_sum;     
      Treturn_is_pass tmp = _my_list_alpha->is_pass(idx_b,idx_a,delta);
+
+     cout<<" "<< tmp_v1.is_pass <<" " << tmp_v2.is_pass <<" ";
+     cout<<" "<< (tmp_v1.alpha_i-tmp_v2.alpha_i) << "=" << tmp.alpha_i <<" ";
+     cout<<" "<< (tmp_v1.alpha_j-tmp_v2.alpha_j) << "=" << tmp.alpha_j <<" ";
+     cout<<" "<< (tmp_v1.new_alpha_i-tmp_v2.new_alpha_i) << "=" << tmp.new_alpha_i <<" ";
+     cout<<" "<< (tmp_v1.new_alpha_j-tmp_v2.new_alpha_j) << "=" << tmp.new_alpha_j <<" ";
+
      if(tmp.is_pass==false)
      {
         return false;
-     }else{
-        //Tmy_double delta_alpha_1 = tmp.new_alpha_i-tmp.alpha_i;
-        //Tmy_double delta_alpha_2 = tmp.new_alpha_j-tmp.alpha_j;        
+     }else{        
         _my_list_G->update_G(idx_b,idx_a,tmp.new_alpha_i,tmp.new_alpha_j);
-        //_my_alpha->update_alpha(idx_b,tmp.new_alpha_i,idx_a,tmp.new_alpha_j);
+        _my_list_G_v1->update_G(idx_b,idx_a,tmp_v1.new_alpha_i,tmp_v1.new_alpha_j);
+        _my_list_G_v2->update_G(idx_b,idx_a,tmp_v2.new_alpha_i,tmp_v2.new_alpha_j);        
         //_rho = _my_G->update_rho(idx_b,idx_a);
         return true;
      }
@@ -81,10 +110,10 @@ Treturn_train Tmy_svm::train(Tdataframe &df){
    _my_G = new Tmy_G(df.getjmlrow_svm(),_my_kernel,_my_alpha);
    _my_G->init();
    Tmy_list_G *list_G = _my_G->get_list_G(); 
-   _rho = _my_G->update_rho(0,1);
+   _rho = _my_G->update_rho();
    
    int iter = 0;
-   int max_iter = max(10000000, jml_data>INT_MAX/100 ? INT_MAX : 100*jml_data);
+   int max_iter =max(10000000, jml_data>INT_MAX/100 ? INT_MAX : 100*jml_data);
    int counter = min(jml_data,1000)+1;
    
    bool is_alpha_changed = true;
@@ -167,7 +196,7 @@ Treturn_train Tmy_svm::train(Tdataframe &df){
          list_G->reset_active_size();
       }
    }   
-   _rho = _my_G->update_rho(0,0);
+   _rho = _my_G->update_rho();
    list_G->reverse_swap();
 
    _my_kernel->clear_container();

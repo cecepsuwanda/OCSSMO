@@ -29,44 +29,62 @@ void Tmy_list_alpha::clear_container()
   _alpha_status.clear();
   _alpha_not_ub.clear();
   _alpha_not_lb.clear();
+  _alpha_not_nol.clear();
   _alpha_free.clear();
 }
 
 
-void Tmy_list_alpha::init(Tmy_double V, Tmy_double eps) {
-  //cetak("init alpha : \n");
+void Tmy_list_alpha::init(Tmy_double V, Tmy_double eps, int flag) {
   Tmy_double tmp = V * ((double)_jml_data);
   int jml = (int) tmp;
 
   _alpha_not_lb.reserve(jml);
-
-  for (int idx = 0; idx < jml; idx++) {
-    update_alpha(idx, _ub);
-  }
-
-  // if(jml<_jml_data)
-  // {
-  //   update_alpha(jml,(_ub* (double) _jml_data)*(1.0/(_jml_data-jml)));
-  // }
-
-  if (_jml_alpha < 1.0)
-  {
-    tmp = 1.0 - _jml_alpha;
-    update_alpha(jml, tmp);
-    jml = jml + 1;
-  }
-  //else{
-  // Tmy_double tmp = _ub/2.0;
-  // update_alpha(jml-1,tmp);
-  // update_alpha(jml,tmp);
-  // jml=jml+1;
-  // }
-
   _alpha_not_lb.reserve(_jml_data - jml);
+  if (flag == 0) {
 
-  for (int idx = jml; idx < _jml_data; idx++) {
-    update_alpha(idx, 0.0);
+    for (int idx = 0; idx < jml; idx++) {
+      update_alpha(idx, _ub);
+    }
+
+    if (_jml_alpha < eps)
+    {
+      tmp = eps - _jml_alpha;
+      update_alpha(jml, tmp);
+      jml = jml + 1;
+    }
+
+    for (int idx = jml; idx < _jml_data; idx++) {
+      update_alpha(idx, 0.0);
+    }
+  } else {
+    if (flag == 1)
+    {
+      int alpha_idx = _jml_data - 1;
+      int i = 0;
+      while (i < jml)
+      {
+        update_alpha(alpha_idx, _ub);
+        i++;
+        alpha_idx--;
+      }
+
+      if (_jml_alpha < eps)
+      {
+        tmp = eps - _jml_alpha;
+        update_alpha(alpha_idx, tmp);
+        alpha_idx--;
+      }
+
+      while (alpha_idx > 0)
+      {
+        update_alpha(alpha_idx, 0.0);
+        alpha_idx--;
+      }
+
+
+    }
   }
+
 }
 
 void Tmy_list_alpha::update_alpha(int idx, Tmy_double value)
@@ -165,6 +183,13 @@ void Tmy_list_alpha::update_lb_ub(int idx_cari)
     }
   }
 
+  for (int i = 0; i < _alpha_not_nol.size(); i++) {
+    if (_alpha_not_nol[i] == idx_cari) {
+      _alpha_not_nol.erase(_alpha_not_nol.begin() + i);
+      break;
+    }
+  }
+
   if (is_upper_bound(idx_cari) == false)
   {
     _alpha_not_ub.push_back(idx_cari);
@@ -178,6 +203,11 @@ void Tmy_list_alpha::update_lb_ub(int idx_cari)
   if (is_free(idx_cari) == true)
   {
     _alpha_free.push_back(idx_cari);
+  }
+
+  if (is_nol(idx_cari) == false)
+  {
+    _alpha_not_nol.push_back(idx_cari);
   }
 
 
@@ -208,11 +238,16 @@ bool Tmy_list_alpha::is_free(int idx)
   return (_alpha_status[idx] == 2);
 }
 
+bool Tmy_list_alpha::is_nol(int idx)
+{
+  return (_alpha[idx] == 0.0);
+}
+
 vector<Tmy_double> Tmy_list_alpha::calculateBoundaries(int i, int j)
 {
   Tmy_double t      = _alpha[i] + _alpha[j];
   Tmy_double diff   = t - _ub;
-  Tmy_double diff1  = t + _lb;
+  Tmy_double diff1  = t + abs((double)_lb);
   vector<Tmy_double> hasil = {_lb, _ub};
   if (((_alpha[i] <= _ub) and (_alpha[i] >= _lb)) and ((_alpha[j] <= _ub) and (_alpha[j] >= _lb))) {
     hasil = {max(diff, _lb), min(_ub, diff1)};
@@ -311,6 +346,10 @@ vector<int> Tmy_list_alpha::get_list_lb_ub(int flag)
     } else {
       if (flag == 2) {
         return _alpha_free;
+      } else {
+        if (flag == 3) {
+          return _alpha_not_nol;
+        }
       }
     }
   }
@@ -361,6 +400,12 @@ Tmy_double Tmy_list_alpha::get_ub()
 {
   return _ub;
 }
+
+Tmy_double Tmy_list_alpha::get_lb()
+{
+  return _lb;
+}
+
 
 void Tmy_list_alpha::swap_index(int i, int j)
 {

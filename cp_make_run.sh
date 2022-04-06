@@ -1,6 +1,7 @@
 #!/bin/bash
 
-cd ~/cpp/OCSMO
-cp -rf ~/OCSMO/makefile .
-cp -rf ~/OCSMO/src/*.* ./src
+cd ~/cpp/OCSSMO
+cp -rf ~/OCSSMO/makefile .
+cp -rf ~/OCSSMO/src/*.* ./src
+cp -rf ~/OCSSMO/data/*.* ./data
 make

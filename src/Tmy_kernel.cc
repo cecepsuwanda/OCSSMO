@@ -202,6 +202,22 @@ vector<Tmy_double> Tmy_kernel::get_Q(int i,int size)
    return data;
 }
 
+vector<Tmy_double> Tmy_kernel::get_diff_Q(int i,int j,int size)
+{
+   vector<Tmy_double> hasil;
+   hasil.reserve(size);
+   hasil.assign(size,0.0);
+   for (int k = 0; k < size; ++k)
+    {
+        vector<Tmy_double> tmp = get_Q(k,size);
+        hasil[k] = (tmp[j]-tmp[i]);
+    }
+
+    return hasil; 
+}
+
+
+
 vector<Tmy_double> Tmy_kernel::hit_eta(int i,int j,int size)
 {
    vector<Tmy_double> Q_i = get_Q(i,size);

@@ -30,8 +30,10 @@ struct Tconfig
 
 
   double gamma = 0.0;
-  double V = 0.0;
-  double eps = 1.0;
+  double V1 = 0.0;
+  double eps1 = 1.0;
+  double V2 = 0.0;
+  double eps2 = 1.0;
 
   int depth = 0;
   int min_sample = 0;

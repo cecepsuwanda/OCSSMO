@@ -15,6 +15,8 @@ class Tmy_G
 private:
 	int _jml_data;
 	Tmy_list_G *_my_list_G;
+	Tmy_list_G *_my_list_G_v1;
+	Tmy_list_G *_my_list_G_v2;
 	Tmy_kernel *_kernel;
     Tmy_alpha *_alphas;
 public:
@@ -24,8 +26,10 @@ public:
     void clear_container();
 
 	void init();
-	Tmy_double update_rho(int idx_a,int idx_b);
+	Tmy_double update_rho();
 	Tmy_list_G* get_list_G();
+	Tmy_list_G* get_list_G_v1();
+	Tmy_list_G* get_list_G_v2();
 };
 
 #endif

@@ -44,6 +44,7 @@ private:
     Tmy_G *_my_G;
     Tmy_double _rho;
     vector<vector<string>> _model;
+    Tmy_double sum_alpha_diff_Q(Tmy_list_alpha* alpha,vector<Tmy_double> diff_Q);
 public:
 	Tmy_svm(Tconfig *v_config);
 	~Tmy_svm();

@@ -83,11 +83,15 @@ int main(int argc, char *argv[])
   double bb_gamma = strtod(argv[3], &endptr);
   double ba_gamma = strtod(argv[4], &endptr);
 
-  double bb_V = strtod(argv[5], &endptr);
-  double ba_V = strtod(argv[6], &endptr);
+  double bb_V1 = strtod(argv[5], &endptr);
+  double ba_V1 = strtod(argv[6], &endptr);
 
-  config.gamma = bb_gamma;
-  config.V = bb_V;
+  double bb_eps2 = strtod(argv[7], &endptr);
+  double ba_eps2 = strtod(argv[8], &endptr);
+
+  double bb_V2 = strtod(argv[9], &endptr);
+  double ba_V2 = strtod(argv[10], &endptr);
+
 
   Tconf_metrix conf_metrix_train_all;
   Tconf_metrix conf_metrix_test_all;
@@ -104,13 +108,13 @@ int main(int argc, char *argv[])
   for (const auto & file : directory_iterator(config.path_model + "/train"))
   {
     string str = file.path().filename();
-    if ((str == "train_model_38.csv"))// and (str != "train_model_36.csv")
+    if ((str == "train_model_1.csv"))// and (str != "train_model_36.csv")
     {
 
       Tdataframe df_train(&config);
       baca_data(df_train, file.path(), config.f_datatype);
       vector<string> label_train = df_train.get_list_label();
-      
+
 
       str.replace(0, 5, "test");
       string file_test = config.path_model + "/test/" + str;
@@ -118,61 +122,77 @@ int main(int argc, char *argv[])
       Tdataframe df_test(&config);
       baca_data(df_test, file_test, config.f_datatype);
       vector<string> label_test = df_test.get_list_label();
-      
-      //df_train.info();
-      //df_test.info();
+
+      df_train.info();
+      df_test.info();
 
       Twaktu_proses waktu_proses;
       waktu_proses.mulai();
 
-      double v_max = 0.0;
+      double v1_max = 0.0;
+      double v2_max = 0.0;
+      double eps2_max = 0.0;
       double gamma_max = 0.0;
       float f1_max = -100;
       vector<string> hasil_train_max;
       vector<string> hasil_test_max;
 
       for (double j = bb_gamma; j <= ba_gamma; j = j + 0.0001)
-      {
-        for (double i = bb_V; i <= ba_V; i = i + 0.01)
-        {
-          config.gamma = j;
-          config.V = i;
-
-          Tmy_svm my_svm(&config);
-          Treturn_train hsl_train = my_svm.train(df_train);
-          vector<string> hasil_train = my_svm.test(df_train);
-
-          cout << "file = " << str;
-          cout << " iterasi = " << hsl_train.jml_iterasi;
-          cout << " V = " << i;
-          cout << " gamma = " << j;
-          cout << " jml kkt = " << hsl_train.n_kkt;
-          cout << " jml all sv = " << hsl_train.n_all_sv;
-          cout << " jml alpha = " << hsl_train.jml_alpha;
-          cout << " jml sv = " << hsl_train.n_sv;
-          cout << " jml alpha sv = " << hsl_train.jml_alpha_n_sv;
-          cout << " rho = " << hsl_train.rho;
-          cout << " is optimum = " << (hsl_train.is_optimum == true ? "Yes" : "No");
-
-          //Tconf_metrix conf_metrix_train;
-          //isi_conf_matrix(conf_metrix_train, label_train, hasil_train);
-          //cetak_conf_matrix(conf_metrix_train);
-
-          vector<string> hasil_test = my_svm.test(df_test);
-
-          Tconf_metrix conf_metrix_test;
-          isi_conf_matrix(conf_metrix_test, label_test, hasil_test);
-          //cetak_conf_matrix(conf_metrix_test);
-
-          float tmp_F1 = conf_metrix_test.get_F1();
-          cetak(" F1 = %f \n", tmp_F1);
-          if (tmp_F1 > f1_max)
+      {        
+        for (double i = bb_V1; i <= ba_V1; i = i + 0.01)
+        {          
+          for (double k = bb_eps2; k <= ba_eps2; k = k + 0.01)
           {
-            v_max = i;
-            gamma_max = j;
-            f1_max = tmp_F1;
-            hasil_train_max = hasil_train;
-            hasil_test_max = hasil_test;
+            for (double l = bb_V2; l <= ba_V2; l = l + 0.01)
+            {
+              config.gamma = j;
+              config.V1 = i;
+              config.eps2 = k;
+              config.V2 = l;
+
+              Tmy_svm my_svm(&config);
+              Treturn_train hsl_train = my_svm.train(df_train);
+              vector<string> hasil_train = my_svm.test(df_train);
+
+              cout << "file = " << str;
+              cout << " iterasi = " << hsl_train.jml_iterasi;
+              cout << " V1 = " << i;
+              cout << " V2 = " << l;
+              cout << " eps2 = " << k;
+              cout << " gamma = " << j;
+              cout << " jml kkt = " << hsl_train.n_kkt;
+              cout << " jml all sv = " << hsl_train.n_all_sv;
+              cout << " jml alpha = " << hsl_train.jml_alpha;
+              cout << " jml sv = " << hsl_train.n_sv;
+              cout << " jml alpha sv = " << hsl_train.jml_alpha_n_sv;
+              cout << " rho = " << hsl_train.rho;
+              cout << " is optimum = " << (hsl_train.is_optimum == true ? "Yes" : "No");
+
+              //Tconf_metrix conf_metrix_train;
+              //isi_conf_matrix(conf_metrix_train, label_train, hasil_train);
+              //cetak_conf_matrix(conf_metrix_train);
+
+              vector<string> hasil_test = my_svm.test(df_test);
+
+              Tconf_metrix conf_metrix_test;
+              isi_conf_matrix(conf_metrix_test, label_test, hasil_test);
+              //cetak_conf_matrix(conf_metrix_test);
+
+              float tmp_F1 = conf_metrix_test.get_F1();
+              cetak(" F1 = %f \n", tmp_F1);
+              if (tmp_F1 > f1_max)
+              {
+                v1_max = i;
+                v2_max = l;
+                eps2_max = k;
+                gamma_max = j;
+                f1_max = tmp_F1;
+                hasil_train_max = hasil_train;
+                hasil_test_max = hasil_test;
+              }
+
+            }
+
           }
         }
       }
@@ -184,7 +204,7 @@ int main(int argc, char *argv[])
       df_test.clear_memory();
       df_test.close_file();
 
-      
+
       //cetak("gamma  max = %f \n", gamma_max);
       //cetak("V  max = %f \n", v_max);
       //cetak("F1 max = %f \n", f1_max);

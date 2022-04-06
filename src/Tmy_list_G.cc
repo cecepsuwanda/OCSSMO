@@ -38,13 +38,14 @@ void Tmy_list_G::init()
        _active_set[i]=i;
    }
 
-   vector<int> idx_alpha = _alpha->get_list_lb_ub(0);
+   vector<int> idx_alpha = _alpha->get_list_lb_ub(3);  
+
    int i=0;
    for (auto& idx : idx_alpha)
    {   	 
-   	 // if((i%100)==0){
-     //    cetak(".");
-     //   }
+   	  // if((i%100)==0){
+      //    cetak(".");
+      //   }
      Tmy_double alpha = _alpha->get_alpha(idx);
    	 vector<Tmy_double> data = _kernel->get_Q(idx,_jml_data);     
      for (int j = 0; j < _jml_data; ++j)
@@ -58,7 +59,15 @@ void Tmy_list_G::init()
        {        
           _arr_G_bar[j]=_arr_G_bar[j]+(_alpha->get_ub()*data[j]);       
        }   
-     } 
+     }
+
+     if( _alpha->is_lower_bound(idx)==true)
+     {
+       for (int j = 0; j < _jml_data; ++j)
+       {        
+          _arr_G_bar[j]=_arr_G_bar[j]+(_alpha->get_lb()*data[j]);       
+       }   
+     }
 
      i=i+1;
           
@@ -86,6 +95,8 @@ void Tmy_list_G::update_G(int idx_b,int idx_a,Tmy_double new_alpha_b,Tmy_double 
 
   bool is_alpha_a_ub = _alpha->is_upper_bound(idx_a);
   bool is_alpha_b_ub = _alpha->is_upper_bound(idx_b);
+  bool is_alpha_a_lb = _alpha->is_lower_bound(idx_a);
+  bool is_alpha_b_lb = _alpha->is_lower_bound(idx_b);
   _alpha->update_alpha(idx_a,new_alpha_a);
   _alpha->update_alpha(idx_b,new_alpha_b);
 
@@ -119,6 +130,41 @@ void Tmy_list_G::update_G(int idx_b,int idx_a,Tmy_double new_alpha_b,Tmy_double 
         for (int i = 0; i < _jml_data; ++i)
         {    
            _arr_G_bar[i]=_arr_G_bar[i]+(data_b[i]*_alpha->get_ub());            
+        }
+     } 
+  }
+
+
+  if(is_alpha_a_lb!=_alpha->is_lower_bound(idx_a))
+  {
+     vector<Tmy_double> data_a = _kernel->get_Q(idx_a,_jml_data);
+     if(is_alpha_a_lb==true)
+     {
+        for (int i = 0; i < _jml_data; ++i)
+        {    
+           _arr_G_bar[i]=_arr_G_bar[i]-(data_a[i]*_alpha->get_lb());            
+        }
+     }else{
+        for (int i = 0; i < _jml_data; ++i)
+        {    
+           _arr_G_bar[i]=_arr_G_bar[i]+(data_a[i]*_alpha->get_lb());            
+        }
+     }
+  }
+
+  if(is_alpha_b_lb!=_alpha->is_lower_bound(idx_b))
+  {
+    vector<Tmy_double> data_b = _kernel->get_Q(idx_b,_jml_data);
+    if(is_alpha_b_lb==true)
+     {
+        for (int i = 0; i < _jml_data; ++i)
+        {    
+           _arr_G_bar[i]=_arr_G_bar[i]-(data_b[i]*_alpha->get_lb());            
+        } 
+     }else{
+        for (int i = 0; i < _jml_data; ++i)
+        {    
+           _arr_G_bar[i]=_arr_G_bar[i]+(data_b[i]*_alpha->get_lb());            
         }
      } 
   }

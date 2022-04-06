@@ -14,6 +14,8 @@ class Tmy_alpha
 private:
 	Tconfig *_config;
     Tmy_list_alpha *_my_list_alpha;
+    Tmy_list_alpha *_my_list_alpha_v1;
+    Tmy_list_alpha *_my_list_alpha_v2;
 public:
 	Tmy_alpha(Tconfig *v_config);
 	~Tmy_alpha();
@@ -24,6 +26,8 @@ public:
     void update_alpha(int idx1,Tmy_double value1,int idx2,Tmy_double value2);
 
     Tmy_list_alpha* get_alpha();
+    Tmy_list_alpha* get_alpha_v1();
+    Tmy_list_alpha* get_alpha_v2();
     
 	
 };
