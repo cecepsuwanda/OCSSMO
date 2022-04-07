@@ -45,6 +45,7 @@ private:
    vector<int> _alpha_not_ub;
    vector<int> _alpha_not_lb;
    vector<int> _alpha_not_nol;
+   vector<int> _alpha_not_lb_ub;
    vector<int> _alpha_free;
    map<int, Tmy_double> _alpha_sv;
 
@@ -71,6 +72,7 @@ public:
    bool is_upper_bound(int idx);
    bool is_free(int idx);
    bool is_nol(int idx);
+   bool is_not_lb_ub(int idx);
 
    Treturn_is_pass is_pass(int i, int j, Tmy_double delta);
    vector<bool> is_alpha_sv(int idx);

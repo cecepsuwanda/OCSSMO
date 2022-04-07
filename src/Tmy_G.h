@@ -10,6 +10,20 @@ using namespace std;
 
 #define Included_Tmy_G_H
 
+struct Treturn_update_rho
+{
+	Tmy_double rho_v1;
+	Tmy_double rho_v2;
+};
+
+struct Treturn_cari_idx
+{
+	int idx_b;
+	int idx_a;
+	Tmy_double gmax;
+	Tmy_double gmin;
+};
+
 class Tmy_G
 {
 private:
@@ -18,18 +32,22 @@ private:
 	Tmy_list_G *_my_list_G_v1;
 	Tmy_list_G *_my_list_G_v2;
 	Tmy_kernel *_kernel;
-    Tmy_alpha *_alphas;
+	Tmy_alpha *_alphas;
 public:
-	Tmy_G(int jml_data,Tmy_kernel *kernel,Tmy_alpha *alphas);
+	Tmy_G(int jml_data, Tmy_kernel *kernel, Tmy_alpha *alphas);
 	~Tmy_G();
 
-    void clear_container();
+	void clear_container();
 
 	void init();
-	Tmy_double update_rho();
+	Treturn_update_rho update_rho();
 	Tmy_list_G* get_list_G();
 	Tmy_list_G* get_list_G_v1();
 	Tmy_list_G* get_list_G_v2();
+
+	bool is_kkt(int idx, Treturn_update_rho rho);
+	Treturn_cari_idx cari_idx();
+	int cari_idx_lain(int idx_b);
 };
 
 #endif

@@ -30,6 +30,7 @@ void Tmy_list_alpha::clear_container()
   _alpha_not_ub.clear();
   _alpha_not_lb.clear();
   _alpha_not_nol.clear();
+  _alpha_not_lb_ub.clear();
   _alpha_free.clear();
 }
 
@@ -190,6 +191,13 @@ void Tmy_list_alpha::update_lb_ub(int idx_cari)
     }
   }
 
+  for (int i = 0; i < _alpha_not_lb_ub.size(); i++) {
+    if (_alpha_not_lb_ub[i] == idx_cari) {
+      _alpha_not_lb_ub.erase(_alpha_not_lb_ub.begin() + i);
+      break;
+    }
+  }
+
   if (is_upper_bound(idx_cari) == false)
   {
     _alpha_not_ub.push_back(idx_cari);
@@ -208,6 +216,11 @@ void Tmy_list_alpha::update_lb_ub(int idx_cari)
   if (is_nol(idx_cari) == false)
   {
     _alpha_not_nol.push_back(idx_cari);
+  }
+
+  if (is_not_lb_ub(idx_cari) == true)
+  {
+    _alpha_not_lb_ub.push_back(idx_cari);
   }
 
 
@@ -241,6 +254,11 @@ bool Tmy_list_alpha::is_free(int idx)
 bool Tmy_list_alpha::is_nol(int idx)
 {
   return (_alpha[idx] == 0.0);
+}
+
+bool Tmy_list_alpha::is_not_lb_ub(int idx)
+{
+  return ((_alpha[idx] != _lb) and (_alpha[idx] != _ub));
 }
 
 vector<Tmy_double> Tmy_list_alpha::calculateBoundaries(int i, int j)
@@ -349,6 +367,10 @@ vector<int> Tmy_list_alpha::get_list_lb_ub(int flag)
       } else {
         if (flag == 3) {
           return _alpha_not_nol;
+        } else {
+          if (flag == 4) {
+            return _alpha_not_lb_ub;
+          }
         }
       }
     }
@@ -375,6 +397,28 @@ void Tmy_list_alpha::mv_lb_ub(int idx, int flag1)
           _alpha_not_ub.erase(_alpha_not_ub.begin() + i);
           _alpha_not_ub.insert(_alpha_not_ub.begin(), idx);
           break;
+        }
+      }
+    } else {
+      if (flag1 == 2)
+      {
+        for (int i = 0; i < _alpha_not_nol.size(); i++) {
+          if (_alpha_not_nol[i] == idx) {
+            _alpha_not_nol.erase(_alpha_not_nol.begin() + i);
+            _alpha_not_nol.insert(_alpha_not_nol.begin(), idx);
+            break;
+          }
+        }
+      } else {
+        if (flag1 == 3)
+        {
+          for (int i = 0; i < _alpha_not_lb_ub.size(); i++) {
+            if (_alpha_not_lb_ub[i] == idx) {
+              _alpha_not_lb_ub.erase(_alpha_not_lb_ub.begin() + i);
+              _alpha_not_lb_ub.insert(_alpha_not_lb_ub.begin(), idx);
+              break;
+            }
+          }
         }
       }
     }

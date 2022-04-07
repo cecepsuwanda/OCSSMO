@@ -165,7 +165,8 @@ int main(int argc, char *argv[])
               cout << " jml alpha = " << hsl_train.jml_alpha;
               cout << " jml sv = " << hsl_train.n_sv;
               cout << " jml alpha sv = " << hsl_train.jml_alpha_n_sv;
-              cout << " rho = " << hsl_train.rho;
+              cout << " rho_v1 = " << hsl_train.rho_v1;
+              cout << " rho_v2 = " << hsl_train.rho_v2;
               cout << " is optimum = " << (hsl_train.is_optimum == true ? "Yes" : "No");
 
               //Tconf_metrix conf_metrix_train;

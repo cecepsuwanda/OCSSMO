@@ -15,9 +15,8 @@ Tmy_svm::~Tmy_svm(){
 
 Treturn_cari_alpha Tmy_svm::cari_idx_alpha()
 {
-   Tmy_list_G* _my_list_G = _my_G->get_list_G();
    vector<Tmy_double> gmax_gmin;
-   Treturn_cari_idx tmp_cari_idx = _my_list_G->cari_idx(_rho);
+   Treturn_cari_idx tmp_cari_idx = _my_G->cari_idx();
    
    Tmy_double diff = tmp_cari_idx.gmax+tmp_cari_idx.gmin;
    cout<<tmp_cari_idx.gmax<<"+"<<tmp_cari_idx.gmin<<"="<<diff<<endl;
@@ -32,9 +31,8 @@ Treturn_cari_alpha Tmy_svm::cari_idx_alpha()
 
 bool Tmy_svm::cari_idx_a_lain(int idx_b,int *idx_alpha)
 {
-   //cout << "cari_idx_a_lain" << endl;
-   Tmy_list_G* _my_list_G = _my_G->get_list_G();
-   *idx_alpha = _my_list_G->cari_idx_lain(idx_b,_rho);
+   //cout << "cari_idx_a_lain" << endl;   
+   *idx_alpha = _my_G->cari_idx_lain(idx_b);
 
    return (*idx_alpha!=-1);
 }
@@ -83,12 +81,20 @@ bool Tmy_svm::take_step(int idx_b,int idx_a)
      Treturn_is_pass tmp = _my_list_alpha->is_pass(idx_b,idx_a,delta);
 
      cout<<" "<< tmp_v1.is_pass <<" " << tmp_v2.is_pass <<" ";
-     cout<<" "<< (tmp_v1.alpha_i-tmp_v2.alpha_i) << "=" << tmp.alpha_i <<" ";
-     cout<<" "<< (tmp_v1.alpha_j-tmp_v2.alpha_j) << "=" << tmp.alpha_j <<" ";
-     cout<<" "<< (tmp_v1.new_alpha_i-tmp_v2.new_alpha_i) << "=" << tmp.new_alpha_i <<" ";
-     cout<<" "<< (tmp_v1.new_alpha_j-tmp_v2.new_alpha_j) << "=" << tmp.new_alpha_j <<" ";
+     Tmy_double diff = (tmp_v1.alpha_i-tmp_v2.alpha_i); 
+     if((diff-tmp.alpha_i)>1e-3)   
+        cout<<" "<< tmp_v1.alpha_i<<"-"<<tmp_v2.alpha_i << "=" << tmp.alpha_i <<" ";
+     diff = (tmp_v1.alpha_j-tmp_v2.alpha_j); 
+     if((diff-tmp.alpha_j)>1e-3)
+        cout<<" "<< tmp_v1.alpha_j<<"-"<<tmp_v2.alpha_j << "=" << tmp.alpha_j <<" ";
+     diff = (tmp_v1.new_alpha_i-tmp_v2.new_alpha_i); 
+     if((diff-tmp.new_alpha_i)>1e-3)
+        cout<<" "<< tmp_v1.new_alpha_i<<"-"<<tmp_v2.new_alpha_i << "=" << tmp.new_alpha_i <<" ";
+     diff = (tmp_v1.new_alpha_j-tmp_v2.new_alpha_j); 
+     if((diff-tmp.new_alpha_j)>1e-3)
+         cout<<" "<< tmp_v1.new_alpha_j<<"-"<<tmp_v2.new_alpha_j << "=" << tmp.new_alpha_j <<" ";
 
-     if(tmp.is_pass==false)
+     if( (tmp_v1.is_pass==false) or (tmp_v2.is_pass==false) or (tmp.is_pass==false))
      {
         return false;
      }else{        
@@ -113,7 +119,7 @@ Treturn_train Tmy_svm::train(Tdataframe &df){
    _rho = _my_G->update_rho();
    
    int iter = 0;
-   int max_iter =max(10000000, jml_data>INT_MAX/100 ? INT_MAX : 100*jml_data);
+   int max_iter = 100;//max(10000000, jml_data>INT_MAX/100 ? INT_MAX : 100*jml_data);
    int counter = min(jml_data,1000)+1;
    
    bool is_alpha_changed = true;
@@ -156,9 +162,9 @@ Treturn_train Tmy_svm::train(Tdataframe &df){
 
       if(hasil_cari.idx_a!=-1.0)
       {
-         cout<<"iterasi ke - "<<iter<<" rho sebelum "<<_rho<<" idx_b "<<hasil_cari.idx_b<<" idx_a "<<hasil_cari.idx_a;                  
+         cout<<"iterasi ke - "<<iter<<" rho v1 "<<_rho.rho_v1<<" rho v2 "<<_rho.rho_v2<<" idx_b "<<hasil_cari.idx_b<<" idx_a "<<hasil_cari.idx_a;                  
          is_alpha_changed = take_step(hasil_cari.idx_b,hasil_cari.idx_a);
-         cout<<" rho sesudah "<<_rho<<endl;
+         cout<<" rho v1 "<<_rho.rho_v1<<" rho v2 "<<_rho.rho_v2<<endl;
          
          if(is_alpha_changed==false)
          {
@@ -167,9 +173,9 @@ Treturn_train Tmy_svm::train(Tdataframe &df){
              bool pass = cari_idx_a_lain(hasil_cari.idx_b,&idx_a);
              if(pass==true)
              {
-                cout<<"iterasi ke - "<<iter<<" rho sebelum "<<_rho<<" idx_b "<<hasil_cari.idx_b<<" idx_a "<<idx_a;   
+                cout<<"iterasi ke - "<<iter<<" rho v1 "<<_rho.rho_v1<<" rho v2 "<<_rho.rho_v2<<" idx_b "<<hasil_cari.idx_b<<" idx_a "<<idx_a;   
                 is_alpha_changed = take_step(hasil_cari.idx_b,idx_a);
-                cout<<" rho sesudah "<<_rho<<endl;               
+                cout<<" rho v1 "<<_rho.rho_v1<<" rho v2 "<<_rho.rho_v2<<endl;               
                 if(is_alpha_changed==false)
                 {
                    counter=1;
@@ -213,7 +219,8 @@ Treturn_train Tmy_svm::train(Tdataframe &df){
    tmp_train.n_all_sv=alpha_stat.n_all_sv;
    tmp_train.n_sv=alpha_stat.n_sv;
    tmp_train.jml_alpha_n_sv=alpha_stat.jml_alpha_n_sv;
-   tmp_train.rho = _rho;
+   tmp_train.rho_v1 = _rho.rho_v1;
+   tmp_train.rho_v2 = _rho.rho_v2;
 
    
    int n_kkt = 0;
@@ -222,7 +229,7 @@ Treturn_train Tmy_svm::train(Tdataframe &df){
    for (map<int, Tmy_double>::iterator it = alpha_sv.begin(); it != alpha_sv.end(); ++it)
    {
       int idx = it->first;
-      if(list_G->is_kkt(idx,_rho)==true)
+      if(_my_G->is_kkt(idx,_rho)==true)
       {
          n_kkt = n_kkt+1;
       }
@@ -263,7 +270,7 @@ vector<string> Tmy_svm::test(Tdataframe &df)
           i=i+1;
       }
       
-      sum = sum - _rho;
+      sum = (sum - _rho.rho_v1)*(_rho.rho_v2-sum);
       if(sum>=0.0){
 
       }else{
