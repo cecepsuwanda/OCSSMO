@@ -28,11 +28,16 @@ class Tmy_G
 {
 private:
 	int _jml_data;
+	int _active_size;
 	Tmy_list_G *_my_list_G;
 	Tmy_list_G *_my_list_G_v1;
 	Tmy_list_G *_my_list_G_v2;
 	Tmy_kernel *_kernel;
 	Tmy_alpha *_alphas;
+
+	bool _unshrink;
+	bool be_shrunk(int i, Tmy_double gmax1, Tmy_double gmax2);
+	void swap_index(int i, int j);
 public:
 	Tmy_G(int jml_data, Tmy_kernel *kernel, Tmy_alpha *alphas);
 	~Tmy_G();
@@ -48,6 +53,12 @@ public:
 	bool is_kkt(int idx, Treturn_update_rho rho);
 	Treturn_cari_idx cari_idx();
 	int cari_idx_lain(int idx_b);
+
+	void do_shrinking();
+	void reconstruct_gradient();
+	int get_active_size();
+	void reset_active_size();
+	void reverse_swap();
 };
 
 #endif

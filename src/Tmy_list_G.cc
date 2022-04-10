@@ -5,7 +5,6 @@ Tmy_list_G::Tmy_list_G(int jml_data, Tmy_kernel *kernel, Tmy_list_alpha *alpha)
 {
     _jml_data = jml_data;
     _active_size = jml_data;
-    _unshrink = false;
     _kernel = kernel;
     _alpha = alpha;
     _arr_G.reserve(_jml_data);
@@ -178,24 +177,10 @@ Tmy_double Tmy_list_G::get_G(int idx)
     return _arr_G[idx];
 }
 
-bool Tmy_list_G::be_shrunk(int i, Tmy_double gmax1, Tmy_double gmax2)
-{
-    if (_alpha->is_upper_bound(i))
-    {
-        return ((-1.0 * _arr_G[i]) > gmax1);
-    }
-    else if (_alpha->is_lower_bound(i))
-    {
-        return (_arr_G[i] > gmax2);
-    }
-    else
-        return (false);
-}
+
 
 void Tmy_list_G::swap_index(int i, int j)
 {
-
-    _kernel->swap_index(i, j);
     _alpha->swap_index(i, j);
     swap(_arr_G[i], _arr_G[j]);
     swap(_active_set[i], _active_set[j]);
@@ -214,58 +199,6 @@ void Tmy_list_G::reverse_swap()
             _active_set[i] = i;
         }
     }
-}
-
-
-void Tmy_list_G::do_shrinking()
-{
-    cout << "do_shrinking" << endl;
-    Tmy_double gmax1 = -HUGE_VAL, gmax2 = -HUGE_VAL;
-
-    for (int i = 0; i < _active_size; ++i)
-    {
-        if (_alpha->is_upper_bound(i) == false)
-        {
-            if ((-1.0 * _arr_G[i]) >= gmax1)
-            {
-                gmax1 = (-1.0 * _arr_G[i]);
-            }
-        }
-
-        if (_alpha->is_lower_bound(i) == false)
-        {
-            if (_arr_G[i] >= gmax2)
-            {
-                gmax2 = _arr_G[i];
-            }
-        }
-    }
-
-    if (_unshrink == false && ((gmax1 + gmax2) <= (1e-3 * 10)))
-    {
-        cout << "un shrink" << endl;
-        _unshrink = true;
-        reconstruct_gradient();
-        _active_size = _jml_data;
-    }
-
-    for (int i = 0; i < _active_size; i++)
-    {
-        if (be_shrunk(i, gmax1, gmax2))
-        {
-            _active_size--;
-            while (_active_size > i)
-            {
-                if (!be_shrunk(_active_size, gmax1, gmax2))
-                {
-                    swap_index(i, _active_size);
-                    break;
-                }
-                _active_size--;
-            }
-        }
-    }
-    cout << "_active_size " << _active_size << " _jml_data " << _jml_data << endl;
 }
 
 void Tmy_list_G::reconstruct_gradient()
@@ -312,10 +245,10 @@ void Tmy_list_G::reconstruct_gradient()
     }
 }
 
-int Tmy_list_G::get_active_size()
+void Tmy_list_G::set_active_size(int new_value)
 {
 
-    return _active_size;
+    _active_size=new_value;
 }
 
 void Tmy_list_G::reset_active_size()
