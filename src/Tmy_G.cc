@@ -124,8 +124,8 @@ Treturn_cari_idx Tmy_G::cari_idx()
   Tmy_list_alpha *list_alpha_v1 = _alphas->get_alpha_v1();
   Tmy_list_alpha *list_alpha_v2 = _alphas->get_alpha_v2();
 
-  vector<int> idx_alpha_not_lb = list_alpha->get_list_lb_ub(0);
-  vector<int> idx_alpha_not_ub = list_alpha->get_list_lb_ub(1);
+  vector<int> idx_alpha_not_lb = list_alpha->get_list_lb_ub(3);
+  vector<int> idx_alpha_not_ub = list_alpha->get_list_lb_ub(4);
 
   int idx_b = -1, idx_a = -1;
   Tmy_double gmax = -HUGE_VAL, kkt_max = -HUGE_VAL, gmin = -HUGE_VAL, diff_max = -HUGE_VAL, obj_diff_min = HUGE_VAL;
@@ -141,7 +141,7 @@ Treturn_cari_idx Tmy_G::cari_idx()
       {
         gmax = tmp;
         idx_b = idx;
-        list_alpha->mv_lb_ub(idx, 1);
+        list_alpha->mv_lb_ub(idx, 4);
       }
 
     }
@@ -159,13 +159,13 @@ Treturn_cari_idx Tmy_G::cari_idx()
         if (diff >= gmin)
         {
           gmin = diff;
-          list_alpha->mv_lb_ub(idx, 0);
+          list_alpha->mv_lb_ub(idx, 3);
         }
 
         Tmy_double grad_diff = gmax + Fa;
         if (grad_diff > 1e-3)
         {
-          list_alpha->mv_lb_ub(idx, 0);
+          list_alpha->mv_lb_ub(idx, 3);
           Tmy_double obj_diff;
           vector<Tmy_double> tmp_hsl = _kernel->hit_eta(idx, idx_b, _active_size);
           Tmy_double quad_coef = tmp_hsl[0];
@@ -174,7 +174,7 @@ Treturn_cari_idx Tmy_G::cari_idx()
           {
             obj_diff_min = obj_diff;
             idx_a = idx;
-            list_alpha->mv_lb_ub(idx, 0);
+            list_alpha->mv_lb_ub(idx, 3);
           }
         }
       }
@@ -189,10 +189,8 @@ int Tmy_G::cari_idx_lain(int idx_b)
   Tmy_list_alpha *list_alpha_v1 = _alphas->get_alpha_v1();
   Tmy_list_alpha *list_alpha_v2 = _alphas->get_alpha_v2();
 
-  vector<int> idx_alpha_not_lb = list_alpha->get_list_lb_ub(0);
-  vector<int> idx_alpha_not_ub = list_alpha->get_list_lb_ub(1);
-
-
+  vector<int> idx_alpha_not_lb = list_alpha->get_list_lb_ub(3);
+  vector<int> idx_alpha_not_ub = list_alpha->get_list_lb_ub(4);
 
   int idx_a = -1;
 
@@ -206,11 +204,18 @@ int Tmy_G::cari_idx_lain(int idx_b)
       Tmy_double diff = gmax + gmin;
       if (diff > 1e-3) {
         vector<Tmy_double> hsl_eta = _kernel->hit_eta(idx_b, idx, _active_size);
+        vector<Tmy_double> hsl_diff = _kernel->get_diff_Q(idx_b, idx, _active_size);
 
-        Tmy_double delta = (Fa - Fb) * hsl_eta[0];
+        Tmy_double hsl_sum_v1 = sum_alpha_diff_Q(list_alpha_v1, hsl_diff);
+        Tmy_double delta_v1 = hsl_eta[0] * hsl_sum_v1;
 
-        vector<Tmy_double> alpha;
-        Treturn_is_pass tmp = list_alpha->is_pass(idx_b, idx, delta);
+        Tmy_double hsl_sum_v2 = sum_alpha_diff_Q(list_alpha_v2, hsl_diff);
+        Tmy_double delta_v2 = hsl_eta[0] * hsl_sum_v2;
+
+        Tmy_double hsl_sum = sum_alpha_diff_Q(list_alpha, hsl_diff);
+        Tmy_double delta = hsl_eta[0] * hsl_sum;
+
+        Treturn_is_pass_h tmp = _alphas->is_pass(idx_b, idx, delta, delta_v1, delta_v2);
         if (tmp.is_pass == true)
         {
           idx_a = idx;
@@ -233,11 +238,18 @@ int Tmy_G::cari_idx_lain(int idx_b)
         Tmy_double diff = gmax + gmin;
         if (diff > 1e-3) {
           vector<Tmy_double> hsl_eta = _kernel->hit_eta(idx_b, idx, _active_size);
+          vector<Tmy_double> hsl_diff = _kernel->get_diff_Q(idx_b, idx, _active_size);
 
-          Tmy_double delta = (Fa - Fb) * hsl_eta[0];
+          Tmy_double hsl_sum_v1 = sum_alpha_diff_Q(list_alpha_v1, hsl_diff);
+          Tmy_double delta_v1 = hsl_eta[0] * hsl_sum_v1;
 
-          vector<Tmy_double> alpha;
-          Treturn_is_pass tmp = list_alpha->is_pass(idx_b, idx, delta);
+          Tmy_double hsl_sum_v2 = sum_alpha_diff_Q(list_alpha_v2, hsl_diff);
+          Tmy_double delta_v2 = hsl_eta[0] * hsl_sum_v2;
+
+          Tmy_double hsl_sum = sum_alpha_diff_Q(list_alpha, hsl_diff);
+          Tmy_double delta = hsl_eta[0] * hsl_sum;
+
+          Treturn_is_pass_h tmp = _alphas->is_pass(idx_b, idx, delta, delta_v1, delta_v2);
           if (tmp.is_pass == true)
           {
             idx_a = idx;
@@ -254,6 +266,19 @@ int Tmy_G::cari_idx_lain(int idx_b)
 
 }
 
+Tmy_double Tmy_G::sum_alpha_diff_Q(Tmy_list_alpha* alpha, vector<Tmy_double> diff_Q)
+{
+  Tmy_double hasil = 0.0;
+
+  for (int i = 0; i < diff_Q.size(); ++i)
+  {
+    hasil = hasil + (alpha->get_alpha(i) * diff_Q[i]);
+  }
+
+  return hasil;
+
+}
+
 void Tmy_G::do_shrinking()
 {
   cout << "do_shrinking" << endl;
@@ -263,7 +288,7 @@ void Tmy_G::do_shrinking()
 
   for (int i = 0; i < _active_size; ++i)
   {
-    if (list_alpha->is_upper_bound(i) == false)
+    if (list_alpha->is_not_lb_ub(i) == true)
     {
       if ((-1.0 * _my_list_G->get_G(i)) >= gmax1)
       {
@@ -271,7 +296,7 @@ void Tmy_G::do_shrinking()
       }
     }
 
-    if (list_alpha->is_lower_bound(i) == false)
+    if (list_alpha->is_nol(i) == false)
     {
       if (_my_list_G->get_G(i) >= gmax2)
       {
@@ -315,11 +340,12 @@ void Tmy_G::do_shrinking()
 bool Tmy_G::be_shrunk(int i, Tmy_double gmax1, Tmy_double gmax2)
 {
   Tmy_list_alpha *list_alpha = _alphas->get_alpha();
-  if (list_alpha->is_upper_bound(i))
+
+  if (list_alpha->is_not_lb_ub(i) == false)
   {
     return ((-1.0 * _my_list_G->get_G(i)) > gmax1);
   }
-  else if (list_alpha->is_lower_bound(i))
+  else if (list_alpha->is_nol(i) == true)
   {
     return (_my_list_G->get_G(i) > gmax2);
   }

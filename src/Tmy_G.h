@@ -38,6 +38,7 @@ private:
 	bool _unshrink;
 	bool be_shrunk(int i, Tmy_double gmax1, Tmy_double gmax2);
 	void swap_index(int i, int j);
+	Tmy_double sum_alpha_diff_Q(Tmy_list_alpha* alpha,vector<Tmy_double> diff_Q);
 public:
 	Tmy_G(int jml_data, Tmy_kernel *kernel, Tmy_alpha *alphas);
 	~Tmy_G();

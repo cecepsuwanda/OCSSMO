@@ -104,63 +104,57 @@ bool Tmy_svm::take_step(int idx_b, int idx_a)
 
       if (new_alpha_i_pass or new_alpha_j_pass)
       {
-         //cout<<" "<< tmp_v1.is_pass <<" " << tmp_v2.is_pass <<" ";
-         //cout<<"v1["<< tmp_v1.alpha_i<<","<<tmp_v1.alpha_j<<"] v2["<<tmp_v2.alpha_i<<","<<tmp_v2.alpha_j<<"] v["<< tmp.alpha_i<<","<<tmp.alpha_j<<"] ";
-         //cout<<"new v1["<< tmp_v1.new_alpha_i<<","<<tmp_v1.new_alpha_j<<"] new v2["<<tmp_v2.new_alpha_i<<","<<tmp_v2.new_alpha_j<<"] new v["<< tmp.new_alpha_i<<","<<tmp.new_alpha_j<<"] ";
+         cout<<" "<< tmp_v1.is_pass <<" " << tmp_v2.is_pass <<" ";
+         cout<<"v1["<< tmp_v1.alpha_i<<","<<tmp_v1.alpha_j<<"] v2["<<tmp_v2.alpha_i<<","<<tmp_v2.alpha_j<<"] v["<< tmp.alpha_i<<","<<tmp.alpha_j<<"] ";
+         cout<<"new v1["<< tmp_v1.new_alpha_i<<","<<tmp_v1.new_alpha_j<<"] new v2["<<tmp_v2.new_alpha_i<<","<<tmp_v2.new_alpha_j<<"] new v["<< tmp.new_alpha_i<<","<<tmp.new_alpha_j<<"] ";
 
          if (v1_zero_v2_notzero)
          {
-            //cout<<" if1 ";
-            if (tmp.new_alpha_i > 0.0) {
-               tmp_v1.new_alpha_i = abs((double) tmp.new_alpha_i);
-               tmp_v2.new_alpha_i = 0.0;
-            } else {
+            //cout<<" if1 ";            
+            if((tmp.new_alpha_i < 0.0) and (tmp.new_alpha_j < 0.0))
+            {
                tmp_v2.new_alpha_i = abs((double) tmp.new_alpha_i);
-            }
-
-            if (tmp.new_alpha_j > 0.0) {
-               tmp_v1.new_alpha_j = abs((double) tmp.new_alpha_j);
-               tmp_v2.new_alpha_j = 0.0;
-            } else {
                tmp_v2.new_alpha_j = abs((double) tmp.new_alpha_j);
-            }
+            }else{
+               tmp.new_alpha_i = tmp_v1.new_alpha_i - tmp_v2.new_alpha_i;
+               tmp.new_alpha_j = tmp_v1.new_alpha_j - tmp_v2.new_alpha_j;
+            }                   
 
          } else {
             if (v2_zero_v1_notzero)
             {
-               //cout<<" if2 ";
-               if (tmp.new_alpha_i < 0.0) {
-                  tmp_v1.new_alpha_i = 0.0;
-                  tmp_v2.new_alpha_i = abs((double) tmp.new_alpha_i);
-
-               } else {
+               //cout<<" if2 ";                           
+               if((tmp.new_alpha_i > 0.0) and (tmp.new_alpha_j > 0.0))
+               {
                   tmp_v1.new_alpha_i = abs((double) tmp.new_alpha_i);
-               }
-
-               if (tmp.new_alpha_j < 0.0) {
-                  tmp_v1.new_alpha_j = 0.0;
-                  tmp_v2.new_alpha_j = abs((double) tmp.new_alpha_j);
-               } else {
                   tmp_v1.new_alpha_j = abs((double) tmp.new_alpha_j);
-               }
+               }else{
+                  tmp.new_alpha_i = tmp_v1.new_alpha_i - tmp_v2.new_alpha_i;
+                  tmp.new_alpha_j = tmp_v1.new_alpha_j - tmp_v2.new_alpha_j;
+               }               
             } else {
                if (v1_zero_v2_zero)
                {
-                  if (tmp.new_alpha_i > 0.0) {
-                     tmp_v1.new_alpha_i = abs((double) tmp.new_alpha_i);
-                  }
-                  if (tmp.new_alpha_j > 0.0) {
-                     tmp_v1.new_alpha_j = abs((double) tmp.new_alpha_j);
-                  }
-                  if (tmp.new_alpha_i < 0.0) {
-                     tmp_v2.new_alpha_i =  abs((double) tmp.new_alpha_i);
-                  }
-                  if (tmp.new_alpha_j < 0.0)  {
-                     tmp_v2.new_alpha_j = abs((double) tmp.new_alpha_j);
-                  }
+                  // if (tmp.new_alpha_i > 0.0) {
+                  //    tmp_v1.new_alpha_i = abs((double) tmp.new_alpha_i);
+                  // }
+                  // if (tmp.new_alpha_j > 0.0) {
+                  //    tmp_v1.new_alpha_j = abs((double) tmp.new_alpha_j);
+                  // }
+                  // if (tmp.new_alpha_i < 0.0) {
+                  //    tmp_v2.new_alpha_i =  abs((double) tmp.new_alpha_i);
+                  // }
+                  // if (tmp.new_alpha_j < 0.0)  {
+                  //    tmp_v2.new_alpha_j = abs((double) tmp.new_alpha_j);
+                  // }
+                  tmp.is_pass = false;
+
                } else {
                   if (v1_notzero_v2_notzero)
                   {
+                     // tmp.new_alpha_i = tmp_v1.new_alpha_i - tmp_v2.new_alpha_i;
+                     // tmp.new_alpha_j = tmp_v1.new_alpha_j - tmp_v2.new_alpha_j;
+
                      if (tmp.new_alpha_i > 0.0) {
                         tmp_v1.new_alpha_i = abs((double) tmp.new_alpha_i);
                         tmp_v2.new_alpha_i = 0.0;
@@ -202,7 +196,7 @@ bool Tmy_svm::take_step(int idx_b, int idx_a)
       if (new_alpha_j_pass)
          cout << " new_j " << tmp_v1.new_alpha_j << "-" << tmp_v2.new_alpha_j << "=" << tmp.new_alpha_j << " ";
 
-      if (tmp.is_pass == false)
+      if ((tmp_v1.is_pass == false) and (tmp_v2.is_pass == false))
       {
          return false;
       } else {
@@ -226,7 +220,7 @@ Treturn_train Tmy_svm::train(Tdataframe &df) {
    _rho = _my_G->update_rho();
 
    int iter = 0;
-   int max_iter =100;//max(10000000, jml_data > INT_MAX / 100 ? INT_MAX : 100 * jml_data);
+   int max_iter =500;//max(10000000, jml_data > INT_MAX / 100 ? INT_MAX : 100 * jml_data);
    int counter = min(jml_data, 1000) + 1;
 
    bool is_alpha_changed = true;
@@ -320,9 +314,20 @@ Treturn_train Tmy_svm::train(Tdataframe &df) {
    map<int, Tmy_double> alpha_sv = list_alpha->get_list_alpha_sv();
    Treturn_alpha_stat alpha_stat = list_alpha->get_stat();
 
+   Tmy_list_alpha *list_alpha_v1 = _my_alpha->get_alpha_v1();
+   map<int, Tmy_double> alpha_sv_v1 = list_alpha_v1->get_list_alpha_sv();
+   Treturn_alpha_stat alpha_stat_v1 = list_alpha_v1->get_stat();
+
+   Tmy_list_alpha *list_alpha_v2 = _my_alpha->get_alpha_v2();
+   map<int, Tmy_double> alpha_sv_v2 = list_alpha_v2->get_list_alpha_sv();
+   Treturn_alpha_stat alpha_stat_v2 = list_alpha_v2->get_stat();
+
+
 
    tmp_train.jml_iterasi = iter;
    tmp_train.jml_alpha = alpha_stat.jml_alpha;
+   tmp_train.jml_alpha_v1 = alpha_stat_v1.jml_alpha;
+   tmp_train.jml_alpha_v2 = alpha_stat_v2.jml_alpha;
    tmp_train.n_all_sv = alpha_stat.n_all_sv;
    tmp_train.n_sv = alpha_stat.n_sv;
    tmp_train.jml_alpha_n_sv = alpha_stat.jml_alpha_n_sv;

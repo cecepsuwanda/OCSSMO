@@ -20,6 +20,8 @@ struct Treturn_train
    int jml_iterasi;
    int n_kkt;
    Tmy_double jml_alpha;
+   Tmy_double jml_alpha_v1;
+   Tmy_double jml_alpha_v2;
    int n_all_sv;
    int n_sv;
    Tmy_double jml_alpha_n_sv;
