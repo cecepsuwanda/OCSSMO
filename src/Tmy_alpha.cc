@@ -60,59 +60,95 @@ Tmy_list_alpha* Tmy_alpha::get_alpha_v2()
 	return _my_list_alpha_v2;
 }
 
-Treturn_is_pass_h Tmy_alpha::is_pass(int i, int j, Tmy_double delta, Tmy_double delta_v1, Tmy_double delta_v2)
+Treturn_is_pass_h Tmy_alpha::is_pass(int i, int j, Tmy_double delta, Tmy_double delta_v1, Tmy_double delta_v2, int flag)
 {
 	Treturn_is_pass tmp_v1 = _my_list_alpha_v1->is_pass(i, j, delta_v1);
 	Treturn_is_pass tmp_v2 = _my_list_alpha_v2->is_pass(i, j, delta_v2);
 	Treturn_is_pass tmp = _my_list_alpha->is_pass(i, j, delta);
 
-	Tmy_double diff = 0.0;
-	auto cek = [&diff](Tmy_double alpha_v1, Tmy_double alpha_v2, Tmy_double alpha) -> bool {
-		diff = (alpha_v1 - alpha_v2);
-		Tmy_double tmp = diff - alpha;
-		return (tmp > -1e-3) and (tmp < 1e-3);
+
+	auto cek = [](Tmy_double alpha_v1, Tmy_double alpha_v2, Tmy_double alpha) -> bool {
+		return  (((alpha_v1 - alpha_v2) - alpha) == 0.0);
+	};
+
+	auto hitung_new_alpha = [](Tmy_double alpha_i, Tmy_double alpha_j, Tmy_double diff) -> vector<Tmy_double> {
+		vector<Tmy_double> hasil;
+		hasil.assign(2, 0);
+
+		alpha_i = alpha_i + diff;
+		alpha_j = alpha_j - diff;
+
+		hasil[0] = (alpha_i > 1.0) ? 1.0 : (double) alpha_i;
+		hasil[0] = (alpha_i < 0.0) ? 0.0 : (double) alpha_i;
+		hasil[1] = (alpha_j > 1.0) ? 1.0 : (double) alpha_j;
+		hasil[1] = (alpha_j < 0.0) ? 0.0 : (double) alpha_j;
+		return hasil;
+
 	};
 
 	bool old_alpha_i_pass = cek(tmp_v1.alpha_i, tmp_v2.alpha_i, tmp.alpha_i) == false;
 	bool old_alpha_j_pass = cek(tmp_v1.alpha_j, tmp_v2.alpha_j, tmp.alpha_j) == false;
 	bool new_alpha_i_pass = cek(tmp_v1.new_alpha_i, tmp_v2.new_alpha_i, tmp.new_alpha_i) == false;
 	bool new_alpha_j_pass = cek(tmp_v1.new_alpha_j, tmp_v2.new_alpha_j, tmp.new_alpha_j) == false;
-	bool v1_zero_v2_notzero = ((tmp_v1.new_alpha_i == 0.0) and (tmp_v1.new_alpha_j == 0.0)) and ((tmp_v2.new_alpha_i != 0.0) or (tmp_v2.new_alpha_j != 0.0));
-	bool v2_zero_v1_notzero = ((tmp_v2.new_alpha_i == 0.0) and (tmp_v2.new_alpha_j == 0.0)) and ((tmp_v1.new_alpha_i != 0.0) or (tmp_v1.new_alpha_j != 0.0));
-	bool v1_zero_v2_zero = ((tmp_v1.new_alpha_i == 0.0) and (tmp_v1.new_alpha_j == 0.0)) and ((tmp_v2.new_alpha_i == 0.0) or (tmp_v2.new_alpha_j == 0.0));
-	bool v1_notzero_v2_notzero = ((tmp_v1.new_alpha_i != 0.0) or (tmp_v1.new_alpha_j != 0.0)) and ((tmp_v2.new_alpha_i != 0.0) or (tmp_v2.new_alpha_j != 0.0));
 
 	Treturn_is_pass_h hsl;
 	hsl.is_pass = true;
 
 	if (new_alpha_i_pass or new_alpha_j_pass)
 	{
-		if (v1_zero_v2_notzero)
-		{
-
-		} else {
-			if (v2_zero_v1_notzero)
-			{
-
-			} else {
-				if (v1_zero_v2_zero)
-				{
-					hsl.is_pass = false;
-				} else {
-					if (v1_notzero_v2_notzero)
-					{
-
-					}
-				}
-			}
+		if (flag == 1) {
+			cout << " " << tmp_v1.is_pass << " " << tmp_v2.is_pass << " ";
+			cout << "v1[" << tmp_v1.alpha_i << "," << tmp_v1.alpha_j << "] v2[" << tmp_v2.alpha_i << "," << tmp_v2.alpha_j << "] v[" << tmp.alpha_i << "," << tmp.alpha_j << "] ";
+			cout << "new v1[" << tmp_v1.new_alpha_i << "," << tmp_v1.new_alpha_j << "] new v2[" << tmp_v2.new_alpha_i << "," << tmp_v2.new_alpha_j << "] new v[" << tmp.new_alpha_i << "," << tmp.new_alpha_j << "] ";
 		}
+
+		if( (tmp_v1.alpha_i==0.0) and (tmp_v1.alpha_j==0.0) and (tmp_v2.alpha_i==0.0) and (tmp_v2.alpha_j==0.0) )
+		{
+           hsl.is_pass = false;
+		}else{
+
+           Tmy_double diff_i = tmp.new_alpha_i - tmp.alpha_i;
+           Tmy_double diff_j = tmp.new_alpha_j - tmp.alpha_j;
+
+           Tmy_double diff_v1_i = tmp_v1.new_alpha_i - tmp_v1.alpha_i;
+           Tmy_double diff_v1_j = tmp_v1.new_alpha_j - tmp_v1.alpha_j; 
+
+           Tmy_double diff_v2_i = tmp_v2.new_alpha_i - tmp_v2.alpha_i;
+           Tmy_double diff_v2_j = tmp_v2.new_alpha_j - tmp_v2.alpha_j; 
+
+           Tmy_double delta_i =  tmp.new_alpha_i - (tmp_v1.alpha_i - tmp_v2.alpha_i); 
+           Tmy_double delta_j =  tmp.new_alpha_j - (tmp_v1.alpha_j - tmp_v2.alpha_j); 
+
+           cout <<" "<<diff_i<<" "<<diff_j<<" "<<delta_i<<" "<<delta_j<<" "<<diff_v1_i<<" "<<diff_v1_j<<" "<<diff_v2_i<<" "<<diff_v2_j<<" ";
+		}		
 	}
 
-	if ((tmp_v1.is_pass == false) and (tmp_v2.is_pass == false))
+
+	old_alpha_i_pass = cek(tmp_v1.alpha_i, tmp_v2.alpha_i, tmp.alpha_i) == false;
+	old_alpha_j_pass = cek(tmp_v1.alpha_j, tmp_v2.alpha_j, tmp.alpha_j) == false;
+	new_alpha_i_pass = cek(tmp_v1.new_alpha_i, tmp_v2.new_alpha_i, tmp.new_alpha_i) == false;
+	new_alpha_j_pass = cek(tmp_v1.new_alpha_j, tmp_v2.new_alpha_j, tmp.new_alpha_j) == false;
+
+	if (flag == 1) {
+		if (old_alpha_i_pass)
+			cout << " old " << tmp_v1.alpha_i << "-" << tmp_v2.alpha_i << "=" << tmp.alpha_i << " ";
+		if (old_alpha_j_pass)
+			cout << " old " << tmp_v1.alpha_j << "-" << tmp_v2.alpha_j << "=" << tmp.alpha_j << " ";
+		if (new_alpha_i_pass)
+			cout << " new_i " << tmp_v1.new_alpha_i << "-" << tmp_v2.new_alpha_i << "=" << tmp.new_alpha_i << " ";
+		if (new_alpha_j_pass)
+			cout << " new_j " << tmp_v1.new_alpha_j << "-" << tmp_v2.new_alpha_j << "=" << tmp.new_alpha_j << " ";
+	}
+
+	if ((tmp_v1.is_pass == false) and (tmp_v2.is_pass == false) and (tmp.is_pass == false))
 	{
 		hsl.is_pass = false;
 	} else {
-		
+		double diff = tmp.new_alpha_i - tmp.alpha_i;
+		if ((diff > -1e-5) and (diff < 1e-5))
+		{
+			hsl.is_pass = false;
+		}
 	}
 
 	hsl.alpha = tmp;

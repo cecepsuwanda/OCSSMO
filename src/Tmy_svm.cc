@@ -71,138 +71,27 @@ bool Tmy_svm::take_step(int idx_b, int idx_a)
       //cout<<" "<< hsl_eta[0] <<" ";
 
       Tmy_double hsl_sum_v1 = sum_alpha_diff_Q(_my_list_alpha_v1, hsl_diff);
-      //cout<<" "<< hsl_sum_v1 <<" ";
       Tmy_double delta_v1 = hsl_eta[0] * hsl_sum_v1;
-      Treturn_is_pass tmp_v1 = _my_list_alpha_v1->is_pass(idx_b, idx_a, delta_v1);
+      //cout<<" "<< delta_v1 <<" ";
 
       Tmy_double hsl_sum_v2 = sum_alpha_diff_Q(_my_list_alpha_v2, hsl_diff);
-      //cout<<" "<< hsl_sum_v2 <<" ";
       Tmy_double delta_v2 = hsl_eta[0] * hsl_sum_v2;
-      Treturn_is_pass tmp_v2 = _my_list_alpha_v2->is_pass(idx_b, idx_a, delta_v2);
+      //cout<<" "<< delta_v2 <<" ";
 
       Tmy_double hsl_sum = sum_alpha_diff_Q(_my_list_alpha, hsl_diff);
       //cout<<" "<< hsl_sum <<" ";
       Tmy_double delta = hsl_eta[0] * hsl_sum;
-      Treturn_is_pass tmp = _my_list_alpha->is_pass(idx_b, idx_a, delta);
+      //cout<<" "<< delta <<" ";
 
+      Treturn_is_pass_h tmp = _my_alpha->is_pass(idx_b, idx_a, delta, delta_v1, delta_v2, 1);
 
-      Tmy_double diff = 0.0;
-      auto cek = [&diff](Tmy_double alpha_v1, Tmy_double alpha_v2, Tmy_double alpha) -> bool {
-         diff = (alpha_v1 - alpha_v2);
-         Tmy_double tmp = diff - alpha;
-         return (tmp > -1e-3) and (tmp < 1e-3);
-      };
-
-      bool old_alpha_i_pass = cek(tmp_v1.alpha_i, tmp_v2.alpha_i, tmp.alpha_i) == false;
-      bool old_alpha_j_pass = cek(tmp_v1.alpha_j, tmp_v2.alpha_j, tmp.alpha_j) == false;
-      bool new_alpha_i_pass = cek(tmp_v1.new_alpha_i, tmp_v2.new_alpha_i, tmp.new_alpha_i) == false;
-      bool new_alpha_j_pass = cek(tmp_v1.new_alpha_j, tmp_v2.new_alpha_j, tmp.new_alpha_j) == false;
-      bool v1_zero_v2_notzero = ((tmp_v1.new_alpha_i == 0.0) and (tmp_v1.new_alpha_j == 0.0)) and ((tmp_v2.new_alpha_i != 0.0) or (tmp_v2.new_alpha_j != 0.0));
-      bool v2_zero_v1_notzero = ((tmp_v2.new_alpha_i == 0.0) and (tmp_v2.new_alpha_j == 0.0)) and ((tmp_v1.new_alpha_i != 0.0) or (tmp_v1.new_alpha_j != 0.0));
-      bool v1_zero_v2_zero = ((tmp_v1.new_alpha_i == 0.0) and (tmp_v1.new_alpha_j == 0.0)) and ((tmp_v2.new_alpha_i == 0.0) or (tmp_v2.new_alpha_j == 0.0));
-      bool v1_notzero_v2_notzero = ((tmp_v1.new_alpha_i != 0.0) or (tmp_v1.new_alpha_j != 0.0)) and ((tmp_v2.new_alpha_i != 0.0) or (tmp_v2.new_alpha_j != 0.0));
-
-      if (new_alpha_i_pass or new_alpha_j_pass)
-      {
-         cout<<" "<< tmp_v1.is_pass <<" " << tmp_v2.is_pass <<" ";
-         cout<<"v1["<< tmp_v1.alpha_i<<","<<tmp_v1.alpha_j<<"] v2["<<tmp_v2.alpha_i<<","<<tmp_v2.alpha_j<<"] v["<< tmp.alpha_i<<","<<tmp.alpha_j<<"] ";
-         cout<<"new v1["<< tmp_v1.new_alpha_i<<","<<tmp_v1.new_alpha_j<<"] new v2["<<tmp_v2.new_alpha_i<<","<<tmp_v2.new_alpha_j<<"] new v["<< tmp.new_alpha_i<<","<<tmp.new_alpha_j<<"] ";
-
-         if (v1_zero_v2_notzero)
-         {
-            //cout<<" if1 ";            
-            if((tmp.new_alpha_i < 0.0) and (tmp.new_alpha_j < 0.0))
-            {
-               tmp_v2.new_alpha_i = abs((double) tmp.new_alpha_i);
-               tmp_v2.new_alpha_j = abs((double) tmp.new_alpha_j);
-            }else{
-               tmp.new_alpha_i = tmp_v1.new_alpha_i - tmp_v2.new_alpha_i;
-               tmp.new_alpha_j = tmp_v1.new_alpha_j - tmp_v2.new_alpha_j;
-            }                   
-
-         } else {
-            if (v2_zero_v1_notzero)
-            {
-               //cout<<" if2 ";                           
-               if((tmp.new_alpha_i > 0.0) and (tmp.new_alpha_j > 0.0))
-               {
-                  tmp_v1.new_alpha_i = abs((double) tmp.new_alpha_i);
-                  tmp_v1.new_alpha_j = abs((double) tmp.new_alpha_j);
-               }else{
-                  tmp.new_alpha_i = tmp_v1.new_alpha_i - tmp_v2.new_alpha_i;
-                  tmp.new_alpha_j = tmp_v1.new_alpha_j - tmp_v2.new_alpha_j;
-               }               
-            } else {
-               if (v1_zero_v2_zero)
-               {
-                  // if (tmp.new_alpha_i > 0.0) {
-                  //    tmp_v1.new_alpha_i = abs((double) tmp.new_alpha_i);
-                  // }
-                  // if (tmp.new_alpha_j > 0.0) {
-                  //    tmp_v1.new_alpha_j = abs((double) tmp.new_alpha_j);
-                  // }
-                  // if (tmp.new_alpha_i < 0.0) {
-                  //    tmp_v2.new_alpha_i =  abs((double) tmp.new_alpha_i);
-                  // }
-                  // if (tmp.new_alpha_j < 0.0)  {
-                  //    tmp_v2.new_alpha_j = abs((double) tmp.new_alpha_j);
-                  // }
-                  tmp.is_pass = false;
-
-               } else {
-                  if (v1_notzero_v2_notzero)
-                  {
-                     // tmp.new_alpha_i = tmp_v1.new_alpha_i - tmp_v2.new_alpha_i;
-                     // tmp.new_alpha_j = tmp_v1.new_alpha_j - tmp_v2.new_alpha_j;
-
-                     if (tmp.new_alpha_i > 0.0) {
-                        tmp_v1.new_alpha_i = abs((double) tmp.new_alpha_i);
-                        tmp_v2.new_alpha_i = 0.0;
-                     }
-                     if (tmp.new_alpha_j > 0.0) {
-                        tmp_v1.new_alpha_j = abs((double) tmp.new_alpha_j);
-                        tmp_v2.new_alpha_j = 0.0;
-                     }
-                     if (tmp.new_alpha_i < 0.0) {
-                        tmp_v2.new_alpha_i =  abs((double) tmp.new_alpha_i);
-                        tmp_v1.new_alpha_i = 0.0;
-                     }
-                     if (tmp.new_alpha_j < 0.0)  {
-                        tmp_v2.new_alpha_j = abs((double) tmp.new_alpha_j);
-                        tmp_v1.new_alpha_j = 0.0;
-                     }
-                  }
-               }
-
-            }
-
-         }
-      }
-
-      old_alpha_i_pass = cek(tmp_v1.alpha_i, tmp_v2.alpha_i, tmp.alpha_i) == false;
-      old_alpha_j_pass = cek(tmp_v1.alpha_j, tmp_v2.alpha_j, tmp.alpha_j) == false;
-      new_alpha_i_pass = cek(tmp_v1.new_alpha_i, tmp_v2.new_alpha_i, tmp.new_alpha_i) == false;
-      new_alpha_j_pass = cek(tmp_v1.new_alpha_j, tmp_v2.new_alpha_j, tmp.new_alpha_j) == false;
-
-      if (old_alpha_i_pass)
-         cout << " old " << tmp_v1.alpha_i << "-" << tmp_v2.alpha_i << "=" << tmp.alpha_i << " ";
-
-      if (old_alpha_j_pass)
-         cout << " old " << tmp_v1.alpha_j << "-" << tmp_v2.alpha_j << "=" << tmp.alpha_j << " ";
-
-      if (new_alpha_i_pass)
-         cout << " new_i " << tmp_v1.new_alpha_i << "-" << tmp_v2.new_alpha_i << "=" << tmp.new_alpha_i << " ";
-
-      if (new_alpha_j_pass)
-         cout << " new_j " << tmp_v1.new_alpha_j << "-" << tmp_v2.new_alpha_j << "=" << tmp.new_alpha_j << " ";
-
-      if ((tmp_v1.is_pass == false) and (tmp_v2.is_pass == false))
+      if (tmp.is_pass == false)
       {
          return false;
       } else {
-         _my_list_G->update_G(idx_b, idx_a, tmp.new_alpha_i, tmp.new_alpha_j);
-         _my_list_G_v1->update_G(idx_b, idx_a, tmp_v1.new_alpha_i, tmp_v1.new_alpha_j);
-         _my_list_G_v2->update_G(idx_b, idx_a, tmp_v2.new_alpha_i, tmp_v2.new_alpha_j);
+         _my_list_G->update_G(idx_b, idx_a, tmp.alpha.new_alpha_i, tmp.alpha.new_alpha_j);
+         _my_list_G_v1->update_G(idx_b, idx_a, tmp.alpha_v1.new_alpha_i, tmp.alpha_v1.new_alpha_j);
+         _my_list_G_v2->update_G(idx_b, idx_a, tmp.alpha_v2.new_alpha_i, tmp.alpha_v2.new_alpha_j);
          //_rho = _my_G->update_rho(idx_b,idx_a);
          return true;
       }
@@ -216,11 +105,11 @@ Treturn_train Tmy_svm::train(Tdataframe &df) {
    _my_kernel = new Tmy_kernel(df, _config->gamma);
    _my_alpha->init(df.getjmlrow_svm());
    _my_G = new Tmy_G(df.getjmlrow_svm(), _my_kernel, _my_alpha);
-   _my_G->init();   
+   _my_G->init();
    _rho = _my_G->update_rho();
 
    int iter = 0;
-   int max_iter =500;//max(10000000, jml_data > INT_MAX / 100 ? INT_MAX : 100 * jml_data);
+   int max_iter = 100;//max(10000000, jml_data > INT_MAX / 100 ? INT_MAX : 100 * jml_data);
    int counter = min(jml_data, 1000) + 1;
 
    bool is_alpha_changed = true;
@@ -282,10 +171,12 @@ Treturn_train Tmy_svm::train(Tdataframe &df) {
                   counter = 1;
                }
             } else {
+               cout << "break 1" << endl;
                break;
             }
          }
       } else {
+         cout << "break 2" << endl;
          break;
       }
 

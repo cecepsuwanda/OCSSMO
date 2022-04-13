@@ -37,7 +37,7 @@ public:
     Tmy_list_alpha* get_alpha_v1();
     Tmy_list_alpha* get_alpha_v2();
 
-    Treturn_is_pass_h is_pass(int i, int j, Tmy_double delta, Tmy_double delta_v1, Tmy_double delta_v2);
+    Treturn_is_pass_h is_pass(int i, int j, Tmy_double delta, Tmy_double delta_v1, Tmy_double delta_v2, int flag);
     
 	
 };

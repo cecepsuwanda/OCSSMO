@@ -299,6 +299,7 @@ vector<Tmy_double> Tmy_list_alpha::limit_alpha(Tmy_double alpha_a, Tmy_double al
 vector<Tmy_double> Tmy_list_alpha::calculateNewAlpha(int i, int j, Tmy_double delta, Tmy_double Low, Tmy_double High)
 {
   Tmy_double alpha_a_new = _alpha[i] + delta;
+  //cout<<" alpha_old "<< _alpha[i] <<" alpha_a_new "<< alpha_a_new <<endl;
   vector<Tmy_double> tmp = limit_alpha(alpha_a_new, 0, Low, High, 0);
   alpha_a_new = tmp[0];
   Tmy_double alpha_b_new = _alpha[j] + (_alpha[i] - alpha_a_new);
@@ -332,7 +333,7 @@ Treturn_is_pass Tmy_list_alpha::is_pass(int i, int j, Tmy_double delta)
       Tmy_double alpha_a_old = hsl[0], alpha_b_old = hsl[1], alpha_a_new = hsl[2], alpha_b_new = hsl[3];
       double diff = alpha_a_new - alpha_a_old;
       //abs(diff)<10e-5
-      if (abs(diff) == 0)
+      if ((diff>-1e-5) and (diff<1e-5))
       {
         return tmp;
       } else {
