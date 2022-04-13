@@ -109,7 +109,7 @@ Treturn_train Tmy_svm::train(Tdataframe &df) {
    _rho = _my_G->update_rho();
 
    int iter = 0;
-   int max_iter = 100;//max(10000000, jml_data > INT_MAX / 100 ? INT_MAX : 100 * jml_data);
+   int max_iter = max(10000000, jml_data > INT_MAX / 100 ? INT_MAX : 100 * jml_data);
    int counter = min(jml_data, 1000) + 1;
 
    bool is_alpha_changed = true;
