@@ -99,7 +99,7 @@ static double bulat_nol(double val,double tolerance,int digit)
   double tmp = val;
   // if(abs(tmp)<tolerance)
   // {
-  //   tmp=0;
+  //     tmp=0;
   // }  
   return tmp;
 }

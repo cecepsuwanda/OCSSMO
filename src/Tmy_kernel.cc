@@ -218,7 +218,7 @@ vector<Tmy_double> Tmy_kernel::get_diff_Q(int i,int j,int size)
 
 
 
-vector<Tmy_double> Tmy_kernel::hit_eta(int i,int j,int size)
+vector<Tmy_double> Tmy_kernel::hit_eta(int i,int j,int size,int flag)
 {
    vector<Tmy_double> Q_i = get_Q(i,size);
    vector<Tmy_double> Q_j = get_Q(j,size);
@@ -227,6 +227,11 @@ vector<Tmy_double> Tmy_kernel::hit_eta(int i,int j,int size)
    Tmy_double k12 = Q_i[j];//kernel_function(j,i);
    Tmy_double k22 = Q_j[j];//kernel_function(j,j);
    Tmy_double p_eta = k11+k22-(2.0*k12);
+   if(flag==1)
+   {
+     p_eta = k11+k22+(2.0*k12); 
+   }
+   
    Tmy_double eta = 0.0;
    if(p_eta!=0.0)
    {

@@ -137,13 +137,13 @@ int main(int argc, char *argv[])
       vector<string> hasil_train_max;
       vector<string> hasil_test_max;
 
-      for (double j = bb_gamma; j <= ba_gamma; j = j + 0.0001)
+      for (double j = bb_gamma; j <= ba_gamma; j = j + bb_gamma)
       {        
-        for (double i = bb_V1; i <= ba_V1; i = i + 0.01)
+        for (double i = bb_V1; i <= ba_V1; i = i + bb_V1)
         {          
-          for (double k = bb_eps2; k <= ba_eps2; k = k + 0.01)
+          for (double k = bb_eps2; k <= ba_eps2; k = k + bb_eps2)
           {
-            for (double l = bb_V2; l <= ba_V2; l = l + 0.01)
+            for (double l = bb_V2; l <= ba_V2; l = l + bb_V2)
             {
               config.gamma = j;
               config.V1 = i;
@@ -204,16 +204,18 @@ int main(int argc, char *argv[])
       df_test.close_file();
 
 
-      //cetak("gamma  max = %f \n", gamma_max);
-      //cetak("V  max = %f \n", v_max);
-      //cetak("F1 max = %f \n", f1_max);
-      //Tconf_metrix conf_metrix;
-      //isi_conf_matrix(conf_metrix, label_train, hasil_train_max);
-      //cetak_conf_matrix(conf_metrix);
+      cetak("gamma max = %f \n", gamma_max);
+      cetak("V1 max  = %f \n", v1_max);
+      cetak("V2 max  = %f \n", v2_max);
+      cetak("eps max = %f \n", eps2_max);
+      cetak("F1 max  = %f \n", f1_max);
+      // Tconf_metrix conf_metrix;
+      // isi_conf_matrix(conf_metrix, label_train, hasil_train_max);
+      // cetak_conf_matrix(conf_metrix);
 
-      //Tconf_metrix conf_metrix1;
-      //isi_conf_matrix(conf_metrix1, label_test, hasil_test_max);
-      //cetak_conf_matrix(conf_metrix1);
+      // Tconf_metrix conf_metrix1;
+      // isi_conf_matrix(conf_metrix1, label_test, hasil_test_max);
+      // cetak_conf_matrix(conf_metrix1);
 
       label_train_all.insert(label_train_all.end(), label_train.begin(), label_train.end());
       label_test_all.insert(label_test_all.end(), label_test.begin(), label_test.end());
@@ -223,10 +225,10 @@ int main(int argc, char *argv[])
 
     }
   }
-  isi_conf_matrix(conf_metrix_train_all, label_train_all, hasil_train_max_all);
-  isi_conf_matrix(conf_metrix_test_all, label_test_all, hasil_test_max_all);
-  cetak_conf_matrix(conf_metrix_train_all);
-  cetak_conf_matrix(conf_metrix_test_all);
+  // isi_conf_matrix(conf_metrix_train_all, label_train_all, hasil_train_max_all);
+  // isi_conf_matrix(conf_metrix_test_all, label_test_all, hasil_test_max_all);
+  // cetak_conf_matrix(conf_metrix_train_all);
+  // cetak_conf_matrix(conf_metrix_test_all);
 
   waktu_proses.selesai();
   //waktu_proses.cetak();

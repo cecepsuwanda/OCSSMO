@@ -261,6 +261,11 @@ bool Tmy_list_alpha::is_not_lb_ub(int idx)
   return ((_alpha[idx] != _lb) and (_alpha[idx] != _ub));
 }
 
+bool Tmy_list_alpha::is_neg(int idx)
+{
+  return (_alpha[idx]<0.0);
+}
+
 vector<Tmy_double> Tmy_list_alpha::calculateBoundaries(int i, int j)
 {
   Tmy_double t      = _alpha[i] + _alpha[j];
@@ -333,7 +338,7 @@ Treturn_is_pass Tmy_list_alpha::is_pass(int i, int j, Tmy_double delta)
       Tmy_double alpha_a_old = hsl[0], alpha_b_old = hsl[1], alpha_a_new = hsl[2], alpha_b_new = hsl[3];
       double diff = alpha_a_new - alpha_a_old;
       //abs(diff)<10e-5
-      if ((diff>-1e-5) and (diff<1e-5))
+      if (abs(diff)==0.0)
       {
         return tmp;
       } else {

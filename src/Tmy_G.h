@@ -53,9 +53,12 @@ public:
 
 	bool is_kkt(int idx, Treturn_update_rho rho);
 	Treturn_cari_idx cari_idx();
+	Treturn_cari_idx cari_idx(Treturn_update_rho rho);
 	int cari_idx_lain(int idx_b);
+	int cari_idx_lain(int idx_b,Treturn_update_rho rho);
 
 	void do_shrinking();
+	void do_shrinking(Treturn_update_rho rho);
 	void reconstruct_gradient();
 	int get_active_size();
 	void reset_active_size();

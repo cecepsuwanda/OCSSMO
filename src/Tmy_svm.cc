@@ -16,7 +16,7 @@ Tmy_svm::~Tmy_svm() {
 Treturn_cari_alpha Tmy_svm::cari_idx_alpha()
 {
    vector<Tmy_double> gmax_gmin;
-   Treturn_cari_idx tmp_cari_idx = _my_G->cari_idx();
+   Treturn_cari_idx tmp_cari_idx = _my_G->cari_idx(_rho);
 
    Tmy_double diff = tmp_cari_idx.gmax + tmp_cari_idx.gmin;
    cout << tmp_cari_idx.gmax << "+" << tmp_cari_idx.gmin << "=" << diff << endl;
@@ -65,25 +65,25 @@ bool Tmy_svm::take_step(int idx_b, int idx_a)
 
       int active_size = _my_G->get_active_size();
 
-      vector<Tmy_double> hsl_eta = _my_kernel->hit_eta(idx_b, idx_a, active_size);
+      vector<Tmy_double> hsl_eta = _my_kernel->hit_eta(idx_b, idx_a, active_size,0);
       vector<Tmy_double> hsl_diff = _my_kernel->get_diff_Q(idx_b, idx_a, active_size);
-
-      //cout<<" "<< hsl_eta[0] <<" ";
 
       Tmy_double hsl_sum_v1 = sum_alpha_diff_Q(_my_list_alpha_v1, hsl_diff);
       Tmy_double delta_v1 = hsl_eta[0] * hsl_sum_v1;
-      //cout<<" "<< delta_v1 <<" ";
+      //Treturn_is_pass tmp_v1 = _my_list_alpha_v1->is_pass(idx_b, idx_a, delta_v1);
 
       Tmy_double hsl_sum_v2 = sum_alpha_diff_Q(_my_list_alpha_v2, hsl_diff);
       Tmy_double delta_v2 = hsl_eta[0] * hsl_sum_v2;
-      //cout<<" "<< delta_v2 <<" ";
+      //Treturn_is_pass tmp_v2 = _my_list_alpha_v2->is_pass(idx_b, idx_a, delta_v2);
 
       Tmy_double hsl_sum = sum_alpha_diff_Q(_my_list_alpha, hsl_diff);
-      //cout<<" "<< hsl_sum <<" ";
       Tmy_double delta = hsl_eta[0] * hsl_sum;
-      //cout<<" "<< delta <<" ";
+      //Treturn_is_pass tmp = _my_list_alpha->is_pass(idx_b, idx_a, delta);
 
+      
       Treturn_is_pass_h tmp = _my_alpha->is_pass(idx_b, idx_a, delta, delta_v1, delta_v2, 1);
+
+      cout << " old [" << tmp.alpha.alpha_i << "," << tmp.alpha.alpha_j << "] new [" << tmp.alpha.new_alpha_i << "," << tmp.alpha.new_alpha_j << "] " << endl;
 
       if (tmp.is_pass == false)
       {
@@ -92,7 +92,8 @@ bool Tmy_svm::take_step(int idx_b, int idx_a)
          _my_list_G->update_G(idx_b, idx_a, tmp.alpha.new_alpha_i, tmp.alpha.new_alpha_j);
          _my_list_G_v1->update_G(idx_b, idx_a, tmp.alpha_v1.new_alpha_i, tmp.alpha_v1.new_alpha_j);
          _my_list_G_v2->update_G(idx_b, idx_a, tmp.alpha_v2.new_alpha_i, tmp.alpha_v2.new_alpha_j);
-         //_rho = _my_G->update_rho(idx_b,idx_a);
+
+         _rho = _my_G->update_rho();
          return true;
       }
 
@@ -109,7 +110,7 @@ Treturn_train Tmy_svm::train(Tdataframe &df) {
    _rho = _my_G->update_rho();
 
    int iter = 0;
-   int max_iter = max(10000000, jml_data > INT_MAX / 100 ? INT_MAX : 100 * jml_data);
+   int max_iter = 100;//max(10000000, jml_data > INT_MAX / 100 ? INT_MAX : 100 * jml_data);
    int counter = min(jml_data, 1000) + 1;
 
    bool is_alpha_changed = true;
@@ -123,11 +124,11 @@ Treturn_train Tmy_svm::train(Tdataframe &df) {
       //   cetak(".");
       // }
 
-      if (--counter == 0)
-      {
-         counter = min(jml_data, 1000);
-         _my_G->do_shrinking();
-      }
+      // if (--counter == 0)
+      // {
+      //    counter = min(jml_data, 1000);
+      //    _my_G->do_shrinking();
+      // }
 
 
       //cetak("iterasi ke - %d \n",iter);
@@ -135,19 +136,20 @@ Treturn_train Tmy_svm::train(Tdataframe &df) {
       Treturn_cari_alpha hasil_cari = cari_idx_alpha();
       tmp_train.is_optimum = !hasil_cari.is_pass;
 
-      if (hasil_cari.is_pass == false)
-      {
-         _my_G->reconstruct_gradient();
-         _my_G->reset_active_size();
-         hasil_cari = cari_idx_alpha();
-         tmp_train.is_optimum = !hasil_cari.is_pass;
-         if (hasil_cari.is_pass == false)
-         {
-            break;
-         } else {
-            counter = 1;
-         }
-      }
+      // if (hasil_cari.is_pass == false)
+      // {
+      //    _my_G->reconstruct_gradient();
+      //    _my_G->reset_active_size();
+      //    hasil_cari = cari_idx_alpha();
+      //    tmp_train.is_optimum = !hasil_cari.is_pass;
+      //    if (hasil_cari.is_pass == false)
+      //    {
+      //       cout << "break 3" << endl;
+      //       break;
+      //    } else {
+      //       counter = 1;
+      //    }
+      // }
 
 
       if (hasil_cari.idx_a != -1.0)
@@ -156,25 +158,26 @@ Treturn_train Tmy_svm::train(Tdataframe &df) {
          is_alpha_changed = take_step(hasil_cari.idx_b, hasil_cari.idx_a);
          cout << " rho v1 " << _rho.rho_v1 << " rho v2 " << _rho.rho_v2 << endl;
 
-         if (is_alpha_changed == false)
-         {
-            //     counter=1;
-            int idx_a;
-            bool pass = cari_idx_a_lain(hasil_cari.idx_b, &idx_a);
-            if (pass == true)
-            {
-               cout << "iterasi ke - " << iter << " rho v1 " << _rho.rho_v1 << " rho v2 " << _rho.rho_v2 << " idx_b " << hasil_cari.idx_b << " idx_a " << idx_a;
-               is_alpha_changed = take_step(hasil_cari.idx_b, idx_a);
-               cout << " rho v1 " << _rho.rho_v1 << " rho v2 " << _rho.rho_v2 << endl;
-               if (is_alpha_changed == false)
-               {
-                  counter = 1;
-               }
-            } else {
-               cout << "break 1" << endl;
-               break;
-            }
-         }
+         // if (is_alpha_changed == false)
+         // {
+         //    // //cout<<" gagal 2 "<<endl;
+         //    int idx_a;
+         //    bool pass = cari_idx_a_lain(hasil_cari.idx_b, &idx_a);
+         //    if (pass == true)
+         //    {
+         //       cout << "iterasi ke - " << iter << " rho v1 " << _rho.rho_v1 << " rho v2 " << _rho.rho_v2 << " idx_b " << hasil_cari.idx_b << " idx_a " << idx_a;
+         //       is_alpha_changed = take_step(hasil_cari.idx_b, idx_a);
+         //       cout << " rho v1 " << _rho.rho_v1 << " rho v2 " << _rho.rho_v2 << endl;
+         //       if (is_alpha_changed == false)
+         //       {
+         //          cout << " gagal 1 " << endl;
+         //          counter = 1;
+         //       }
+         //    } else {
+         //       cout << "break 1" << endl;
+         //       break;
+         //    }
+         // }
       } else {
          cout << "break 2" << endl;
          break;

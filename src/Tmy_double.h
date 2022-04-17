@@ -19,12 +19,14 @@ class Tmy_double
 
 	friend Tmy_double operator * (const double& lhs, const Tmy_double& rhs)
 	{
-		return (lhs * rhs._val);
+		double tmp = (lhs * rhs._val);
+		return bulat_nol(tmp,1e-3,8);
 	}
 
 	friend Tmy_double operator / (const double& lhs, const Tmy_double& rhs)
 	{
-		return (lhs / rhs._val);
+		double tmp = (lhs / rhs._val);
+		return bulat_nol(tmp,1e-3,8);
 	}
 
 
@@ -32,14 +34,16 @@ class Tmy_double
 	{
 		double tmp = lhs;
 		double tmp1 = rhs._val;
-		return (tmp - tmp1);
+		tmp = tmp - tmp1;
+		return bulat_nol(tmp,1e-3,8);
 	}
 
 	friend double operator + (const double& lhs, const Tmy_double& rhs)
 	{
 		double tmp = lhs;
 		double tmp1 = rhs._val;
-		return tmp + tmp1;
+		tmp = tmp + tmp1;
+		return bulat_nol(tmp,1e-3,8);
 	}
 
 
@@ -80,42 +84,50 @@ public:
 
 	Tmy_double operator * (const Tmy_double& rhs)
 	{
-		return (_val * rhs._val);
+		double tmp = _val * rhs._val;
+		return bulat_nol(tmp,1e-3,8);
 	}
 
 	Tmy_double operator * (const double& rhs)
 	{
-		return (_val * rhs);
+		double tmp = _val * rhs;
+		return bulat_nol(tmp,1e-3,8);
 	}
 
 	Tmy_double operator / (const Tmy_double& rhs)
 	{
-		return (_val / rhs._val);
+		double tmp = _val / rhs._val;
+		return bulat_nol(tmp,1e-3,8);
 	}
 
 	Tmy_double operator / (const double& rhs)
 	{
-		return (_val / rhs);
+		double tmp = _val / rhs;
+		return bulat_nol(tmp,1e-3,8);
 	}
 
 	Tmy_double operator + (const Tmy_double& rhs)
 	{
-		return (_val + rhs._val);
+		double tmp = _val + rhs._val;
+		return bulat_nol(tmp,1e-3,8);
 	}
 
 	Tmy_double operator + (const double& rhs)
 	{
-		return (_val + rhs);
+		double tmp = _val + rhs; 
+		return bulat_nol(tmp,1e-3,8);
 	}
 
 	Tmy_double operator - (const Tmy_double& rhs)
 	{
-		return (_val - rhs._val);
+		double tmp = _val - rhs._val;
+		return bulat_nol(tmp,1e-3,8);
 	}
 
 	Tmy_double operator - (const double& rhs)
 	{
-		return (_val - rhs);
+		double tmp = _val - rhs;
+		return bulat_nol(tmp,1e-3,8);
 	}
 
 
@@ -124,7 +136,8 @@ public:
 		double tmp  =  rhs._val;
 		double tmp1 =  _val;
 		tmp = tmp1 - tmp;
-		return ((tmp<0.0) or (tmp>0.0));
+		//(((tmp<0.0) or (tmp>0.0)) and (abs(tmp) > _batas))
+		return (_val != rhs._val);
 	}
 
 	bool operator !=(const double& rhs) const
@@ -132,28 +145,44 @@ public:
 		double tmp  =  rhs;
 		double tmp1 =  _val;
 		tmp = tmp1 - tmp;
-		return ((tmp<0.0) or (tmp>0.0));
+		//(((tmp < 0.0) or (tmp > 0.0)) and (abs(tmp) > _batas) )
+		return (_val != rhs);
 	}
 
 	bool operator <(const Tmy_double& rhs) const
 	{
-
-		return _val < rhs._val;
+		double tmp  =  rhs._val;
+		double tmp1 =  _val;
+		tmp = tmp1 - tmp;
+		//(tmp < 0.0)
+		return (_val < rhs._val);
 	}
 
 	bool operator <(const double& rhs) const
 	{
-		return _val < rhs;
+		double tmp  =  rhs;
+		double tmp1 =  _val;
+		tmp = tmp1 - tmp;
+		//(tmp < 0.0)
+		return (_val < rhs);
 	}
 
 	bool operator >(const Tmy_double& rhs) const
 	{
-		return _val > rhs._val;
+		double tmp  =  rhs._val;
+		double tmp1 =  _val;
+		tmp1 = tmp1 - tmp;
+		//(tmp1 > 0.0)
+		return (_val > rhs._val);
 	}
 
 	bool operator >(const double& rhs) const
 	{
-		return _val > rhs;
+		double tmp  =  rhs;
+		double tmp1 =  _val;
+		tmp = tmp1 - tmp;
+		//(tmp > 0.0)
+		return (_val > rhs);
 	}
 
 	bool operator >=(const Tmy_double& rhs) const
@@ -161,7 +190,8 @@ public:
 		double tmp  =  rhs._val;
 		double tmp1 =  _val;
 		tmp1 = tmp1 - tmp;
-		return ((tmp1 > 0.0) or (abs(tmp1) < _batas) );
+		//((tmp1 > 0.0) or (abs(tmp1) < _batas) )
+		return (_val>=rhs._val);
 	}
 
 	bool operator >=(const double& rhs) const
@@ -170,7 +200,8 @@ public:
 		double tmp  =  rhs;
 		double tmp1 =  _val;
 		tmp = tmp1 - tmp;
-		return ((tmp > 0.0) or (abs(tmp) < _batas));
+		//((tmp > 0.0) or (abs(tmp) < _batas))
+		return (_val>=rhs);
 	}
 
 	bool operator <=(const Tmy_double& rhs) const
@@ -178,7 +209,8 @@ public:
 		double tmp  =  rhs._val;
 		double tmp1 =  _val;
 		tmp = tmp1 - tmp;
-		return ( (tmp < 0.0) or (abs(tmp) < _batas));
+		//( (tmp < 0.0) or (abs(tmp) < _batas))
+		return (_val<=rhs._val);
 	}
 
 	bool operator <=(const double& rhs) const
@@ -186,7 +218,8 @@ public:
 		double tmp  =  rhs;
 		double tmp1 =  _val;
 		tmp = tmp1 - tmp;
-		return ((tmp < 0.0) or (abs(tmp) < _batas));
+		//((tmp < 0.0) or (abs(tmp) < _batas))
+		return (_val<=rhs);
 	}
 
 	bool operator ==(const Tmy_double& rhs) const
@@ -194,7 +227,8 @@ public:
 		double tmp  =  rhs._val;
 		double tmp1 =  _val;
 		tmp = tmp1 - tmp;
-		return (abs(tmp) < _batas);
+		//(abs(tmp) < _batas)
+		return (_val==rhs._val);
 	}
 
 
@@ -203,7 +237,8 @@ public:
 		double tmp  =  rhs;
 		double tmp1 =  _val;
 		tmp = tmp1 - tmp;
-		return (abs(tmp) < _batas);
+		//(abs(tmp) < _batas)
+		return (_val==rhs);
 	}
 
 

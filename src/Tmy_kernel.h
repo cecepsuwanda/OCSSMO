@@ -42,7 +42,7 @@ public:
 
 	vector<Tmy_double> get_Q(int i,int size);
 	vector<Tmy_double> get_diff_Q(int i,int j,int size);
-	vector<Tmy_double> hit_eta(int i,int j,int size);  
+	vector<Tmy_double> hit_eta(int i,int j,int size,int flag);  
 	Tmy_double kernel_function_f(vector<string> x,vector<string> y);
 	void swap_index(int i,int j);
 };

@@ -73,6 +73,7 @@ public:
    bool is_free(int idx);
    bool is_nol(int idx);
    bool is_not_lb_ub(int idx);
+   bool is_neg(int idx);
 
    
    Treturn_is_pass is_pass(int i, int j, Tmy_double delta);
