@@ -36,25 +36,22 @@ Treturn_update_rho Tmy_G::update_rho()
   tmp_rho.rho_v1 = 0.0;
   tmp_rho.rho_v2 = 0.0;
 
-  map<int, Tmy_double> list_alpha_sv = list_alpha->get_list_alpha_sv();
-
   int jml_n_v1 = 0;
   Tmy_double jml_G_v1 = 0.0;
   int jml_n_v2 = 0;
   Tmy_double jml_G_v2 = 0.0;
 
-  for (map<int, Tmy_double>::iterator it = list_alpha_sv.begin(); it != list_alpha_sv.end(); ++it)
+  for (int i = 0; i < _jml_data; ++i)
   {
-    vector<bool> is_sv_v1 = list_alpha_v1->is_alpha_sv(it->first);
-    vector<bool> is_sv_v2 = list_alpha_v2->is_alpha_sv(it->first);
+    vector<bool> is_sv_v1 = list_alpha_v1->is_alpha_sv(i);
+    vector<bool> is_sv_v2 = list_alpha_v2->is_alpha_sv(i);
 
     if (is_sv_v1[0])
     {
       if (is_sv_v1[1])
       {
-        jml_G_v1 = jml_G_v1 + it->second;
+        jml_G_v1 = jml_G_v1 + _my_list_G->get_G(i);
       }
-
       jml_n_v1++;
     }
 
@@ -62,9 +59,8 @@ Treturn_update_rho Tmy_G::update_rho()
     {
       if (is_sv_v2[1])
       {
-        jml_G_v2 = jml_G_v2 + it->second;
+        jml_G_v2 = jml_G_v2 + _my_list_G->get_G(i);
       }
-
       jml_n_v2++;
     }
   }
@@ -111,7 +107,7 @@ bool Tmy_G::is_kkt(int idx, Treturn_update_rho rho)
   {
     stat = true;
   } else {
-    if ((hsl[1] == true) and (abs((double) F) < 1e-3))
+    if ((hsl[1] == true) and (abs(F) < 1e-3))
     {
       stat = true;
     } else {
@@ -238,45 +234,53 @@ Treturn_cari_idx Tmy_G::cari_idx(Treturn_update_rho rho)
   Tmy_list_alpha *list_alpha_v1 = _alphas->get_alpha_v1();
   Tmy_list_alpha *list_alpha_v2 = _alphas->get_alpha_v2();
 
-  vector<int> idx_alpha_not_lb = list_alpha->get_list_lb_ub(3);
-  vector<int> idx_alpha_not_ub = list_alpha->get_list_lb_ub(4);
-
   int idx_b = -1, idx_a = -1;
   Tmy_double gmax = -HUGE_VAL, gmin = HUGE_VAL, gmax1 = -HUGE_VAL, gmax2 = -HUGE_VAL;
 
   for (int i = 0; i < _jml_data; ++i)
   {
-    Tmy_double Fb = _my_list_G->get_G(i);
-    Tmy_double min_diff = min((Fb - rho.rho_v1), (rho.rho_v2 - Fb));
-    if (min_diff >= gmax)
-    {
-      gmax  = min_diff;
-    }
-    Tmy_double abs_min_diff = abs((double) min_diff);
-    if ( abs_min_diff >= gmax1)
+    Tmy_double Fb = _my_list_G->get_F(i, rho.rho_v1, rho.rho_v2);
+    Tmy_double abs_Fb = abs(Fb);
+
+    bool is_pass = true;
+    is_pass = is_include(abs_Fb, rho);
+    if ((abs_Fb >= gmax) and is_pass)
     {
       idx_b = i;
-      gmax1  = abs_min_diff;
+      gmax  = abs_Fb;
     }
-
   }
 
-  Tmy_double Fb = _my_list_G->get_G(idx_b);
-  Tmy_double min_diff_Fb = min((Fb - rho.rho_v1), (rho.rho_v2 - Fb));
-  for (int j = 0; j < _jml_data; ++j)
-  {
-    Tmy_double Fa = _my_list_G->get_G(j);
-    Tmy_double min_diff = min((Fa - rho.rho_v1), (rho.rho_v2 - Fa));
-    if (min_diff <= gmin)
+  if (idx_b != -1) {
+    Tmy_double Fb = _my_list_G->get_F(idx_b, rho.rho_v1, rho.rho_v2);
+    Tmy_double abs_Fb = abs(Fb);
+    for (int j = 0; j < _jml_data; ++j)
     {
-      gmin  = min_diff;
-    }
+      Tmy_double Fa = _my_list_G->get_F(j, rho.rho_v1, rho.rho_v2);
+      Tmy_double abs_Fa = abs(Fa);
+      
+      bool is_pass = true;
+      is_pass = is_include(abs_Fa, rho); 
+      if ((abs_Fa <= gmin) and is_pass)
+      {
+        gmin  = abs_Fa;
+      }
 
-    Tmy_double diff = abs((double)(min_diff_Fb - min_diff));
-    if (diff >= gmax2)
-    {
-      idx_a = j;
-      gmax2  = diff;
+      Tmy_double diff = abs_Fb - abs_Fa;
+      Tmy_double abs_diff = abs(Fb-Fa);
+      
+      if (abs(diff) > 1e-3)
+      {
+        bool is_pass = true;
+        is_pass = !list_alpha->is_nol(idx_b, j);
+        is_pass = is_pass ? is_include(abs_Fa, rho) : is_pass;
+        if ((abs_diff >= gmax2) and is_pass)
+        {
+          idx_a = j;
+          gmax2  = abs_diff;
+        }
+      }
+
     }
   }
 
@@ -289,10 +293,136 @@ int Tmy_G::cari_idx_lain(int idx_b, Treturn_update_rho rho)
   Tmy_list_alpha *list_alpha_v1 = _alphas->get_alpha_v1();
   Tmy_list_alpha *list_alpha_v2 = _alphas->get_alpha_v2();
 
+  auto cek = [&, this](int idx_b, int idx_a) -> bool {
+
+    vector<Tmy_double> hsl_eta = _kernel->hit_eta(idx_b, idx_a, _jml_data, 0);
+    vector<Tmy_double> hsl_diff = _kernel->get_diff_Q(idx_b, idx_a, _jml_data);
+
+    Tmy_double hsl_sum_v1 = this->sum_alpha_diff_Q(list_alpha_v1, hsl_diff);
+    Tmy_double delta_v1 = hsl_eta[0] * hsl_sum_v1;
+
+    Tmy_double hsl_sum_v2 = this->sum_alpha_diff_Q(list_alpha_v2, hsl_diff);
+    Tmy_double delta_v2 = hsl_eta[0] * hsl_sum_v2;
+
+    Tmy_double hsl_sum = this->sum_alpha_diff_Q(list_alpha, hsl_diff);
+    Tmy_double delta = hsl_eta[0] * hsl_sum;
+
+    Treturn_is_pass_h tmp = _alphas->is_pass(idx_b, idx_a, delta, delta_v1, delta_v2, 0);
+
+    return  (tmp.is_pass);
+  };
+
+
   vector<int> idx_alpha_not_lb = list_alpha->get_list_lb_ub(0);
   vector<int> idx_alpha_not_ub = list_alpha->get_list_lb_ub(1);
 
+  Tmy_double Fb = _my_list_G->get_F(idx_b, rho.rho_v1, rho.rho_v2);
+  Tmy_double abs_Fb = abs(Fb);
+
+  Tmy_double gmax2 = -HUGE_VAL;
   int idx_a = -1;
+  for (auto& idx : idx_alpha_not_lb)
+  {
+    Tmy_double Fa = _my_list_G->get_F(idx, rho.rho_v1, rho.rho_v2);
+    Tmy_double abs_Fa = abs(Fa);
+
+    Tmy_double diff = abs_Fb - abs_Fa;
+    Tmy_double abs_diff = abs(Fb-Fa);
+
+    if (abs(diff) > 1e-3)
+    {
+      bool is_pass = true;
+      is_pass = !list_alpha->is_nol(idx_b, idx);
+      is_pass = is_pass ? is_include(abs_Fa, rho) : is_pass;
+
+      if ((abs_diff >= gmax2) and is_pass)
+      {
+        if (cek(idx_b, idx)) {
+          idx_a = idx;
+          gmax2  = abs_diff;
+          list_alpha->mv_lb_ub(idx, 0);
+        }
+      }
+    }
+  }
+
+  if (idx_a == -1)
+  {
+    for (auto& idx : idx_alpha_not_lb)
+    {
+      Tmy_double Fa = _my_list_G->get_F(idx, rho.rho_v1, rho.rho_v2);
+      Tmy_double abs_Fa = abs(Fa);
+
+      Tmy_double diff = abs_Fb - abs_Fa;
+      Tmy_double abs_diff = abs(Fb-Fa);
+
+      if (abs(diff) > 1e-3)
+      {
+        bool is_pass = true;
+        is_pass = !list_alpha->is_nol(idx_b, idx);
+        is_pass = is_pass ? is_include(abs_Fa, rho) : is_pass;
+
+        if (cek(idx_b, idx) and is_pass)
+        {
+          idx_a = idx;
+          break;
+        }
+      }
+    }
+  }
+
+  if (idx_a == -1)
+  {
+    for (auto& idx : idx_alpha_not_ub)
+    {
+      Tmy_double Fa = _my_list_G->get_F(idx, rho.rho_v1, rho.rho_v2);
+      Tmy_double abs_Fa = abs(Fa);
+
+      Tmy_double diff = abs_Fb - abs_Fa;
+      Tmy_double abs_diff = abs(Fb-Fa);
+
+      if (abs(diff) > 1e-3)
+      {
+        bool is_pass = true;
+        is_pass = !list_alpha->is_nol(idx_b, idx);
+        is_pass = is_pass ? is_include(abs_Fa, rho) : is_pass;
+
+        if ((abs_diff >= gmax2) and is_pass)
+        {
+          if (cek(idx_b, idx)) {
+            idx_a = idx;
+            gmax2  = abs_diff;
+            list_alpha->mv_lb_ub(idx, 1);
+          }
+        }
+      }
+    }
+  }
+
+  if (idx_a == -1)
+  {
+    for (auto& idx : idx_alpha_not_ub)
+    {
+      Tmy_double Fa = _my_list_G->get_F(idx, rho.rho_v1, rho.rho_v2);
+      Tmy_double abs_Fa = abs(Fa);
+
+      Tmy_double diff = abs_Fb - abs_Fa;
+      Tmy_double abs_diff = abs(Fb-Fa);
+
+      if (abs(diff) > 1e-3)
+      {
+        bool is_pass = true;
+        is_pass = !list_alpha->is_nol(idx_b, idx);
+        is_pass = is_pass ? is_include(abs_Fa, rho) : is_pass;
+
+        if (cek(idx_b, idx) and is_pass)
+        {
+          idx_a = idx;
+          break;
+        }
+      }
+    }
+  }
 
   return idx_a;
 
@@ -607,4 +737,27 @@ void Tmy_G::reverse_swap()
   _my_list_G->reverse_swap();
   _my_list_G_v1->reverse_swap();
   _my_list_G_v2->reverse_swap();
+}
+
+void Tmy_G::insert_idx_exclude(int idx)
+{
+  _idx_exclude.insert(_idx_exclude.begin(), idx);
+}
+
+void Tmy_G::delete_idx_exclude()
+{
+  _idx_exclude.clear();
+}
+
+bool Tmy_G::is_include(Tmy_double abs_F, Treturn_update_rho rho)
+{
+  bool is_pass = true;
+
+  if (_idx_exclude.size() > 0)
+  {
+    Tmy_double tmp_F =  _my_list_G->get_F(_idx_exclude[0], rho.rho_v1, rho.rho_v2);
+    is_pass = abs_F < abs(tmp_F);
+  }
+
+  return is_pass;
 }

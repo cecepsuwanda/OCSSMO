@@ -72,6 +72,7 @@ public:
    bool is_upper_bound(int idx);
    bool is_free(int idx);
    bool is_nol(int idx);
+   bool is_nol(int idx_i,int idx_j);
    bool is_not_lb_ub(int idx);
    bool is_neg(int idx);
 

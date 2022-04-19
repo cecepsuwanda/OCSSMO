@@ -35,6 +35,8 @@ private:
 	Tmy_kernel *_kernel;
 	Tmy_alpha *_alphas;
 
+	vector<int> _idx_exclude;
+
 	bool _unshrink;
 	bool be_shrunk(int i, Tmy_double gmax1, Tmy_double gmax2);
 	void swap_index(int i, int j);
@@ -63,6 +65,11 @@ public:
 	int get_active_size();
 	void reset_active_size();
 	void reverse_swap();
+
+	void insert_idx_exclude(int idx);
+	void delete_idx_exclude();
+	bool is_include(Tmy_double abs_F,Treturn_update_rho rho);
+
 };
 
 #endif

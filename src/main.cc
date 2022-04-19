@@ -225,10 +225,10 @@ int main(int argc, char *argv[])
 
     }
   }
-  // isi_conf_matrix(conf_metrix_train_all, label_train_all, hasil_train_max_all);
-  // isi_conf_matrix(conf_metrix_test_all, label_test_all, hasil_test_max_all);
-  // cetak_conf_matrix(conf_metrix_train_all);
-  // cetak_conf_matrix(conf_metrix_test_all);
+  isi_conf_matrix(conf_metrix_train_all, label_train_all, hasil_train_max_all);
+  isi_conf_matrix(conf_metrix_test_all, label_test_all, hasil_test_max_all);
+  cetak_conf_matrix(conf_metrix_train_all);
+  cetak_conf_matrix(conf_metrix_test_all);
 
   waktu_proses.selesai();
   //waktu_proses.cetak();

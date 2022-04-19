@@ -49,7 +49,7 @@ void Tmy_list_G::init()
         vector<Tmy_double> data = _kernel->get_Q(idx, _jml_data);
         for (int j = 0; j < _jml_data; ++j)
         {
-            _arr_G[j] = _arr_G[j] + (alpha * data[j]);
+            _arr_G.at(j) = _arr_G.at(j) + (alpha * data[j]);
         }
 
         if ( _alpha->is_upper_bound(idx) == true)
@@ -89,7 +89,7 @@ void Tmy_list_G::update_G(int idx_b, int idx_a, Tmy_double new_alpha_b, Tmy_doub
 
     for (int i = 0; i < _active_size; ++i)
     {
-        _arr_G[i] = _arr_G[i] + ((data_b[i] * delta_1) + (data_a[i] * delta_2));
+        _arr_G.at(i) = _arr_G.at(i) + ((data_b[i] * delta_1) + (data_a[i] * delta_2));
     }
 
     bool is_alpha_a_ub = _alpha->is_upper_bound(idx_a);
@@ -167,22 +167,24 @@ void Tmy_list_G::update_G(int idx_b, int idx_a, Tmy_double new_alpha_b, Tmy_doub
             }
         }
     }
-
-
-
 }
 
 Tmy_double Tmy_list_G::get_G(int idx)
 {
-    return _arr_G[idx];
+    return _arr_G.at(idx);
 }
 
-
+Tmy_double Tmy_list_G::get_F(int idx,Tmy_double rho1,Tmy_double rho2)
+{
+   Tmy_double G = _arr_G.at(idx);
+   Tmy_double tmp_F = min((G - rho1), (rho2 - G));
+   return tmp_F; 
+}
 
 void Tmy_list_G::swap_index(int i, int j)
 {
     _alpha->swap_index(i, j);
-    swap(_arr_G[i], _arr_G[j]);
+    swap(_arr_G.at(i), _arr_G.at(j));
     swap(_active_set[i], _active_set[j]);
     swap(_arr_G_bar[i], _arr_G_bar[j]);
 }
@@ -194,7 +196,7 @@ void Tmy_list_G::reverse_swap()
         if (_active_set[i] != i)
         {
             _alpha->swap_index(i, _active_set[i]);
-            swap(_arr_G[i], _arr_G[_active_set[i]]);
+            swap(_arr_G.at(i), _arr_G.at(_active_set[i]));
             _active_set[_active_set[i]] = _active_set[i];
             _active_set[i] = i;
         }
@@ -210,7 +212,7 @@ void Tmy_list_G::reconstruct_gradient()
         int nr_free = 0;
 
         for (j = _active_size; j < _jml_data; j++)
-            _arr_G[j] = _arr_G_bar[j];
+            _arr_G.at(j) = _arr_G_bar[j];
 
         for (j = 0; j < _active_size; j++)
             if (_alpha->is_free(j))
@@ -225,7 +227,7 @@ void Tmy_list_G::reconstruct_gradient()
                 for (j = 0; j < _active_size; j++)
                     if (_alpha->is_free(j)) {
                         Tmy_double alpha_j = _alpha->get_alpha(j);
-                        _arr_G[i] = _arr_G[i] + (alpha_j * Q_i[j]);
+                        _arr_G.at(i) = _arr_G.at(i) + (alpha_j * Q_i[j]);
                     }
             }
         }
@@ -237,7 +239,7 @@ void Tmy_list_G::reconstruct_gradient()
                     vector<Tmy_double> Q_i = _kernel->get_Q(i, _jml_data);
                     Tmy_double alpha_i = _alpha->get_alpha(i);
                     for (j = _active_size; j < _jml_data; j++)
-                        _arr_G[j] = _arr_G[j] + (alpha_i * Q_i[j]);
+                        _arr_G.at(j) = _arr_G.at(j) + (alpha_i * Q_i[j]);
                 }
         }
 

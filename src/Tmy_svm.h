@@ -35,6 +35,7 @@ struct Treturn_cari_alpha
    bool is_pass;
    Tmy_double idx_b;
    Tmy_double idx_a;
+   bool is_optimum;
 };
 
 class Tmy_svm

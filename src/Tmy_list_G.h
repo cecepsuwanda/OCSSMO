@@ -32,7 +32,11 @@ public:
    void init();
    void update_G(int idx_b, int idx_a, Tmy_double new_alpha_b, Tmy_double new_alpha_a);
    Tmy_double get_G(int idx);
+   Tmy_double get_F(int idx,Tmy_double rho1,Tmy_double rho2);
+
    void reconstruct_gradient();
+
+   
 
    void set_active_size(int new_value);
    void reset_active_size();

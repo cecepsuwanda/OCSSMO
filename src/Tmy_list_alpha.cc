@@ -90,8 +90,8 @@ void Tmy_list_alpha::init(Tmy_double V, Tmy_double eps, int flag) {
 
 void Tmy_list_alpha::update_alpha(int idx, Tmy_double value)
 {
-  if (_alpha[idx] != 0.0) {
-    _jml_alpha = _jml_alpha - _alpha[idx];
+  if (_alpha.at(idx) != 0.0) {
+    _jml_alpha = _jml_alpha - _alpha.at(idx);
   }
 
   vector<bool> hasil = is_alpha_sv(idx);
@@ -104,13 +104,13 @@ void Tmy_list_alpha::update_alpha(int idx, Tmy_double value)
 
   if (hasil[1] == true) {
     if (_n_sv != 0) {
-      _jml_alpha_n_sv = _jml_alpha_n_sv - _alpha[idx];
+      _jml_alpha_n_sv = _jml_alpha_n_sv - _alpha.at(idx);
       _n_sv = _n_sv - 1;
     }
   }
 
-  _alpha[idx] = value;
-  _jml_alpha = _jml_alpha + _alpha[idx];
+  _alpha.at(idx) = value;
+  _jml_alpha = _jml_alpha + _alpha.at(idx);
 
   hasil = is_alpha_sv(idx);
 
@@ -119,7 +119,7 @@ void Tmy_list_alpha::update_alpha(int idx, Tmy_double value)
   }
 
   if (hasil[1] == true) {
-    _jml_alpha_n_sv = _jml_alpha_n_sv + _alpha[idx];
+    _jml_alpha_n_sv = _jml_alpha_n_sv + _alpha.at(idx);
     _n_sv = _n_sv + 1;
   }
 
@@ -131,14 +131,14 @@ void Tmy_list_alpha::update_alpha(int idx, Tmy_double value)
 void Tmy_list_alpha::update_alpha_status(int idx)
 {
 
-  if (_alpha[idx] >= _ub)
+  if (_alpha.at(idx) >= _ub)
   {
-    //cout<<"Stat 1 "<<idx<<" "<<_alpha[idx]<<endl;
+    //cout<<"Stat 1 "<<idx<<" "<<_alpha.at(idx)<<endl;
     _alpha_status[idx] = 1;
   } else {
-    if (_alpha[idx] <= _lb)
+    if (_alpha.at(idx) <= _lb)
     {
-      //cout<<"Stat 0 "<<idx<<" "<<_alpha[idx]<<endl;
+      //cout<<"Stat 0 "<<idx<<" "<<_alpha.at(idx)<<endl;
       _alpha_status[idx] = 0;
     } else {
       //cout<<"Free "<<idx<<endl;
@@ -157,7 +157,7 @@ void Tmy_list_alpha::update_alpha_sv(int idx)
 
   vector<bool> hasil = is_alpha_sv(idx);
   if (hasil[0] == true) {
-    _alpha_sv[idx] = _alpha[idx];
+    _alpha_sv[idx] = _alpha.at(idx);
   }
 }
 
@@ -229,10 +229,10 @@ void Tmy_list_alpha::update_lb_ub(int idx_cari)
 vector<bool> Tmy_list_alpha::is_alpha_sv(int idx)
 {
   vector<bool> tmp;
-  tmp.push_back((_alpha[idx] >= _lb) and (_alpha[idx] <= _ub) and (_alpha[idx] != 0.0));
-  tmp.push_back((_alpha[idx] > _lb) and (_alpha[idx] < _ub) and (_alpha[idx] != 0.0));
-  tmp.push_back((_alpha[idx] == _ub));
-  tmp.push_back((_alpha[idx] == _lb));
+  tmp.push_back((_alpha.at(idx) >= _lb) and (_alpha.at(idx) <= _ub) and (_alpha.at(idx) != 0.0));
+  tmp.push_back((_alpha.at(idx) > _lb) and (_alpha.at(idx) < _ub) and (_alpha.at(idx) != 0.0));
+  tmp.push_back((_alpha.at(idx) == _ub));
+  tmp.push_back((_alpha.at(idx) == _lb));
   return tmp;
 }
 
@@ -253,26 +253,31 @@ bool Tmy_list_alpha::is_free(int idx)
 
 bool Tmy_list_alpha::is_nol(int idx)
 {
-  return (_alpha[idx] == 0.0);
+  return (_alpha.at(idx) == 0.0);
+}
+
+bool Tmy_list_alpha::is_nol(int idx_i,int idx_j)
+{
+  return ((_alpha.at(idx_i) == 0.0) and (_alpha.at(idx_j) == 0.0));
 }
 
 bool Tmy_list_alpha::is_not_lb_ub(int idx)
 {
-  return ((_alpha[idx] != _lb) and (_alpha[idx] != _ub));
+  return ((_alpha.at(idx) != _lb) and (_alpha.at(idx) != _ub));
 }
 
 bool Tmy_list_alpha::is_neg(int idx)
 {
-  return (_alpha[idx]<0.0);
+  return (_alpha.at(idx)<0.0);
 }
 
 vector<Tmy_double> Tmy_list_alpha::calculateBoundaries(int i, int j)
 {
-  Tmy_double t      = _alpha[i] + _alpha[j];
+  Tmy_double t      = _alpha.at(i) + _alpha.at(j);
   Tmy_double diff   = t - _ub;
-  Tmy_double diff1  = t + abs((double)_lb);
+  Tmy_double diff1  = t + abs(_lb);
   vector<Tmy_double> hasil = {_lb, _ub};
-  if (((_alpha[i] <= _ub) and (_alpha[i] >= _lb)) and ((_alpha[j] <= _ub) and (_alpha[j] >= _lb))) {
+  if (((_alpha.at(i) <= _ub) and (_alpha.at(i) >= _lb)) and ((_alpha.at(j) <= _ub) and (_alpha.at(j) >= _lb))) {
     hasil = {max(diff, _lb), min(_ub, diff1)};
   }
   return hasil;
@@ -303,15 +308,15 @@ vector<Tmy_double> Tmy_list_alpha::limit_alpha(Tmy_double alpha_a, Tmy_double al
 
 vector<Tmy_double> Tmy_list_alpha::calculateNewAlpha(int i, int j, Tmy_double delta, Tmy_double Low, Tmy_double High)
 {
-  Tmy_double alpha_a_new = _alpha[i] + delta;
-  //cout<<" alpha_old "<< _alpha[i] <<" alpha_a_new "<< alpha_a_new <<endl;
+  Tmy_double alpha_a_new = _alpha.at(i) + delta;
+  //cout<<" alpha_old "<< _alpha.at(i) <<" alpha_a_new "<< alpha_a_new <<endl;
   vector<Tmy_double> tmp = limit_alpha(alpha_a_new, 0, Low, High, 0);
   alpha_a_new = tmp[0];
-  Tmy_double alpha_b_new = _alpha[j] + (_alpha[i] - alpha_a_new);
+  Tmy_double alpha_b_new = _alpha.at(j) + (_alpha.at(i) - alpha_a_new);
   // tmp = limit_alpha(alpha_b_new,alpha_a_new,_lb,_ub,1);
   // alpha_b_new = tmp[0];
   // alpha_a_new = tmp[1];
-  return {_alpha[i], _alpha[j], alpha_a_new, alpha_b_new};
+  return {_alpha.at(i), _alpha.at(j), alpha_a_new, alpha_b_new};
 }
 
 Treturn_is_pass Tmy_list_alpha::is_pass(int i, int j, Tmy_double delta)
@@ -319,10 +324,10 @@ Treturn_is_pass Tmy_list_alpha::is_pass(int i, int j, Tmy_double delta)
   Treturn_is_pass tmp;
 
   tmp.is_pass = false;
-  tmp.alpha_i = _alpha[i];
-  tmp.alpha_j = _alpha[j];
-  tmp.new_alpha_i = _alpha[i];
-  tmp.new_alpha_j = _alpha[j];
+  tmp.alpha_i = _alpha.at(i);
+  tmp.alpha_j = _alpha.at(j);
+  tmp.new_alpha_i = _alpha.at(i);
+  tmp.new_alpha_j = _alpha.at(j);
 
   if (i == j)
   {
@@ -338,7 +343,7 @@ Treturn_is_pass Tmy_list_alpha::is_pass(int i, int j, Tmy_double delta)
       Tmy_double alpha_a_old = hsl[0], alpha_b_old = hsl[1], alpha_a_new = hsl[2], alpha_b_new = hsl[3];
       double diff = alpha_a_new - alpha_a_old;
       //abs(diff)<10e-5
-      if (abs(diff)==0.0)
+      if (abs(diff)<10e-5)
       {
         return tmp;
       } else {
@@ -357,7 +362,7 @@ Treturn_is_pass Tmy_list_alpha::is_pass(int i, int j, Tmy_double delta)
 
 Tmy_double Tmy_list_alpha::get_alpha(int idx)
 {
-  return _alpha[idx];
+  return _alpha.at(idx);
 }
 
 vector<int> Tmy_list_alpha::get_list_lb_ub(int flag)
@@ -460,7 +465,7 @@ Tmy_double Tmy_list_alpha::get_lb()
 void Tmy_list_alpha::swap_index(int i, int j)
 {
   swap(_alpha_status[i], _alpha_status[j]);
-  swap(_alpha[i], _alpha[j]);
+  swap(_alpha.at(i), _alpha.at(j));
 
   update_alpha_sv(i);
   update_alpha_status(i);
