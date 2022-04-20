@@ -52,21 +52,21 @@ void Tmy_list_G::init()
             _arr_G.at(j) = _arr_G.at(j) + (alpha * data[j]);
         }
 
-        if ( _alpha->is_upper_bound(idx) == true)
-        {
-            for (int j = 0; j < _jml_data; ++j)
-            {
-                _arr_G_bar[j] = _arr_G_bar[j] + (_alpha->get_ub() * data[j]);
-            }
-        }
+        // if ( _alpha->is_upper_bound(idx) == true)
+        // {
+        //     for (int j = 0; j < _jml_data; ++j)
+        //     {
+        //         _arr_G_bar[j] = _arr_G_bar[j] + (_alpha->get_ub() * data[j]);
+        //     }
+        // }
 
-        if ( _alpha->is_lower_bound(idx) == true)
-        {
-            for (int j = 0; j < _jml_data; ++j)
-            {
-                _arr_G_bar[j] = _arr_G_bar[j] + (_alpha->get_lb() * data[j]);
-            }
-        }
+        // if ( _alpha->is_lower_bound(idx) == true)
+        // {
+        //     for (int j = 0; j < _jml_data; ++j)
+        //     {
+        //         _arr_G_bar[j] = _arr_G_bar[j] + (_alpha->get_lb() * data[j]);
+        //     }
+        // }
 
         i = i + 1;
 
@@ -92,81 +92,119 @@ void Tmy_list_G::update_G(int idx_b, int idx_a, Tmy_double new_alpha_b, Tmy_doub
         _arr_G.at(i) = _arr_G.at(i) + ((data_b[i] * delta_1) + (data_a[i] * delta_2));
     }
 
-    bool is_alpha_a_ub = _alpha->is_upper_bound(idx_a);
-    bool is_alpha_b_ub = _alpha->is_upper_bound(idx_b);
-    bool is_alpha_a_lb = _alpha->is_lower_bound(idx_a);
-    bool is_alpha_b_lb = _alpha->is_lower_bound(idx_b);
+    // bool is_alpha_a_ub = _alpha->is_upper_bound(idx_a);
+    // bool is_alpha_b_ub = _alpha->is_upper_bound(idx_b);
+    // bool is_alpha_a_lb = _alpha->is_lower_bound(idx_a);
+    // bool is_alpha_b_lb = _alpha->is_lower_bound(idx_b);
     _alpha->update_alpha(idx_a, new_alpha_a);
     _alpha->update_alpha(idx_b, new_alpha_b);
 
-    if (is_alpha_a_ub != _alpha->is_upper_bound(idx_a))
+    // if (is_alpha_a_ub != _alpha->is_upper_bound(idx_a))
+    // {
+    //     vector<Tmy_double> data_a = _kernel->get_Q(idx_a, _jml_data);
+    //     if (is_alpha_a_ub == true)
+    //     {
+    //         for (int i = 0; i < _jml_data; ++i)
+    //         {
+    //             _arr_G_bar[i] = _arr_G_bar[i] - (data_a[i] * _alpha->get_ub());
+    //         }
+    //     } else {
+    //         for (int i = 0; i < _jml_data; ++i)
+    //         {
+    //             _arr_G_bar[i] = _arr_G_bar[i] + (data_a[i] * _alpha->get_ub());
+    //         }
+    //     }
+    // }
+
+    // if (is_alpha_b_ub != _alpha->is_upper_bound(idx_b))
+    // {
+    //     vector<Tmy_double> data_b = _kernel->get_Q(idx_b, _jml_data);
+    //     if (is_alpha_b_ub == true)
+    //     {
+    //         for (int i = 0; i < _jml_data; ++i)
+    //         {
+    //             _arr_G_bar[i] = _arr_G_bar[i] - (data_b[i] * _alpha->get_ub());
+    //         }
+    //     } else {
+    //         for (int i = 0; i < _jml_data; ++i)
+    //         {
+    //             _arr_G_bar[i] = _arr_G_bar[i] + (data_b[i] * _alpha->get_ub());
+    //         }
+    //     }
+    // }
+
+
+    // if (is_alpha_a_lb != _alpha->is_lower_bound(idx_a))
+    // {
+    //     vector<Tmy_double> data_a = _kernel->get_Q(idx_a, _jml_data);
+    //     if (is_alpha_a_lb == true)
+    //     {
+    //         for (int i = 0; i < _jml_data; ++i)
+    //         {
+    //             _arr_G_bar[i] = _arr_G_bar[i] - (data_a[i] * _alpha->get_lb());
+    //         }
+    //     } else {
+    //         for (int i = 0; i < _jml_data; ++i)
+    //         {
+    //             _arr_G_bar[i] = _arr_G_bar[i] + (data_a[i] * _alpha->get_lb());
+    //         }
+    //     }
+    // }
+
+    // if (is_alpha_b_lb != _alpha->is_lower_bound(idx_b))
+    // {
+    //     vector<Tmy_double> data_b = _kernel->get_Q(idx_b, _jml_data);
+    //     if (is_alpha_b_lb == true)
+    //     {
+    //         for (int i = 0; i < _jml_data; ++i)
+    //         {
+    //             _arr_G_bar[i] = _arr_G_bar[i] - (data_b[i] * _alpha->get_lb());
+    //         }
+    //     } else {
+    //         for (int i = 0; i < _jml_data; ++i)
+    //         {
+    //             _arr_G_bar[i] = _arr_G_bar[i] + (data_b[i] * _alpha->get_lb());
+    //         }
+    //     }
+    // }
+}
+
+void Tmy_list_G::update_G(int idx_b, int idx_a, Tmy_double new_alpha_b, Tmy_double new_alpha_a, int idx_exclude, Tmy_double rho1, Tmy_double rho2)
+{
+    Tmy_double alpha_a = _alpha->get_alpha(idx_a);
+    Tmy_double alpha_b = _alpha->get_alpha(idx_b);
+
+    Tmy_double delta_1 = new_alpha_b - alpha_b;
+    Tmy_double delta_2 = new_alpha_a - alpha_a;
+
+    vector<Tmy_double> data_a = _kernel->get_Q(idx_a, _active_size);
+    vector<Tmy_double> data_b = _kernel->get_Q(idx_b, _active_size);
+
+    
+    Tmy_double abs_F = 0.0;
+    if(idx_exclude!=-1)
     {
-        vector<Tmy_double> data_a = _kernel->get_Q(idx_a, _jml_data);
-        if (is_alpha_a_ub == true)
-        {
-            for (int i = 0; i < _jml_data; ++i)
-            {
-                _arr_G_bar[i] = _arr_G_bar[i] - (data_a[i] * _alpha->get_ub());
-            }
-        } else {
-            for (int i = 0; i < _jml_data; ++i)
-            {
-                _arr_G_bar[i] = _arr_G_bar[i] + (data_a[i] * _alpha->get_ub());
-            }
-        }
+      Tmy_double F = get_F(idx_exclude,rho1,rho2);
+      Tmy_double abs_F = abs(F);
     }
 
-    if (is_alpha_b_ub != _alpha->is_upper_bound(idx_b))
+    for (int i = 0; i < _active_size; ++i)
     {
-        vector<Tmy_double> data_b = _kernel->get_Q(idx_b, _jml_data);
-        if (is_alpha_b_ub == true)
+        bool is_pass = true;
+        if(idx_exclude!=-1)
         {
-            for (int i = 0; i < _jml_data; ++i)
-            {
-                _arr_G_bar[i] = _arr_G_bar[i] - (data_b[i] * _alpha->get_ub());
-            }
-        } else {
-            for (int i = 0; i < _jml_data; ++i)
-            {
-                _arr_G_bar[i] = _arr_G_bar[i] + (data_b[i] * _alpha->get_ub());
-            }
+          Tmy_double F = get_F(i,rho1,rho2);
+          Tmy_double abs_F1 = abs(F);
+          is_pass = abs_F1<abs_F;
         }
+
+        if(is_pass){
+          _arr_G.at(i) = _arr_G.at(i) + ((data_b[i] * delta_1) + (data_a[i] * delta_2));
+        }  
     }
 
-
-    if (is_alpha_a_lb != _alpha->is_lower_bound(idx_a))
-    {
-        vector<Tmy_double> data_a = _kernel->get_Q(idx_a, _jml_data);
-        if (is_alpha_a_lb == true)
-        {
-            for (int i = 0; i < _jml_data; ++i)
-            {
-                _arr_G_bar[i] = _arr_G_bar[i] - (data_a[i] * _alpha->get_lb());
-            }
-        } else {
-            for (int i = 0; i < _jml_data; ++i)
-            {
-                _arr_G_bar[i] = _arr_G_bar[i] + (data_a[i] * _alpha->get_lb());
-            }
-        }
-    }
-
-    if (is_alpha_b_lb != _alpha->is_lower_bound(idx_b))
-    {
-        vector<Tmy_double> data_b = _kernel->get_Q(idx_b, _jml_data);
-        if (is_alpha_b_lb == true)
-        {
-            for (int i = 0; i < _jml_data; ++i)
-            {
-                _arr_G_bar[i] = _arr_G_bar[i] - (data_b[i] * _alpha->get_lb());
-            }
-        } else {
-            for (int i = 0; i < _jml_data; ++i)
-            {
-                _arr_G_bar[i] = _arr_G_bar[i] + (data_b[i] * _alpha->get_lb());
-            }
-        }
-    }
+    _alpha->update_alpha(idx_a, new_alpha_a);
+    _alpha->update_alpha(idx_b, new_alpha_b);
 }
 
 Tmy_double Tmy_list_G::get_G(int idx)
@@ -174,11 +212,11 @@ Tmy_double Tmy_list_G::get_G(int idx)
     return _arr_G.at(idx);
 }
 
-Tmy_double Tmy_list_G::get_F(int idx,Tmy_double rho1,Tmy_double rho2)
+Tmy_double Tmy_list_G::get_F(int idx, Tmy_double rho1, Tmy_double rho2)
 {
-   Tmy_double G = _arr_G.at(idx);
-   Tmy_double tmp_F = min((G - rho1), (rho2 - G));
-   return tmp_F; 
+    Tmy_double G = _arr_G.at(idx);
+    Tmy_double tmp_F = min((G - rho1), (rho2 - G));
+    return tmp_F;
 }
 
 void Tmy_list_G::swap_index(int i, int j)
@@ -202,6 +240,8 @@ void Tmy_list_G::reverse_swap()
         }
     }
 }
+
+
 
 void Tmy_list_G::reconstruct_gradient()
 {
@@ -250,7 +290,7 @@ void Tmy_list_G::reconstruct_gradient()
 void Tmy_list_G::set_active_size(int new_value)
 {
 
-    _active_size=new_value;
+    _active_size = new_value;
 }
 
 void Tmy_list_G::reset_active_size()

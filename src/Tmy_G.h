@@ -35,7 +35,7 @@ private:
 	Tmy_kernel *_kernel;
 	Tmy_alpha *_alphas;
 
-	vector<int> _idx_exclude;
+	std::map<int, Tmy_double> _g_exclude;
 
 	bool _unshrink;
 	bool be_shrunk(int i, Tmy_double gmax1, Tmy_double gmax2);
@@ -49,6 +49,7 @@ public:
 
 	void init();
 	Treturn_update_rho update_rho();
+	Treturn_update_rho update_rho(Treturn_update_rho old_rho);
 	Tmy_list_G* get_list_G();
 	Tmy_list_G* get_list_G_v1();
 	Tmy_list_G* get_list_G_v2();
@@ -65,6 +66,8 @@ public:
 	int get_active_size();
 	void reset_active_size();
 	void reverse_swap();
+
+	void update_G(int idx_b,int idx_a,Treturn_is_pass_h tmp,Treturn_update_rho rho);
 
 	void insert_idx_exclude(int idx);
 	void delete_idx_exclude();

@@ -18,15 +18,14 @@ Treturn_cari_alpha Tmy_svm::cari_idx_alpha()
    vector<Tmy_double> gmax_gmin;
    Treturn_cari_idx tmp_cari_idx = _my_G->cari_idx(_rho);
 
-   double diff = tmp_cari_idx.gmax - tmp_cari_idx.gmin;
-   cout << tmp_cari_idx.gmax << "-" << tmp_cari_idx.gmin << "=" << diff << endl;
+   double diff = tmp_cari_idx.gmax + tmp_cari_idx.gmin;
+   cout << tmp_cari_idx.gmax << "+" << tmp_cari_idx.gmin << "=" << diff << endl;
    bool stat = true;
    bool is_optimum = abs(diff) < 1e-3;
    if ( is_optimum or ((tmp_cari_idx.idx_b == -1) or (tmp_cari_idx.idx_a == -1)))
    {  //(diff<1e-3) or
       stat = false;
    }
-
    return {stat, tmp_cari_idx.idx_b, tmp_cari_idx.idx_a,is_optimum};
 }
 
@@ -89,12 +88,13 @@ bool Tmy_svm::take_step(int idx_b, int idx_a)
       if (tmp.is_pass == false)
       {
          return false;
-      } else {         
-         _my_list_G->update_G(idx_b, idx_a, tmp.alpha.new_alpha_i, tmp.alpha.new_alpha_j);
-         _my_list_G_v1->update_G(idx_b, idx_a, tmp.alpha_v1.new_alpha_i, tmp.alpha_v1.new_alpha_j);
-         _my_list_G_v2->update_G(idx_b, idx_a, tmp.alpha_v2.new_alpha_i, tmp.alpha_v2.new_alpha_j);
-         _rho = _my_G->update_rho();
-         _my_G->delete_idx_exclude();
+      } else {                  
+         // _my_list_G->update_G(idx_b, idx_a, tmp.alpha.new_alpha_i, tmp.alpha.new_alpha_j);         
+         // _my_list_G_v1->update_G(idx_b, idx_a, tmp.alpha_v1.new_alpha_i, tmp.alpha_v1.new_alpha_j);
+         // _my_list_G_v2->update_G(idx_b, idx_a, tmp.alpha_v2.new_alpha_i, tmp.alpha_v2.new_alpha_j);
+         _my_G->update_G(idx_b,idx_a,tmp,_rho);
+         _rho = _my_G->update_rho();         
+         //_my_G->delete_idx_exclude();
          return true;
       }
 
@@ -136,12 +136,16 @@ Treturn_train Tmy_svm::train(Tdataframe &df) {
 
       Treturn_cari_alpha hasil_cari = cari_idx_alpha();
       tmp_train.is_optimum = hasil_cari.is_optimum;
-
+      
+      
+   
       if (hasil_cari.is_pass == false)
       {
       //    _my_G->reconstruct_gradient();
       //    _my_G->reset_active_size();
-          _my_G->insert_idx_exclude(hasil_cari.idx_b);
+          if(hasil_cari.idx_b!=-1.0){
+            _my_G->insert_idx_exclude(hasil_cari.idx_b);
+          }                    
           hasil_cari = cari_idx_alpha();
           tmp_train.is_optimum = hasil_cari.is_optimum;
           if (hasil_cari.is_pass == false)
@@ -163,7 +167,7 @@ Treturn_train Tmy_svm::train(Tdataframe &df) {
 
          if (is_alpha_changed == false)
          {
-            // //cout<<" gagal 2 "<<endl;
+            //cout<<" gagal 2 "<<endl;
             int idx_a;
             bool pass = cari_idx_a_lain(hasil_cari.idx_b, &idx_a);
             if (pass == true)
@@ -179,7 +183,7 @@ Treturn_train Tmy_svm::train(Tdataframe &df) {
             } else {
                cout << "break 1 " << iter << endl;
                _my_G->insert_idx_exclude(hasil_cari.idx_b);
-               //break;
+               break;
             }
          }
       } else {

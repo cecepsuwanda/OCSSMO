@@ -83,9 +83,9 @@ Treturn_is_pass_h Tmy_alpha::is_pass(int i, int j, Tmy_double delta, Tmy_double 
 	if (new_alpha_i_pass or new_alpha_j_pass)
 	{
 		if (flag == 1) {
-			//cout << " " << tmp_v1.is_pass << " " << tmp_v2.is_pass << " ";
-			//cout << "v1[" << tmp_v1.alpha_i << "," << tmp_v1.alpha_j << "] v2[" << tmp_v2.alpha_i << "," << tmp_v2.alpha_j << "] v[" << tmp.alpha_i << "," << tmp.alpha_j << "] ";
-			//cout << "new v1[" << tmp_v1.new_alpha_i << "," << tmp_v1.new_alpha_j << "] new v2[" << tmp_v2.new_alpha_i << "," << tmp_v2.new_alpha_j << "] new v[" << tmp.new_alpha_i << "," << tmp.new_alpha_j << "] ";
+			cout << " " << tmp_v1.is_pass << " " << tmp_v2.is_pass << " ";
+			cout << "v1[" << tmp_v1.alpha_i << "," << tmp_v1.alpha_j << "] v2[" << tmp_v2.alpha_i << "," << tmp_v2.alpha_j << "] v[" << tmp.alpha_i << "," << tmp.alpha_j << "] ";
+			cout << "new v1[" << tmp_v1.new_alpha_i << "," << tmp_v1.new_alpha_j << "] new v2[" << tmp_v2.new_alpha_i << "," << tmp_v2.new_alpha_j << "] new v[" << tmp.new_alpha_i << "," << tmp.new_alpha_j << "] ";
 		}
 
 		if ( (tmp_v1.alpha_i == 0.0) and (tmp_v1.alpha_j == 0.0) and (tmp_v2.alpha_i == 0.0) and (tmp_v2.alpha_j == 0.0) )
@@ -206,14 +206,14 @@ Treturn_is_pass_h Tmy_alpha::is_pass(int i, int j, Tmy_double delta, Tmy_double 
 	new_alpha_j_pass = cek(tmp_v1.new_alpha_j, tmp_v2.new_alpha_j, tmp.new_alpha_j) == false;
 
 	if (flag == 1) {
-		 // if (old_alpha_i_pass)
-		 //   	cout << " old " << tmp_v1.alpha_i << "-" << tmp_v2.alpha_i << "=" << tmp.alpha_i << " ";
-		 // if (old_alpha_j_pass)
-		 //   	cout << " old " << tmp_v1.alpha_j << "-" << tmp_v2.alpha_j << "=" << tmp.alpha_j << " ";
-		 // if (new_alpha_i_pass)
-		 //   	cout << " new_i " << tmp_v1.new_alpha_i << "-" << tmp_v2.new_alpha_i << "=" << tmp.new_alpha_i << " ";
-		 // if (new_alpha_j_pass)
-		 //   	cout << " new_j " << tmp_v1.new_alpha_j << "-" << tmp_v2.new_alpha_j << "=" << tmp.new_alpha_j << " ";
+		 if (old_alpha_i_pass)
+		   	cout << " old " << tmp_v1.alpha_i << "-" << tmp_v2.alpha_i << "=" << tmp.alpha_i << " ";
+		 if (old_alpha_j_pass)
+		   	cout << " old " << tmp_v1.alpha_j << "-" << tmp_v2.alpha_j << "=" << tmp.alpha_j << " ";
+		 if (new_alpha_i_pass)
+		   	cout << " new_i " << tmp_v1.new_alpha_i << "-" << tmp_v2.new_alpha_i << "=" << tmp.new_alpha_i << " ";
+		 if (new_alpha_j_pass)
+		   	cout << " new_j " << tmp_v1.new_alpha_j << "-" << tmp_v2.new_alpha_j << "=" << tmp.new_alpha_j << " ";
 	}
 
 	if (tmp.is_pass == false)
