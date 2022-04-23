@@ -16,33 +16,21 @@ using namespace std;
 class Tmy_list_G
 {
 private:
-   int _jml_data;
-   int _active_size;
+   int _jml_data;   
    Tmy_kernel *_kernel;
    Tmy_list_alpha *_alpha;
 
-   vector<Tmy_double> _arr_G;
-   vector<Tmy_double> _arr_G_bar;
-   vector<int> _active_set;
+   vector<Tmy_double> _arr_G;   
+   
 public:
    Tmy_list_G(int jml_data, Tmy_kernel *kernel, Tmy_list_alpha *alpha);
    ~Tmy_list_G();
 
    void clear_container();
    void init();
-   void update_G(int idx_b, int idx_a, Tmy_double new_alpha_b, Tmy_double new_alpha_a);
-   void update_G(int idx_b, int idx_a, Tmy_double new_alpha_b, Tmy_double new_alpha_a,int idx_exclude,Tmy_double rho1,Tmy_double rho2);
+   void update_G(int idx_b, int idx_a, Tmy_double new_alpha_b, Tmy_double new_alpha_a);   
    Tmy_double get_G(int idx);
-   Tmy_double get_F(int idx,Tmy_double rho1,Tmy_double rho2);
-
-   void reconstruct_gradient();
-
-   
-
-   void set_active_size(int new_value);
-   void reset_active_size();
-   void reverse_swap();
-   void swap_index(int i, int j);
+   Tmy_double get_F(int idx,Tmy_double rho1,Tmy_double rho2);   
 };
 
 #endif

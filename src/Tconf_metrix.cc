@@ -155,8 +155,8 @@ void Tconf_metrix::kalkulasi()
 		precision = tmp > 0 ? (TP / (double)(tmp)) : 0.0;
 		tmp = TP + FN;
 		recall = tmp > 0 ? (TP / (double)(tmp)) : 0.0;
-		tmp = recall + precision;
-		f1 = tmp > 0 ? ((2 * recall * precision) / (double)(tmp)) : 0.0;
+		float tmp1 = recall + precision;
+		f1 = tmp1 > 0 ? ((2 * recall * precision) / (double)(tmp1)) : 0.0;
 	}
 }
 

@@ -136,9 +136,9 @@ Treturn_data Tmy_kernel::thread_hit_data(int idx_map,int idx_vec,vector<string> 
    return {idx_map,idx_vec,hasil};
 }
 
-vector<Tmy_double> Tmy_kernel::get_Q(int i,int size)
+vector<Tmy_double> Tmy_kernel::get_Q(int i)
 {   
-   Treturn_is_in_head hasil = _cache->is_in_head(i,size);   
+   Treturn_is_in_head hasil = _cache->is_in_head(i,_jml_data);   
    
    if(hasil.is_pass==false){     
      int idx_df = i;
@@ -152,7 +152,7 @@ vector<Tmy_double> Tmy_kernel::get_Q(int i,int size)
      vector<string> x_j = _df->goto_rec(idx_df);
 
      vector<future<Treturn_data>> async_worker;
-     for (int j = hasil.awal; j < size; ++j)
+     for (int j = hasil.awal; j < _jml_data; ++j)
      { 
        //cetak("*");
 
@@ -202,14 +202,14 @@ vector<Tmy_double> Tmy_kernel::get_Q(int i,int size)
    return data;
 }
 
-vector<Tmy_double> Tmy_kernel::get_diff_Q(int i,int j,int size)
+vector<Tmy_double> Tmy_kernel::get_diff_Q(int i,int j)
 {
    vector<Tmy_double> hasil;
-   hasil.reserve(size);
-   hasil.assign(size,0.0);
-   for (int k = 0; k < size; ++k)
+   hasil.reserve(_jml_data);
+   hasil.assign(_jml_data,0.0);
+   for (int k = 0; k < _jml_data; ++k)
     {
-        vector<Tmy_double> tmp = get_Q(k,size);
+        vector<Tmy_double> tmp = get_Q(k);
         hasil[k] = (tmp[j]-tmp[i]);
     }
 
@@ -218,19 +218,15 @@ vector<Tmy_double> Tmy_kernel::get_diff_Q(int i,int j,int size)
 
 
 
-vector<Tmy_double> Tmy_kernel::hit_eta(int i,int j,int size,int flag)
+vector<Tmy_double> Tmy_kernel::hit_eta(int i,int j)
 {
-   vector<Tmy_double> Q_i = get_Q(i,size);
-   vector<Tmy_double> Q_j = get_Q(j,size);
+   vector<Tmy_double> Q_i = get_Q(i);
+   vector<Tmy_double> Q_j = get_Q(j);
 
    Tmy_double k11 = Q_i[i];//kernel_function(i,i);
    Tmy_double k12 = Q_i[j];//kernel_function(j,i);
    Tmy_double k22 = Q_j[j];//kernel_function(j,j);
    Tmy_double p_eta = k11+k22-(2.0*k12);
-   if(flag==1)
-   {
-     p_eta = k11+k22+(2.0*k12); 
-   }
    
    Tmy_double eta = 0.0;
    if(p_eta!=0.0)
@@ -272,14 +268,3 @@ Tmy_double Tmy_kernel::kernel_function_f(vector<string> x,vector<string> y)
    return hasil;
 }
 
-void Tmy_kernel::swap_index(int i,int j)
-{
-  _map_swap[i]=j;
-  _map_swap[j]=i; 
-
-  Tmy_double tmp = _x_square[i];
-  _x_square[i] = _x_square[j];
-  _x_square[j] = tmp;
-
-  _cache->swap_index(i,j);
-}

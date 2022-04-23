@@ -460,21 +460,3 @@ Tmy_double Tmy_list_alpha::get_lb()
 {
   return _lb;
 }
-
-
-void Tmy_list_alpha::swap_index(int i, int j)
-{
-  swap(_alpha_status[i], _alpha_status[j]);
-  swap(_alpha.at(i), _alpha.at(j));
-
-  update_alpha_sv(i);
-  update_alpha_status(i);
-  update_lb_ub(i);
-
-  update_alpha_sv(j);
-  update_alpha_status(j);
-  update_lb_ub(j);
-
-
-}
-

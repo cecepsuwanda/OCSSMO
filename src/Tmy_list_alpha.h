@@ -88,9 +88,7 @@ public:
 
    Treturn_alpha_stat get_stat();
    Tmy_double get_ub();
-   Tmy_double get_lb();
-
-   void swap_index(int i, int j);
+   Tmy_double get_lb();  
 
 };
 
