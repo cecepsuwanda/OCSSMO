@@ -241,7 +241,7 @@ public:
 		double tmp  =  rhs;
 		double tmp1 =  _val;
 		tmp = tmp1 - tmp;
-		//(abs(tmp) < _batas)
+		//(abs(tmp) < _batas) _val == rhs
 		return (_val == rhs);
 	}
 

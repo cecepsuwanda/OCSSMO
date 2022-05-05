@@ -26,12 +26,7 @@ Tmy_list_alpha::~Tmy_list_alpha() {
 void Tmy_list_alpha::clear_container()
 {
   _alpha.clear();
-  _alpha_status.clear();
-  _alpha_not_ub.clear();
-  _alpha_not_lb.clear();
-  _alpha_not_nol.clear();
-  _alpha_not_lb_ub.clear();
-  _alpha_free.clear();
+  _alpha_status.clear();   
 }
 
 
@@ -39,8 +34,7 @@ void Tmy_list_alpha::init(Tmy_double V, Tmy_double eps, int flag) {
   Tmy_double tmp = V * ((double)_jml_data);
   int jml = (int) tmp;
 
-  _alpha_not_lb.reserve(jml);
-  _alpha_not_lb.reserve(_jml_data - jml);
+  
   if (flag == 0) {
 
     for (int idx = 0; idx < jml; idx++) {
@@ -124,8 +118,7 @@ void Tmy_list_alpha::update_alpha(int idx, Tmy_double value)
   }
 
   update_alpha_sv(idx);
-  update_alpha_status(idx);
-  update_lb_ub(idx);
+  update_alpha_status(idx);  
 }
 
 void Tmy_list_alpha::update_alpha_status(int idx)
@@ -161,279 +154,42 @@ void Tmy_list_alpha::update_alpha_sv(int idx)
   }
 }
 
-void Tmy_list_alpha::update_lb_ub(int idx_cari)
-{
-  for (int i = 0; i < _alpha_not_ub.size(); i++) {
-    if (_alpha_not_ub[i] == idx_cari) {
-      _alpha_not_ub.erase(_alpha_not_ub.begin() + i);
-      break;
-    }
-  }
 
-  for (int i = 0; i < _alpha_not_lb.size(); i++) {
-    if (_alpha_not_lb[i] == idx_cari) {
-      _alpha_not_lb.erase(_alpha_not_lb.begin() + i);
-      break;
-    }
-  }
-
-  for (int i = 0; i < _alpha_free.size(); i++) {
-    if (_alpha_free[i] == idx_cari) {
-      _alpha_free.erase(_alpha_free.begin() + i);
-      break;
-    }
-  }
-
-  for (int i = 0; i < _alpha_not_nol.size(); i++) {
-    if (_alpha_not_nol[i] == idx_cari) {
-      _alpha_not_nol.erase(_alpha_not_nol.begin() + i);
-      break;
-    }
-  }
-
-  for (int i = 0; i < _alpha_not_lb_ub.size(); i++) {
-    if (_alpha_not_lb_ub[i] == idx_cari) {
-      _alpha_not_lb_ub.erase(_alpha_not_lb_ub.begin() + i);
-      break;
-    }
-  }
-
-  if (is_upper_bound(idx_cari) == false)
-  {
-    _alpha_not_ub.push_back(idx_cari);
-  }
-
-  if (is_lower_bound(idx_cari) == false)
-  {
-    _alpha_not_lb.push_back(idx_cari);
-  }
-
-  if (is_free(idx_cari) == true)
-  {
-    _alpha_free.push_back(idx_cari);
-  }
-
-  if (is_nol(idx_cari) == false)
-  {
-    _alpha_not_nol.push_back(idx_cari);
-  }
-
-  if (is_not_lb_ub(idx_cari) == true)
-  {
-    _alpha_not_lb_ub.push_back(idx_cari);
-  }
-
-
-}
 
 vector<bool> Tmy_list_alpha::is_alpha_sv(int idx)
 {
   vector<bool> tmp;
   tmp.push_back((_alpha.at(idx) >= _lb) and (_alpha.at(idx) <= _ub) and (_alpha.at(idx) != 0.0));
   tmp.push_back((_alpha.at(idx) > _lb) and (_alpha.at(idx) < _ub) and (_alpha.at(idx) != 0.0));
-  tmp.push_back((_alpha.at(idx) == _ub));
-  tmp.push_back((_alpha.at(idx) == _lb));
+  tmp.push_back(_alpha.at(idx) == _ub);
+  tmp.push_back(_alpha.at(idx) == _lb);
   return tmp;
 }
 
 bool Tmy_list_alpha::is_lower_bound(int idx)
 {
-  return (_alpha_status[idx] == 0);
+  return (_alpha_status.at(idx) == 0);
 }
 
 bool Tmy_list_alpha::is_upper_bound(int idx)
 {
-  return (_alpha_status[idx] == 1);
+  return (_alpha_status.at(idx) == 1);
 }
 
 bool Tmy_list_alpha::is_free(int idx)
 {
-  return (_alpha_status[idx] == 2);
+  return (_alpha_status.at(idx) == 2);
 }
-
-bool Tmy_list_alpha::is_nol(int idx)
-{
-  return (_alpha.at(idx) == 0.0);
-}
-
 bool Tmy_list_alpha::is_nol(int idx_i,int idx_j)
 {
-  return ((_alpha.at(idx_i) == 0.0) and (_alpha.at(idx_j) == 0.0));
+  return ((_alpha.at(idx_i)==0.0) and (_alpha.at(idx_j)==0.0));
 }
 
-bool Tmy_list_alpha::is_not_lb_ub(int idx)
-{
-  return ((_alpha.at(idx) != _lb) and (_alpha.at(idx) != _ub));
-}
 
-bool Tmy_list_alpha::is_neg(int idx)
-{
-  return (_alpha.at(idx)<0.0);
-}
-
-vector<Tmy_double> Tmy_list_alpha::calculateBoundaries(int i, int j)
-{
-  Tmy_double t      = _alpha.at(i) + _alpha.at(j);
-  Tmy_double diff   = t - _ub;
-  Tmy_double diff1  = t + abs(_lb);
-  vector<Tmy_double> hasil = {_lb, _ub};
-  if (((_alpha.at(i) <= _ub) and (_alpha.at(i) >= _lb)) and ((_alpha.at(j) <= _ub) and (_alpha.at(j) >= _lb))) {
-    hasil = {max(diff, _lb), min(_ub, diff1)};
-  }
-  return hasil;
-}
-
-vector<Tmy_double> Tmy_list_alpha::limit_alpha(Tmy_double alpha_a, Tmy_double alpha_b, Tmy_double Low, Tmy_double High, int flag)
-{
-  vector<Tmy_double> hasil = {alpha_a, alpha_b};
-  if (alpha_a > High) {
-    if (flag == 1)
-    {
-      Tmy_double s = alpha_a - High;
-      hasil[1] = alpha_b + s;
-    }
-    hasil[0] = High;
-  } else {
-    if (alpha_a < Low) {
-      if (flag == 1)
-      {
-        Tmy_double s = alpha_a - Low;
-        hasil[1] = alpha_b + s;
-      }
-      hasil[0] = Low;
-    }
-  }
-  return hasil;
-}
-
-vector<Tmy_double> Tmy_list_alpha::calculateNewAlpha(int i, int j, Tmy_double delta, Tmy_double Low, Tmy_double High)
-{
-  Tmy_double alpha_a_new = _alpha.at(i) + delta;
-  //cout<<" alpha_old "<< _alpha.at(i) <<" alpha_a_new "<< alpha_a_new <<endl;
-  vector<Tmy_double> tmp = limit_alpha(alpha_a_new, 0, Low, High, 0);
-  alpha_a_new = tmp[0];
-  Tmy_double alpha_b_new = _alpha.at(j) + (_alpha.at(i) - alpha_a_new);
-  // tmp = limit_alpha(alpha_b_new,alpha_a_new,_lb,_ub,1);
-  // alpha_b_new = tmp[0];
-  // alpha_a_new = tmp[1];
-  return {_alpha.at(i), _alpha.at(j), alpha_a_new, alpha_b_new};
-}
-
-Treturn_is_pass Tmy_list_alpha::is_pass(int i, int j, Tmy_double delta)
-{
-  Treturn_is_pass tmp;
-
-  tmp.is_pass = false;
-  tmp.alpha_i = _alpha.at(i);
-  tmp.alpha_j = _alpha.at(j);
-  tmp.new_alpha_i = _alpha.at(i);
-  tmp.new_alpha_j = _alpha.at(j);
-
-  if (i == j)
-  {
-    return tmp;
-  } else {
-    vector<Tmy_double> hsl = calculateBoundaries(i, j);
-    Tmy_double Low = hsl[0], High = hsl[1];
-    //cout <<"Low "<<Low<<" High "<<High<<endl;
-    if (Low == High) {
-      return tmp;
-    } else {
-      vector<Tmy_double> hsl = calculateNewAlpha(i, j, delta, Low, High);
-      Tmy_double alpha_a_old = hsl[0], alpha_b_old = hsl[1], alpha_a_new = hsl[2], alpha_b_new = hsl[3];
-      double diff = alpha_a_new - alpha_a_old;
-      //abs(diff)<10e-5
-      if (abs(diff)<10e-5)
-      {
-        return tmp;
-      } else {
-        tmp.is_pass = true;
-        tmp.alpha_i = alpha_a_old;
-        tmp.alpha_j = alpha_b_old;
-        tmp.new_alpha_i = alpha_a_new;
-        tmp.new_alpha_j = alpha_b_new;
-        // cout<<"alpha_a_new : "<<alpha_a_new<<" alpha_a_old : "<<alpha_a_old<<endl;
-        // cout<<"alpha_b_new : "<<alpha_b_new<<" alpha_b_old : "<<alpha_b_old<<endl;
-        return tmp;
-      }
-    }
-  }
-}
 
 Tmy_double Tmy_list_alpha::get_alpha(int idx)
 {
   return _alpha.at(idx);
-}
-
-vector<int> Tmy_list_alpha::get_list_lb_ub(int flag)
-{
-  if (flag == 0) {
-    return _alpha_not_lb;
-  } else {
-    if (flag == 1) {
-      return _alpha_not_ub;
-    } else {
-      if (flag == 2) {
-        return _alpha_free;
-      } else {
-        if (flag == 3) {
-          return _alpha_not_nol;
-        } else {
-          if (flag == 4) {
-            return _alpha_not_lb_ub;
-          }
-        }
-      }
-    }
-  }
-}
-
-void Tmy_list_alpha::mv_lb_ub(int idx, int flag1)
-{
-  if (flag1 == 0)
-  {
-    for (int i = 0; i < _alpha_not_lb.size(); i++) {
-      if (_alpha_not_lb[i] == idx) {
-        _alpha_not_lb.erase(_alpha_not_lb.begin() + i);
-        _alpha_not_lb.insert(_alpha_not_lb.begin(), idx);
-        break;
-      }
-    }
-  }
-  else {
-    if (flag1 == 1)
-    {
-      for (int i = 0; i < _alpha_not_ub.size(); i++) {
-        if (_alpha_not_ub[i] == idx) {
-          _alpha_not_ub.erase(_alpha_not_ub.begin() + i);
-          _alpha_not_ub.insert(_alpha_not_ub.begin(), idx);
-          break;
-        }
-      }
-    } else {
-      if (flag1 == 2)
-      {
-        for (int i = 0; i < _alpha_not_nol.size(); i++) {
-          if (_alpha_not_nol[i] == idx) {
-            _alpha_not_nol.erase(_alpha_not_nol.begin() + i);
-            _alpha_not_nol.insert(_alpha_not_nol.begin(), idx);
-            break;
-          }
-        }
-      } else {
-        if (flag1 == 3)
-        {
-          for (int i = 0; i < _alpha_not_lb_ub.size(); i++) {
-            if (_alpha_not_lb_ub[i] == idx) {
-              _alpha_not_lb_ub.erase(_alpha_not_lb_ub.begin() + i);
-              _alpha_not_lb_ub.insert(_alpha_not_lb_ub.begin(), idx);
-              break;
-            }
-          }
-        }
-      }
-    }
-  }
 }
 
 map<int, Tmy_double> Tmy_list_alpha::get_list_alpha_sv()

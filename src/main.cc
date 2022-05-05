@@ -162,9 +162,8 @@ int main(int argc, char *argv[])
               cout << " gamma = " << j;
               cout << " jml kkt = " << hsl_train.n_kkt;
               cout << " jml all sv = " << hsl_train.n_all_sv;
-              cout << " jml alpha = " << hsl_train.jml_alpha;
-              cout << " jml alpha v1 = " << hsl_train.jml_alpha_v1;
-              cout << " jml alpha v2 = " << hsl_train.jml_alpha_v2;             
+              cout << " jml sv = " << hsl_train.n_sv;
+              cout << " jml alpha = " << hsl_train.jml_alpha;                     
               cout << " is optimum = " << (hsl_train.is_optimum == true ? "Yes" : "No");
 
               //Tconf_metrix conf_metrix_train;
@@ -188,7 +187,7 @@ int main(int argc, char *argv[])
                 f1_max = tmp_F1;
                 hasil_train_max = hasil_train;
                 hasil_test_max = hasil_test;
-              }
+              } 
 
             }
 
@@ -197,13 +196,12 @@ int main(int argc, char *argv[])
       }
       waktu_proses.selesai();
       //waktu_proses.cetak();
-
+      
       df_train.clear_memory();
       df_train.close_file();
       df_test.clear_memory();
-      df_test.close_file();
-
-
+      df_test.close_file();            
+      
       cetak("gamma max = %f \n", gamma_max);
       cetak("V1 max  = %f \n", v1_max);
       cetak("V2 max  = %f \n", v2_max);
@@ -221,8 +219,8 @@ int main(int argc, char *argv[])
       label_test_all.insert(label_test_all.end(), label_test.begin(), label_test.end());
       hasil_train_max_all.insert(hasil_train_max_all.end(), hasil_train_max.begin(), hasil_train_max.end());
       hasil_test_max_all.insert(hasil_test_max_all.end(), hasil_test_max.begin(), hasil_test_max.end());
-
-
+      
+         
     }
   }
   isi_conf_matrix(conf_metrix_train_all, label_train_all, hasil_train_max_all);

@@ -42,6 +42,7 @@ public:
 
 	vector<Tmy_double> get_Q(int i);
 	vector<Tmy_double> get_diff_Q(int i,int j);
+	vector<Tmy_double> get_rho_Q(int i);
 	vector<Tmy_double> hit_eta(int i,int j);  
 	Tmy_double kernel_function_f(vector<string> x,vector<string> y);
 	

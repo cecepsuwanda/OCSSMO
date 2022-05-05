@@ -24,22 +24,20 @@ void Tmy_list_G::clear_container()
 void Tmy_list_G::init()
 {
     //cetak("Start init G : \n");
-    
-    vector<int> idx_alpha = _alpha->get_list_lb_ub(3);
-
     int i = 0;
-    for (auto& idx : idx_alpha)
+    for (int idx=0;idx<_jml_data;idx++)
     {
         // if((i%100)==0){
         //    cetak(".");
         //   }
         Tmy_double alpha = _alpha->get_alpha(idx);
         vector<Tmy_double> data = _kernel->get_Q(idx);
-        for (int j = 0; j < _jml_data; ++j)
-        {
+        if(alpha!=0.0){
+           for (int j = 0; j < _jml_data; ++j)
+           {
             _arr_G.at(j) = _arr_G.at(j) + (alpha * data[j]);
+           }
         }
-        
 
         i = i + 1;
 
@@ -75,10 +73,17 @@ Tmy_double Tmy_list_G::get_G(int idx)
     return _arr_G.at(idx);
 }
 
-Tmy_double Tmy_list_G::get_F(int idx, Tmy_double rho1, Tmy_double rho2)
+Tmy_double Tmy_list_G::get_obj(int idx, Tmy_double rho1, Tmy_double rho2)
 {
     Tmy_double G = _arr_G.at(idx);
     Tmy_double tmp_F = min((G - rho1), (rho2 - G));
+    return tmp_F;
+}
+
+Tmy_double Tmy_list_G::get_dec(int idx, Tmy_double rho1, Tmy_double rho2)
+{
+    Tmy_double G = _arr_G.at(idx);
+    Tmy_double tmp_F = (G - rho1)*(rho2 - G);
     return tmp_F;
 }
 

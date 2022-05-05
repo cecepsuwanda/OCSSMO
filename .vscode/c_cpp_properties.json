@@ -4,7 +4,7 @@
             "name": "Win32",
             "includePath": [
                 "${workspaceFolder}/**",
-                "E:\\OCSSMO\\src"
+                "E:\\\\OCSSMO\\\\src\\\\**"
             ],
             "defines": [
                 "_DEBUG",

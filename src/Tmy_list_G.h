@@ -19,7 +19,6 @@ private:
    int _jml_data;   
    Tmy_kernel *_kernel;
    Tmy_list_alpha *_alpha;
-
    vector<Tmy_double> _arr_G;   
    
 public:
@@ -30,7 +29,8 @@ public:
    void init();
    void update_G(int idx_b, int idx_a, Tmy_double new_alpha_b, Tmy_double new_alpha_a);   
    Tmy_double get_G(int idx);
-   Tmy_double get_F(int idx,Tmy_double rho1,Tmy_double rho2);   
+   Tmy_double get_obj(int idx,Tmy_double rho1,Tmy_double rho2);
+   Tmy_double get_dec(int idx,Tmy_double rho1,Tmy_double rho2);   
 };
 
 #endif
