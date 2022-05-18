@@ -6,7 +6,7 @@ Tmy_alpha::Tmy_alpha(Tconfig *v_config) {
 }
 
 Tmy_alpha::~Tmy_alpha() {
-	
+
 }
 
 
@@ -36,30 +36,33 @@ void Tmy_alpha::init(int jml_data, T_alpha_container& alpha)
 		alpha[jml] = _config->eps1 - jml_alpha;
 	}
 
-
-
 	tmp = _config->V2 * ((double) jml_data);
 	jml = (int) tmp;
 
 	Tmy_double total = 0.0;
-	for (int i = (jml_data - 1); i > ((jml_data - 1) - jml); --i)
+
+	int i = 0;
+	int idx = jml_data - 1;
+	while ( i < jml)
 	{
-		if (alpha[i] != 0.0) {
-			alpha[i] = alpha[i] - ub_v2;
+		if (alpha[idx] != 0.0) {
+			alpha[idx] = alpha[idx] - ub_v2;
 		} else {
-			alpha[i] = -1.0 * ub_v2;
+			alpha[idx] = -1.0 * ub_v2;
 		}
 
 		total = total + ub_v2;
+		i++;
+		idx--;
 	}
 
 	if (total < _config->eps2)
 	{
-		if (alpha[((jml_data - 1) - jml)] != 0.0)
+		if (alpha[idx] != 0.0)
 		{
-			alpha[((jml_data - 1) - jml)] = alpha[((jml_data - 1) - jml)] - (_config->eps2 - total);
+			alpha[idx] = alpha[idx] - (_config->eps2 - total);
 		} else {
-			alpha[((jml_data - 1) - jml)] = -1.0 * (_config->eps2 - total);
+			alpha[idx] = -1.0 * (_config->eps2 - total);
 		}
 	}
 
@@ -70,11 +73,38 @@ void Tmy_alpha::init(int jml_data, T_alpha_container& alpha)
 vector<Tmy_double> Tmy_alpha::calculateBoundaries(int i, int j, T_alpha_container alpha)
 {
 	Tmy_double t      = alpha[i] + alpha[j];
-	Tmy_double diff   = t - alpha.ub();
-	Tmy_double diff1  = t + abs(alpha.lb());
+	Tmy_double diff = 0.0;
+	Tmy_double diff1 = 0.0;
+
+	if ((alpha[i] >= 0.0) and (alpha[j] >= 0.0))
+	{
+		diff   = t - alpha.ub();
+		diff1  = t + 0.0;
+	} else {
+		if ((alpha[i] <= 0.0) and (alpha[j] <= 0.0))
+		{
+			diff   = t - 0.0;
+			diff1  = t + abs(alpha.lb());
+		} else {
+			diff   = t - alpha.ub();
+			diff1  = t + abs(alpha.lb());
+		}
+	}
+
+
 	vector<Tmy_double> hasil = {alpha.lb(), alpha.ub()};
 	if (((alpha[i] <= alpha.ub()) and (alpha[i] >= alpha.lb())) and ((alpha[j] <= alpha.ub()) and (alpha[j] >= alpha.lb()))) {
-		hasil = {max(diff, alpha.lb()), min(alpha.ub(), diff1)};
+		if ((alpha[i] >= 0.0) and (alpha[j] >= 0.0))
+		{
+			hasil = {max((double) diff, 0.0), min(alpha.ub(), diff1)};
+		} else {
+			if ((alpha[i] <= 0.0) and (alpha[j] <= 0.0))
+			{
+				hasil = {max(diff, alpha.lb()), min(0.0, (double) diff1)};
+			} else {
+				hasil = {max(diff, alpha.lb()), min(alpha.ub(), diff1)};
+			}
+		}
 	}
 	return hasil;
 }
@@ -109,9 +139,20 @@ vector<Tmy_double> Tmy_alpha::calculateNewAlpha(int i, int j, Tmy_double delta, 
 	vector<Tmy_double> tmp = limit_alpha(alpha_a_new, 0, Low, High, 0);
 	alpha_a_new = tmp[0];
 	Tmy_double alpha_b_new = alpha[j] + (alpha[i] - alpha_a_new);
-	// tmp = limit_alpha(alpha_b_new,alpha_a_new,_lb,_ub,1);
-	// alpha_b_new = tmp[0];
-	// alpha_a_new = tmp[1];
+	if ((alpha[i] >= 0.0) and (alpha[j] >= 0.0))
+	{
+		tmp = limit_alpha(alpha_b_new, alpha_a_new, 0, alpha.ub(), 1);
+	} else {
+		if ((alpha[i] <= 0.0) and (alpha[j] <= 0.0))
+		{
+			tmp = limit_alpha(alpha_b_new, alpha_a_new, alpha.lb(), 0, 1);
+		} else {
+			tmp = limit_alpha(alpha_b_new, alpha_a_new, alpha.lb(), alpha.ub(), 1);
+		}
+
+	}
+	alpha_b_new = tmp[0];
+	alpha_a_new = tmp[1];
 	return {alpha[i], alpha[j], alpha_a_new, alpha_b_new};
 }
 
@@ -138,7 +179,7 @@ Treturn_is_pass Tmy_alpha::is_pass(int i, int j, Tmy_double delta, T_alpha_conta
 			Tmy_double alpha_a_old = hsl[0], alpha_b_old = hsl[1], alpha_a_new = hsl[2], alpha_b_new = hsl[3];
 			double diff = alpha_a_new - alpha_a_old;
 			//abs(diff)<10e-5
-			if (abs(diff) < 10e-5)
+			if (abs(diff) < 1e-5)
 			{
 				return tmp;
 			} else {

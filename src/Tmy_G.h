@@ -32,11 +32,11 @@ public:
 	Treturn_update_rho update_rho(Tmy_kernel *kernel, T_alpha_container alpha,T_grad_container grad);
 	
 	bool is_kkt(int idx, Treturn_update_rho rho,T_alpha_container alpha,T_grad_container grad);
-	int cari_idx_a(int idx_b, Treturn_update_rho rho,T_alpha_container alpha,T_grad_container grad);
+	int cari_idx_a(int idx_b, Treturn_update_rho rho,T_alpha_container alpha,T_grad_container grad,Tmy_kernel *kernel);
 	
 	int cari_idx_lain(int idx_b, Treturn_update_rho rho,Tmy_kernel *kernel,T_alpha_container alpha,T_grad_container grad,Tmy_alpha *my_alpha);
 	
-	bool cari_idx(int& idx_b, int& idx_a, Treturn_update_rho rho);
+	bool cari_idx(int& idx_b, int& idx_a, Treturn_update_rho rho,T_alpha_container alpha,T_grad_container grad,Tmy_kernel *kernel);
 
 	Tmy_double sum_alpha_diff_Q(T_alpha_container alpha, vector<Tmy_double> diff_Q);
 	void update_G(int idx_b, int idx_a, Treturn_is_pass tmp, Tmy_kernel *kernel, T_alpha_container &alpha,T_grad_container &grad);

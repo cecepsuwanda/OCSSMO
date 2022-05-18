@@ -5,18 +5,16 @@
 #include "Tmy_svm.h"
 
 using namespace std;
+using std::experimental::filesystem::directory_iterator;
 using std::experimental::filesystem::exists;
 using std::experimental::filesystem::path;
-using std::experimental::filesystem::directory_iterator;
-
-
 
 void baca_data(Tdataframe &df, string sumber_data, string tipe_data)
 {
   df.by_pass_filter_on();
   df.read_data(sumber_data);
   df.read_data_type(tipe_data);
-  //df.info();
+  // df.info();
 }
 
 void isi_conf_matrix(Tconf_metrix &conf_metrix, vector<string> label, vector<string> prediksi)
@@ -67,9 +65,7 @@ struct Twaktu_proses
     cout << "Mulai : " << put_time(std::localtime(&tanggal_mulai), "%F %T.\n");
     cout << "Selesai : " << put_time(std::localtime(&tanggal_selesai), "%F %T.\n");
   }
-
 };
-
 
 int main(int argc, char *argv[])
 {
@@ -77,8 +73,7 @@ int main(int argc, char *argv[])
   Tconfig config;
   config.f_datatype = argv[2];
   config.path_model = argv[1];
-  //config.svm_path = config.path_model + "/" + argv[3];
-
+  // config.svm_path = config.path_model + "/" + argv[3];
 
   double bb_gamma = strtod(argv[3], &endptr);
   double ba_gamma = strtod(argv[4], &endptr);
@@ -92,7 +87,6 @@ int main(int argc, char *argv[])
   double bb_V2 = strtod(argv[9], &endptr);
   double ba_V2 = strtod(argv[10], &endptr);
 
-
   Tconf_metrix conf_metrix_train_all;
   Tconf_metrix conf_metrix_test_all;
   vector<string> label_train_all;
@@ -105,16 +99,15 @@ int main(int argc, char *argv[])
 
   int jml = 0;
 
-  for (const auto & file : directory_iterator(config.path_model + "/train"))
+  for (const auto &file : directory_iterator(config.path_model + "/train"))
   {
     string str = file.path().filename();
-    if ((str == "train_model_1.csv"))// and (str != "train_model_36.csv")
+    if ((str == "train_model_1.csv")) // and (str != "train_model_36.csv")
     {
 
       Tdataframe df_train(&config);
       baca_data(df_train, file.path(), config.f_datatype);
       vector<string> label_train = df_train.get_list_label();
-
 
       str.replace(0, 5, "test");
       string file_test = config.path_model + "/test/" + str;
@@ -138,9 +131,9 @@ int main(int argc, char *argv[])
       vector<string> hasil_test_max;
 
       for (double j = bb_gamma; j <= ba_gamma; j = j + bb_gamma)
-      {        
+      {
         for (double i = bb_V1; i <= ba_V1; i = i + bb_V1)
-        {          
+        {
           for (double k = bb_eps2; k <= ba_eps2; k = k + bb_eps2)
           {
             for (double l = bb_V2; l <= ba_V2; l = l + bb_V2)
@@ -150,31 +143,34 @@ int main(int argc, char *argv[])
               config.eps2 = k;
               config.V2 = l;
 
-              Tmy_svm my_svm(&config);
-              Treturn_train hsl_train = my_svm.train(df_train);
-              vector<string> hasil_train = my_svm.test(df_train);
-
               cout << "file = " << str;
-              cout << " iterasi = " << hsl_train.jml_iterasi;
               cout << " V1 = " << i;
               cout << " V2 = " << l;
               cout << " eps2 = " << k;
               cout << " gamma = " << j;
+
+              Tmy_svm my_svm(&config);
+              Treturn_train hsl_train = my_svm.train(df_train);
+              vector<string> hasil_train = my_svm.test(df_train);
+
+              cout << " iterasi = " << hsl_train.jml_iterasi;
               cout << " jml kkt = " << hsl_train.n_kkt;
               cout << " jml all sv = " << hsl_train.n_all_sv;
               cout << " jml sv = " << hsl_train.n_sv;
-              cout << " jml alpha = " << hsl_train.jml_alpha;                     
-              cout << " is optimum = " << (hsl_train.is_optimum == true ? "Yes" : "No");
+              cout << " jml alpha = " << hsl_train.jml_alpha;
+              cout << " jml alpha v1 = " << hsl_train.jml_alpha_v1;
+              cout << " jml alpha v2 = " << hsl_train.jml_alpha_v2;
+              // cout << " is optimum = " << (hsl_train.is_optimum == true ? "Yes" : "No");
 
-              //Tconf_metrix conf_metrix_train;
-              //isi_conf_matrix(conf_metrix_train, label_train, hasil_train);
-              //cetak_conf_matrix(conf_metrix_train);
+              // Tconf_metrix conf_metrix_train;
+              // isi_conf_matrix(conf_metrix_train, label_train, hasil_train);
+              // cetak_conf_matrix(conf_metrix_train);
 
               vector<string> hasil_test = my_svm.test(df_test);
 
               Tconf_metrix conf_metrix_test;
               isi_conf_matrix(conf_metrix_test, label_test, hasil_test);
-              //cetak_conf_matrix(conf_metrix_test);
+              // cetak_conf_matrix(conf_metrix_test);
 
               float tmp_F1 = conf_metrix_test.get_F1();
               cetak(" F1 = %f \n", tmp_F1);
@@ -187,21 +183,19 @@ int main(int argc, char *argv[])
                 f1_max = tmp_F1;
                 hasil_train_max = hasil_train;
                 hasil_test_max = hasil_test;
-              } 
-
+              }
             }
-
           }
         }
       }
       waktu_proses.selesai();
-      //waktu_proses.cetak();
-      
+      // waktu_proses.cetak();
+
       df_train.clear_memory();
       df_train.close_file();
       df_test.clear_memory();
-      df_test.close_file();            
-      
+      df_test.close_file();
+
       cetak("gamma max = %f \n", gamma_max);
       cetak("V1 max  = %f \n", v1_max);
       cetak("V2 max  = %f \n", v2_max);
@@ -219,8 +213,6 @@ int main(int argc, char *argv[])
       label_test_all.insert(label_test_all.end(), label_test.begin(), label_test.end());
       hasil_train_max_all.insert(hasil_train_max_all.end(), hasil_train_max.begin(), hasil_train_max.end());
       hasil_test_max_all.insert(hasil_test_max_all.end(), hasil_test_max.begin(), hasil_test_max.end());
-      
-         
     }
   }
   isi_conf_matrix(conf_metrix_train_all, label_train_all, hasil_train_max_all);
@@ -229,7 +221,7 @@ int main(int argc, char *argv[])
   cetak_conf_matrix(conf_metrix_test_all);
 
   waktu_proses.selesai();
-  //waktu_proses.cetak();
+  // waktu_proses.cetak();
 
   return 0;
 }

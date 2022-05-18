@@ -21,9 +21,11 @@ struct Treturn_train
 {
    int jml_iterasi;
    int n_kkt;
-   Tmy_double jml_alpha;   
+   Tmy_double jml_alpha;
+   Tmy_double jml_alpha_v1;
+   Tmy_double jml_alpha_v2;
    int n_all_sv;
-   int n_sv;   
+   int n_sv;
    Tmy_double rho_v1;
    Tmy_double rho_v2;
    bool is_optimum;
@@ -35,7 +37,7 @@ class Tmy_svm
 private:
    Tconfig *_config;
    T_alpha_container _alpha;
-   T_grad_container  _grad;
+   T_grad_container _grad;
 
    Tmy_alpha *_my_alpha;
    Tmy_kernel *_my_kernel;
@@ -43,7 +45,7 @@ private:
 
    Treturn_update_rho _rho;
    map<int, vector<string>> _model;
-   vector<Tmy_double> _alpha_sv;   
+   vector<Tmy_double> _alpha_sv;
 
 public:
    Tmy_svm(Tconfig *v_config);

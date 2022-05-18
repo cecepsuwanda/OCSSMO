@@ -14,7 +14,6 @@ Tmy_svm::~Tmy_svm()
    _alpha_sv.clear();
 }
 
-
 int Tmy_svm::take_step(int idx_b, int idx_a)
 {
    if (idx_b == idx_a)
@@ -30,7 +29,7 @@ int Tmy_svm::take_step(int idx_b, int idx_a)
       Tmy_double delta = hsl_eta[0] * hsl_sum;
       Treturn_is_pass tmp = _my_alpha->is_pass(idx_b, idx_a, delta, _alpha);
 
-      // cout << " old [" << tmp.alpha.alpha_i << "," << tmp.alpha.alpha_j << "] new [" << tmp.alpha.new_alpha_i << "," << tmp.alpha.new_alpha_j << "] " << endl;
+      // cout << " old [" << tmp.alpha_i << "," << tmp.alpha_j << "] new [" << tmp.new_alpha_i << "," << tmp.new_alpha_j << "] " << endl;
 
       if (tmp.is_pass == false)
       {
@@ -39,6 +38,7 @@ int Tmy_svm::take_step(int idx_b, int idx_a)
       else
       {
          _my_G.update_G(idx_b, idx_a, tmp, _my_kernel, _alpha, _grad);
+         //_alpha.nol_kan();
          _rho = _my_G.update_rho(_my_kernel, _alpha, _grad);
          return 1;
       }
@@ -54,53 +54,60 @@ int Tmy_svm::examineExample(int idx_b)
    Tmy_double obj = _grad.obj(idx_b, _rho.rho_v1, _rho.rho_v2);
    Tmy_double dec = _grad.dec(idx_b, _rho.rho_v1, _rho.rho_v2);
 
-
-   //cout << " [" << Gb << "," << obj << "] " << endl;
+   // cout << " [" << Gb << "," << (Gb-_rho.rho_v1) << "," << (_rho.rho_v2-Gb) << "] " << endl;
 
    bool is_pass = true;
 
-   if (is_pass)
-   {
-      is_pass = abs(obj) > 1e-3;
-   }
-
    // if (is_pass)
    // {
-   //    is_pass = ((dec > 0.0) and (_alpha[idx_b] == 0.0)) or ((dec < 0.0) and ((_alpha[idx_b] == _alpha.ub()) or (_alpha[idx_b] == _alpha.lb())));
+   //    is_pass = abs(obj) > 1e-3;
    // }
 
    if (is_pass)
    {
-      idx_a = _my_G.cari_idx_a(idx_b, _rho, _alpha, _grad);
+      is_pass = (((dec < -1e-3) and (_alpha[idx_b] < _alpha.ub())) or ((dec > 1e-3) and (_alpha[idx_b] > 0.0))) or (((dec < -1e-3) and (_alpha[idx_b] > _alpha.lb())) or ((dec > 1e-3) and (_alpha[idx_b] < 0.0)));
+   }
+
+   // if (is_pass)
+   // {
+   //    is_pass = (!_alpha.is_lb(idx_b) and !_alpha.is_ub(idx_b));
+   // }
+
+   if (is_pass)
+   {
+      idx_a = _my_G.cari_idx_a(idx_b, _rho, _alpha, _grad, _my_kernel);
       if (idx_a != -1)
       {
-         //cout << " idx_b " << idx_b << " idx_a " << idx_a << " " << endl;
+         // cout << " idx_b " << idx_b << " idx_a " << idx_a << " " << endl;
          hasil = take_step(idx_b, idx_a);
          if (hasil == 0)
          {
             idx_a = _my_G.cari_idx_lain(idx_b, _rho, _my_kernel, _alpha, _grad, _my_alpha);
             if (idx_a != -1)
             {
-               //cout << " idx_b " << idx_b << " idx_a " << idx_a << " ";
+               // cout << " idx_b " << idx_b << " idx_a " << idx_a << " ";
                hasil = take_step(idx_b, idx_a);
-               if (hasil == 1)
-               {
-                  //cout << " cari idx_a lain 1 " << endl;;
-               }
+               // if (hasil == 1)
+               // {
+               //    cout << "           cari idx_a lain 1 " << endl;;
+               // }
             }
          }
-      } else {
-         if (idx_b != -1) {
-            //cout << " idx_b " << idx_b << " idx_a " << idx_a << " " << endl;
+      }
+      else
+      {
+         if (idx_b != -1)
+         {
+            // cout << " idx_b " << idx_b << " idx_a " << idx_a << " " << endl;
             idx_a = _my_G.cari_idx_lain(idx_b, _rho, _my_kernel, _alpha, _grad, _my_alpha);
             if (idx_a != -1)
             {
-               //cout << " idx_b " << idx_b << " idx_a " << idx_a << " ";
+               // cout << " idx_b " << idx_b << " idx_a " << idx_a << " ";
                hasil = take_step(idx_b, idx_a);
-               if (hasil == 1)
-               {
-                  //cout << " cari idx_a lain 2 " << endl;
-               }
+               // if (hasil == 1)
+               // {
+               //    cout << "           cari idx_a lain 2 " << endl;
+               // }
             }
          }
       }
@@ -115,30 +122,32 @@ int Tmy_svm::examineExample()
    int idx_a = -1;
    int idx_b = -1;
 
-   // bool is_pass = _my_G->cari_idx(idx_b, idx_a, _rho);
-   // if (idx_a != -1)
-   // {
-   //    hasil = take_step(idx_b, idx_a);
-   //    if (hasil == 0)
-   //    {
-   //       //cout << " cari idx_a lain ";
-   //       idx_a = _my_G->cari_idx_lain(idx_b, _rho);
-   //       if (idx_a != -1)
-   //       {
-   //          hasil = take_step(idx_b, idx_a);
-   //       }
-   //    }
-
-   // } else {
-   //    if (idx_b != -1) {
-   //       //cout << " cari idx_a lain ";
-   //       idx_a = _my_G->cari_idx_lain(idx_b, _rho);
-   //       if (idx_a != -1)
-   //       {
-   //          hasil = take_step(idx_b, idx_a);
-   //       }
-   //    }
-   // }
+   bool is_pass = _my_G.cari_idx(idx_b, idx_a, _rho, _alpha, _grad, _my_kernel);
+   if (idx_a != -1)
+   {
+      hasil = take_step(idx_b, idx_a);
+      if (hasil == 0)
+      {
+         //cout << " cari idx_a lain ";
+         idx_a = _my_G.cari_idx_lain(idx_b, _rho, _my_kernel, _alpha, _grad, _my_alpha);
+         if (idx_a != -1)
+         {
+            hasil = take_step(idx_b, idx_a);
+         }
+      }
+   }
+   else
+   {
+      if (idx_b != -1)
+      {
+         //cout << " cari idx_a lain ";
+         idx_a = _my_G.cari_idx_lain(idx_b, _rho, _my_kernel, _alpha, _grad, _my_alpha);
+         if (idx_a != -1)
+         {
+            hasil = take_step(idx_b, idx_a);
+         }
+      }
+   }
 
    //cout << " idx_b " << idx_b << " idx_a " << idx_a << " ";
    return hasil;
@@ -167,35 +176,60 @@ Treturn_train Tmy_svm::train(Tdataframe &df)
       // }
       is_alpha_changed = 0;
       //cout << "iterasi ke - " << iter << endl;
-      if (examineAll) {
+      if (examineAll)
+      {
          for (int idx_b = 0; idx_b < jml_data; idx_b++)
          {
             //cout << " rho v1 " << _rho.rho_v1 << " rho v2 " << _rho.rho_v2;
             is_alpha_changed += examineExample(idx_b);
             //cout << " rho v1 " << _rho.rho_v1 << " rho v2 " << _rho.rho_v2 << endl;
+            // if (is_alpha_changed != (idx_b + 1))
+            // {
+            //    break;
+            // }
          }
-      } else {
+         // if (is_alpha_changed == 0)
+         // {
+         //    is_alpha_changed = 1;
+         //    examineAll = !examineAll;
+         // }
+      }
+      else
+      {
          for (int idx_b = 0; idx_b < jml_data; idx_b++)
          {
             bool is_pass = true;
-            is_pass = _alpha.is_sv(idx_b);
+            is_pass = ((_alpha[idx_b] != 0.0) and (!_alpha.is_ub(idx_b))) or ((_alpha[idx_b] != 0.0) and (!_alpha.is_lb(idx_b)));
             if (is_pass)
             {
-               //cout << " rho v1 " << _rho.rho_v1 << " rho v2 " << _rho.rho_v2;
+               // cout << " rho v1 " << _rho.rho_v1 << " rho v2 " << _rho.rho_v2;
                is_alpha_changed += examineExample(idx_b);
-               //cout << " rho v1 " << _rho.rho_v1 << " rho v2 " << _rho.rho_v2 << endl;
+               // cout << " rho v1 " << _rho.rho_v1 << " rho v2 " << _rho.rho_v2 << endl;
+               // if (is_alpha_changed != 0)
+               // {
+               //    break;
+               // }
             }
          }
+         // if (is_alpha_changed != 0)
+         // {
+         //    examineAll = !examineAll;
+         // }
       }
       examineAll = !examineAll;
       iter = iter + 1;
    }
    // cetak("\n");
 
+   //_alpha.nol_kan();
    _rho = _my_G.update_rho(_my_kernel, _alpha, _grad);
 
    tmp_train.jml_iterasi = iter;
    tmp_train.jml_alpha = _alpha.sum();
+   tmp_train.jml_alpha_v1 = _alpha.sum_if([](Tmy_double val) -> bool
+                                          { return val > 0.0; });
+   tmp_train.jml_alpha_v2 = _alpha.sum_if([](Tmy_double val) -> bool
+                                          { return val < 0.0; });
    tmp_train.n_all_sv = _alpha.n_all_sv();
    tmp_train.n_sv = _alpha.n_sv();
    tmp_train.rho_v1 = _rho.rho_v1;
@@ -206,7 +240,8 @@ Treturn_train Tmy_svm::train(Tdataframe &df)
    _alpha_sv.reserve(tmp_train.n_all_sv);
    for (int idx = 0; idx < jml_data; ++idx)
    {
-      if (_alpha[idx] != 0.0) {
+      if (_alpha[idx] != 0.0)
+      {
          if (_my_G.is_kkt(idx, _rho, _alpha, _grad) == true)
          {
             n_kkt = n_kkt + 1;
