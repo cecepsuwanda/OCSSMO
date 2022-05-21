@@ -8,8 +8,8 @@
 #define Included_T_grad_container_H
 
 using namespace std::placeholders;
-using callback_type = std::function<bool(int, int, Tmy_double, Tmy_double, T_alpha_container)>;
-using callback_type1 = std::function<bool(int, int, Tmy_double, Tmy_double, T_alpha_container, Tmy_kernel *, Tmy_alpha *)>;
+using callback_type = std::function<bool(int, int, Tmy_double, Tmy_double, T_alpha_container, T_alpha_container, T_alpha_container)>;
+using callback_type1 = std::function<bool(int, int, Tmy_double, Tmy_double, T_alpha_container, T_alpha_container, T_alpha_container, Tmy_kernel *, Tmy_alpha *)>;
 
 class T_grad_container
 {
@@ -30,11 +30,11 @@ public:
 
 	void mv_idx(int idx, int flag);
 
-	int max(Tmy_double rho1, Tmy_double rho2, T_alpha_container alpha, callback_type f);
-	int max(int idx_b, Tmy_double rho1, Tmy_double rho2, T_alpha_container alpha, Tmy_kernel *kernel, callback_type f);
-	int max(int idx_b, Tmy_double rho1, Tmy_double rho2, T_alpha_container alpha, Tmy_kernel *kernel, Tmy_alpha *my_alpha, callback_type1 f);
+	int max(Tmy_double rho1, Tmy_double rho2, T_alpha_container alpha, T_alpha_container alpha_v1, T_alpha_container alpha_v2, callback_type f);
+	int max(int idx_b, Tmy_double rho1, Tmy_double rho2, T_alpha_container alpha, T_alpha_container alpha_v1, T_alpha_container alpha_v2, Tmy_kernel *kernel, callback_type f);
+	int max(int idx_b, Tmy_double rho1, Tmy_double rho2, T_alpha_container alpha, T_alpha_container alpha_v1, T_alpha_container alpha_v2, Tmy_kernel *kernel, Tmy_alpha *my_alpha, callback_type1 f);
 
-	int cari(int idx_b, Tmy_double rho1, Tmy_double rho2, T_alpha_container alpha, Tmy_kernel *kernel, Tmy_alpha *my_alpha, callback_type1 f);
+	int cari(int idx_b, Tmy_double rho1, Tmy_double rho2, T_alpha_container alpha, T_alpha_container alpha_v1, T_alpha_container alpha_v2, Tmy_kernel *kernel, Tmy_alpha *my_alpha, callback_type1 f);
 };
 
 #endif

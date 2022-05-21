@@ -36,8 +36,14 @@ class Tmy_svm
 
 private:
    Tconfig *_config;
+   
    T_alpha_container _alpha;
+   T_alpha_container _alpha_v1;
+   T_alpha_container _alpha_v2;
+   
    T_grad_container _grad;
+   T_grad_container _grad_v1;
+   T_grad_container _grad_v2;
 
    Tmy_alpha *_my_alpha;
    Tmy_kernel *_my_kernel;

@@ -21,7 +21,7 @@ struct Treturn_is_pass
 class Tmy_alpha
 {
 private:
-  Tconfig *_config; 
+  Tconfig *_config;
 
   vector<Tmy_double> calculateBoundaries(int i, int j, T_alpha_container alpha);
   vector<Tmy_double> limit_alpha(Tmy_double alpha_a, Tmy_double alpha_b, Tmy_double Low, Tmy_double High, int flag);
@@ -29,8 +29,8 @@ private:
 
 public:
   Tmy_alpha(Tconfig *v_config);
-  ~Tmy_alpha();  
-  void init(int jml_data, T_alpha_container& alpha); 
+  ~Tmy_alpha();
+  void init(int jml_data, T_alpha_container& alpha, T_alpha_container& alpha_v1, T_alpha_container& alpha_v2);
   Treturn_is_pass is_pass(int i, int j, Tmy_double delta, T_alpha_container alpha);
 
 };
