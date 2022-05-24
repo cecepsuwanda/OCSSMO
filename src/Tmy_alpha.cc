@@ -110,10 +110,14 @@ vector<Tmy_double> Tmy_alpha::limit_alpha(Tmy_double alpha_a, Tmy_double alpha_b
 vector<Tmy_double> Tmy_alpha::calculateNewAlpha(int i, int j, Tmy_double delta, Tmy_double Low, Tmy_double High, T_alpha_container alpha)
 {
 	Tmy_double alpha_a_new = alpha[i] + delta;
+	//if(abs(alpha_a_new)<1e-3) alpha_a_new = 0.0; 
+
 	//cout<<" alpha_old "<< _alpha.at(i) <<" alpha_a_new "<< alpha_a_new <<endl;
 	vector<Tmy_double> tmp = limit_alpha(alpha_a_new, 0, Low, High, 0);
 	alpha_a_new = tmp[0];
 	Tmy_double alpha_b_new = alpha[j] + (alpha[i] - alpha_a_new);	
+    //if(abs(alpha_b_new)<1e-3) alpha_b_new = 0.0;
+
 	// tmp = limit_alpha(alpha_b_new, alpha_a_new, alpha.lb(), alpha.ub(), 1);
 	// alpha_b_new = tmp[0];
 	// alpha_a_new = tmp[1];
