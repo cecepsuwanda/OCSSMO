@@ -132,6 +132,8 @@ Treturn_is_pass Tmy_alpha::is_pass(int i, int j, Tmy_double delta, T_alpha_conta
 	tmp.alpha_j = alpha[j];
 	tmp.new_alpha_i = alpha[i];
 	tmp.new_alpha_j = alpha[j];
+	tmp.lb = alpha.lb();
+	tmp.ub = alpha.ub();
 
 	if (i == j)
 	{

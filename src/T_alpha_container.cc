@@ -85,12 +85,12 @@ bool T_alpha_container::is_sv(size_t idx)
 
 bool T_alpha_container::is_ub(size_t idx)
 {
-	return (abs(_alpha.at(idx) - _ub) < 1e-10);
+	return (_alpha.at(idx) == _ub);
 }
 
 bool T_alpha_container::is_lb(size_t idx)
 {
-	return (abs(_alpha.at(idx) - _lb) < 1e-10);
+	return (_alpha.at(idx) == _lb);
 }
 
 bool T_alpha_container::is_nol(size_t idx)

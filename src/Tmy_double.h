@@ -53,7 +53,7 @@ class Tmy_double
 
 private:
 	double _val;
-	double _batas = 1e-3;
+	double _batas = 1e-9;
 
 
 
@@ -232,7 +232,7 @@ public:
 		double tmp1 =  _val;
 		tmp = tmp1 - tmp;
 		//(abs(tmp) < _batas)
-		return (_val == rhs._val);
+		return (abs(tmp) < _batas);
 	}
 
 
@@ -242,7 +242,7 @@ public:
 		double tmp1 =  _val;
 		tmp = tmp1 - tmp;
 		//(abs(tmp) < _batas) _val == rhs
-		return (_val == rhs);
+		return (abs(tmp) < _batas);
 	}
 
 

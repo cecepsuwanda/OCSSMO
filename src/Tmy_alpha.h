@@ -11,11 +11,73 @@ using namespace std;
 
 struct Treturn_is_pass
 {
+public:
   bool is_pass;
   Tmy_double alpha_i;
   Tmy_double alpha_j;
   Tmy_double new_alpha_i;
   Tmy_double new_alpha_j;
+  Tmy_double lb;
+  Tmy_double ub;
+
+
+
+  bool operator ==(const Treturn_is_pass& rhs) const
+  {
+    return ((new_alpha_i == rhs.new_alpha_i) and (new_alpha_j == rhs.new_alpha_j));
+  }
+
+  bool operator !=(const Treturn_is_pass& rhs) const
+  {
+    return ((new_alpha_i != rhs.new_alpha_i) or (new_alpha_j != rhs.new_alpha_j));
+  }
+
+  Treturn_is_pass operator - (const Treturn_is_pass& rhs)
+  {
+    Treturn_is_pass tmp;
+    tmp.alpha_i = alpha_i - rhs.alpha_i;
+    tmp.alpha_j = alpha_j - rhs.alpha_j;
+    tmp.new_alpha_i = new_alpha_i - rhs.new_alpha_i;
+    tmp.new_alpha_j = new_alpha_j - rhs.new_alpha_j;
+    return tmp;
+  }
+
+  Treturn_is_pass& operator = (const Tmy_double &t)
+  {
+    Tmy_double tmp_i = this->new_alpha_i - t;
+    Tmy_double tmp_j = this->new_alpha_j + tmp_i;
+    tmp_i = t;
+
+    this->new_alpha_i = limit_alpha(tmp_i);
+    this->new_alpha_j = limit_alpha(tmp_j);
+
+    return *this;
+  }
+
+  Treturn_is_pass& operator = (const double t)
+  {
+    Tmy_double tmp_i = this->new_alpha_i - t;
+    Tmy_double tmp_j = this->new_alpha_j + tmp_i;
+    tmp_i = t;
+
+    this->new_alpha_i = limit_alpha(tmp_i);
+    this->new_alpha_j = limit_alpha(tmp_j);
+    return *this;
+  }
+
+private:
+  Tmy_double limit_alpha(Tmy_double alpha)
+  {
+    if (alpha > ub) {      
+       alpha = ub;
+    } else {
+      if (alpha < lb) {        
+        alpha = lb;
+      }
+    }
+    return alpha; 
+  }
+
 };
 
 class Tmy_alpha

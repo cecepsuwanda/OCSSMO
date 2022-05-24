@@ -22,15 +22,8 @@ int Tmy_svm::take_step(int idx_b, int idx_a)
    }
    else
    {
-      auto cek = [](Treturn_is_pass v1, Treturn_is_pass v2, Treturn_is_pass v)->bool
-      {
-         Tmy_double alpha_i = v1.new_alpha_i - v2.new_alpha_i;
-         Tmy_double alpha_j = v1.new_alpha_j - v2.new_alpha_j;
 
-         return (abs(alpha_i - v.new_alpha_i) < 1e-3) and (abs(alpha_j - v.new_alpha_j) < 1e-3);
-      };
-
-      auto tambah = [ = ](Treturn_is_pass & v1, Treturn_is_pass & v2, Treturn_is_pass v, bool v1_pass, bool v2_pass)->bool
+      auto tambah = [](Treturn_is_pass & v1, Treturn_is_pass & v2, Treturn_is_pass v)->bool
       {
          bool is_pass = false;
          Treturn_is_pass coba_v1;
@@ -38,93 +31,46 @@ int Tmy_svm::take_step(int idx_b, int idx_a)
 
          if (v.new_alpha_i > 0.0)
          {
-            if (v1_pass and v2_pass) {
+            if (v1.is_pass and v2.is_pass) {
                coba_v2 = v2;
-               coba_v2.new_alpha_j = coba_v2.new_alpha_j + coba_v2.new_alpha_i;
-               coba_v2.new_alpha_i = 0.0;
-
+               coba_v2 = 0.0;
                coba_v1 = v1;
-               coba_v1.new_alpha_i =  v.new_alpha_i;
-
-               Tmy_double delta = v1.new_alpha_i - v.new_alpha_i;
-               coba_v1.new_alpha_j = abs(coba_v1.new_alpha_j + delta);
-
+               coba_v1 = v.new_alpha_i;
             } else {
-               if (v2_pass) {
+               if (v2.is_pass) {
                   coba_v1 = v1;
-                  Tmy_double delta_i = coba_v1.new_alpha_i - v.new_alpha_i;
-                  Tmy_double delta_j = coba_v1.new_alpha_j - v.new_alpha_j;
-
-                  Tmy_double sum_delta = abs(delta_i) + abs(delta_j);
-                  Tmy_double sum = abs(v2.new_alpha_i) + abs(v2.new_alpha_j);
-
                   coba_v2 = v2;
-                  if (abs(sum_delta - sum) < 1e-3) {
-                     coba_v2.new_alpha_i = abs(delta_i);
-                     coba_v2.new_alpha_j = abs(delta_j);
-                  }
+                  Tmy_double delta_i = v1.new_alpha_i - v.new_alpha_i;
+                  coba_v2 = delta_i;
                } else {
-                  if (v1_pass) {
-                     coba_v2 = v2;
-                     Tmy_double delta_i = coba_v2.new_alpha_i + v.new_alpha_i;
-                     Tmy_double delta_j = coba_v2.new_alpha_j + v.new_alpha_j;
-
-                     Tmy_double sum_delta = abs(delta_i) + abs(delta_j);
-                     Tmy_double sum = abs(v1.new_alpha_i) + abs(v1.new_alpha_j);
-
+                  if (v1.is_pass) {
                      coba_v1 = v1;
-                     if (abs(sum_delta - sum) < 1e-3) {
-                        coba_v1.new_alpha_i = abs(delta_i);
-                        coba_v1.new_alpha_j = abs(delta_j);
-                     }
-
+                     coba_v2 = v2;
+                     Tmy_double delta_i = v2.new_alpha_i + v.new_alpha_i;
+                     coba_v1 = delta_i;
                   }
                }
             }
          } else{
             if (v.new_alpha_i < 0.0)
             {
-               if (v1_pass and v2_pass) {
+               if (v1.is_pass and v2.is_pass) {
                   coba_v1 = v1;
-                  coba_v1.new_alpha_j = coba_v1.new_alpha_j + coba_v1.new_alpha_i;
-                  coba_v1.new_alpha_i = 0.0;
-
+                  coba_v1 = 0.0;
                   coba_v2 = v2;
-                  coba_v2.new_alpha_i = -1.0 * v.new_alpha_i;
-
-                  Tmy_double delta = v2.new_alpha_i - (-1.0 * v.new_alpha_i);
-                  coba_v2.new_alpha_j = abs(coba_v2.new_alpha_j + delta);
-
+                  coba_v2 = -1.0 * v.new_alpha_i;
                } else {
-                  if (v1_pass) {
-                     coba_v2 = v2;
-                     Tmy_double delta_i = coba_v2.new_alpha_i + v.new_alpha_i;
-                     Tmy_double delta_j = coba_v2.new_alpha_j + v.new_alpha_j;
-
-                     Tmy_double sum_delta = abs(delta_i) + abs(delta_j);
-                     Tmy_double sum = abs(v1.new_alpha_i) + abs(v1.new_alpha_j);
-
+                  if (v1.is_pass) {
                      coba_v1 = v1;
-                     if (abs(sum_delta - sum) < 1e-3) {
-                        coba_v1.new_alpha_i = abs(delta_i);
-                        coba_v1.new_alpha_j = abs(delta_j);
-                     }
-
+                     coba_v2 = v2;
+                     Tmy_double delta_i = v2.new_alpha_i + v.new_alpha_i;
+                     coba_v1 = delta_i;
                   } else {
-                     if (v2_pass) {
+                     if (v2.is_pass) {
                         coba_v1 = v1;
-                        Tmy_double delta_i = coba_v1.new_alpha_i - v.new_alpha_i;
-                        Tmy_double delta_j = coba_v1.new_alpha_j - v.new_alpha_j;
-
-                        Tmy_double sum_delta = abs(delta_i) + abs(delta_j);
-                        Tmy_double sum = abs(v2.new_alpha_i) + abs(v2.new_alpha_j);
-
                         coba_v2 = v2;
-                        if (abs(sum_delta - sum) < 1e-3) {
-                           coba_v2.new_alpha_i = abs(delta_i);
-                           coba_v2.new_alpha_j = abs(delta_j);
-                        }
-
+                        Tmy_double delta_i = v1.new_alpha_i - v.new_alpha_i;
+                        coba_v2 = delta_i;
                      }
                   }
                }
@@ -132,7 +78,7 @@ int Tmy_svm::take_step(int idx_b, int idx_a)
          }
 
 
-         if (cek(coba_v1, coba_v2, v) == true)
+         if ( (coba_v1 - coba_v2) == v )
          {
             v1 = coba_v1;
             v2 = coba_v2;
@@ -146,9 +92,6 @@ int Tmy_svm::take_step(int idx_b, int idx_a)
 
          return is_pass;
       };
-
-
-
 
       cout << endl << idx_b << "," << idx_a << endl;
 
@@ -201,11 +144,10 @@ int Tmy_svm::take_step(int idx_b, int idx_a)
       }
       else
       {
-
-         if (cek(tmp_v1, tmp_v2, tmp) == false)
+         if ((tmp_v1 - tmp_v2) != tmp)
          {
             cout << "tak sama !!!" << endl;
-            if (tambah(tmp_v1, tmp_v2, tmp, tmp_v1.is_pass, tmp_v2.is_pass) == true)
+            if (tambah(tmp_v1, tmp_v2, tmp) == true)
             {
                cout << "solve 1 !!!" << endl;
             } else {
@@ -235,15 +177,17 @@ int Tmy_svm::take_step(int idx_b, int idx_a)
             _grad.mv_idx(idx_a, 1);
             _grad.mv_idx(idx_b, 1);
 
+            cout << tmp_v1.is_pass << " old [" << tmp_v1.alpha_i << "," << tmp_v1.alpha_j << "] new [" << tmp_v1.new_alpha_i << "," << tmp_v1.new_alpha_j << "] " << endl;
+            cout << tmp_v2.is_pass << " old [" << tmp_v2.alpha_i << "," << tmp_v2.alpha_j << "] new [" << tmp_v2.new_alpha_i << "," << tmp_v2.new_alpha_j << "] " << endl;
+            cout << tmp.is_pass << " old [" << tmp.alpha_i << "," << tmp.alpha_j << "] new [" << tmp.new_alpha_i << "," << tmp.new_alpha_j << "] " << endl;
+
             _rho = _my_G.update_rho(_my_kernel, _alpha, _alpha_v1, _alpha_v2);
             return 1;
          } else {
             return 0;
          }
 
-         cout << tmp_v1.is_pass << " old [" << tmp_v1.alpha_i << "," << tmp_v1.alpha_j << "] new [" << tmp_v1.new_alpha_i << "," << tmp_v1.new_alpha_j << "] " << endl;
-         cout << tmp_v2.is_pass << " old [" << tmp_v2.alpha_i << "," << tmp_v2.alpha_j << "] new [" << tmp_v2.new_alpha_i << "," << tmp_v2.new_alpha_j << "] " << endl;
-         cout << tmp.is_pass << " old [" << tmp.alpha_i << "," << tmp.alpha_j << "] new [" << tmp.new_alpha_i << "," << tmp.new_alpha_j << "] " << endl;
+
       }
    }
 }
