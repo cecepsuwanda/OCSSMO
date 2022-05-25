@@ -205,10 +205,36 @@ int Tmy_svm::examineExample(int idx_b)
 
    bool is_pass = true;
 
-   if (is_pass)
-   {
-      is_pass = ((dec < -1e-3) and ((_alpha[idx_b] < _alpha.ub()) or (_alpha[idx_b] > _alpha.lb()))) or ((dec > 1e-3) and ((_alpha[idx_b] < 0.0) or (_alpha[idx_b] > 0.0)) );
-   }
+   // if (is_pass)
+   // {
+   //    is_pass = ((dec < -1e-3) and ((_alpha[idx_b] < _alpha.ub()) or (_alpha[idx_b] > _alpha.lb()))) or ((dec > 1e-3) and ((_alpha[idx_b] < 0.0) or (_alpha[idx_b] > 0.0)) );
+   // }
+
+   // if (is_pass)
+   // {
+   //    is_pass = ((dec < -1e-3) and (((_alpha_v1[idx_b]<_alpha_v1.ub()) and (_alpha_v2[idx_b]>_alpha_v2.lb())) or ((_alpha_v1[idx_b]>_alpha_v1.lb()) and (_alpha_v2[idx_b]<_alpha_v2.ub())))) or ((dec > 1e-3) and ((_alpha_v1[idx_b]>_alpha_v1.lb()) or (_alpha_v2[idx_b]>_alpha_v2.lb())));
+   // }
+
+
+   // if ((_alpha_v1.is_nol(idx_b) and _alpha_v2.is_nol(idx_b)) and (dec >= 1e-3))
+   // {
+   //    is_pass = false;
+   // }
+   // else
+   // {
+      if (((_alpha_v1.is_sv(idx_b) and _alpha_v2.is_nol(idx_b)) or (_alpha_v1.is_nol(idx_b) and _alpha_v2.is_sv(idx_b))) and (abs(dec) < 1e-3))
+      {
+         is_pass = false;
+      }
+      else
+      {
+         if (((_alpha_v1.is_ub(idx_b) and _alpha_v2.is_nol(idx_b)) or (_alpha_v1.is_nol(idx_b) and _alpha_v2.is_ub(idx_b)))  and (dec <= -1e-3))
+         {
+            is_pass = false;
+         }
+      }
+   // }
+
 
    if (is_pass)
    {
@@ -340,7 +366,7 @@ Treturn_train Tmy_svm::train(Tdataframe & df)
          for (int idx_b = 0; idx_b < jml_data; idx_b++)
          {
             bool is_pass = true;
-            is_pass = !_alpha.is_ub(idx_b) and !_alpha.is_lb(idx_b);
+            is_pass = (!_alpha_v1.is_ub(idx_b) and _alpha_v2.is_nol(idx_b)) and (_alpha_v1.is_nol(idx_b) and !_alpha_v2.is_ub(idx_b));
             if (is_pass)
             {
                cout << " rho v1 " << _rho.rho_v1 << " rho v2 " << _rho.rho_v2;
