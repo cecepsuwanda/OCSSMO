@@ -1,6 +1,7 @@
 #include <stdarg.h>
 #include <string>
 #include <stdio.h>
+#include <float.h>
 #include <vector>
 #include <cmath>
 
@@ -92,7 +93,7 @@ static void cetak ( const char * format, ... )
   cetak_stdout(buffer);
 }
 
-static double bulat_nol(double val,double tolerance,int digit)
+static double bulat_nol(double val, double tolerance, int digit)
 {
   // const double multiplier = std::pow(10.0, digit);
   // double tmp = ceil(val * multiplier) / multiplier;
@@ -100,8 +101,23 @@ static double bulat_nol(double val,double tolerance,int digit)
   // if(abs(tmp)<tolerance)
   // {
   //     tmp=0;
-  // }  
+  // }
   return tmp;
+}
+
+static bool AlmostEqualRelative(double A, double B,
+                         float maxRelDiff = FLT_EPSILON)
+{
+  // Calculate the difference.
+  double diff = fabs(A - B);
+  A = fabs(A);
+  B = fabs(B);
+  // Find the largest
+  double largest = (B > A) ? B : A;
+
+  if (diff <= largest * maxRelDiff)
+    return true;
+  return false;
 }
 
 #endif

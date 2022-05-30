@@ -75,19 +75,19 @@ bool Tmy_G::is_kkt(int idx, Treturn_update_rho rho, T_alpha_container alpha, T_a
   Tmy_double F = grad.dec(idx, rho.rho_v1, rho.rho_v2);
   bool stat = false;
 
-  if ((alpha_v1.is_nol(idx) and alpha_v2.is_nol(idx)) and (F >= 1e-3))
+  if ((alpha_v1.is_nol(idx) and alpha_v2.is_nol(idx)) and (F > 1e-3))
   {
     stat = true;
   }
   else
   {
-    if (((alpha_v1.is_sv(idx) and alpha_v2.is_nol(idx))or(alpha_v1.is_nol(idx) and alpha_v2.is_sv(idx))) and (abs(F) < 1e-3))
+    if (((alpha_v1.is_sv(idx) and alpha_v2.is_nol(idx)) or (alpha_v1.is_nol(idx) and alpha_v2.is_sv(idx))) and (abs(F) < 1e-3))
     {
       stat = true;
     }
     else
     {
-      if (((alpha_v1.is_ub(idx) and alpha_v2.is_nol(idx)) or (alpha_v1.is_nol(idx) and alpha_v2.is_ub(idx)))  and (F <= -1e-3))
+      if (((alpha_v1.is_ub(idx) and alpha_v2.is_nol(idx)) or (alpha_v1.is_nol(idx) and alpha_v2.is_ub(idx))) and (F < -1e-3))
       {
         stat = true;
       }
@@ -102,12 +102,13 @@ int Tmy_G::cari_idx_a(int idx_b, Treturn_update_rho rho, T_alpha_container alpha
   auto cek_filter = [](int idx_b, int idx_a, Tmy_double Fa, Tmy_double Fb, T_alpha_container alpha, T_alpha_container alpha_v1, T_alpha_container alpha_v2) -> bool
   {
     bool is_pass = true;
-
+    // is_pass = ((Fa < -1e-3) and ((alpha_v1[idx_a] < alpha_v1.ub()) or (alpha_v2[idx_a] < alpha_v2.ub()))) or ((Fa > 1e-3) and ((alpha_v1[idx_a] > 0.0) or (alpha_v2[idx_a] > 0.0)));
+    //     is_pass = ((Fa < -1e-3) and (alpha_v1[idx_b] < alpha_v1.ub())) or ((Fa > 1e-3) and (alpha_v1[idx_b] > 0.0));
     if (is_pass)
     {
-      is_pass = (alpha_v1.is_sv(idx_a) and alpha_v2.is_nol(idx_a)) or (alpha_v1.is_nol(idx_a) and alpha_v2.is_sv(idx_a));
+      // is_pass = alpha_v1.is_sv(idx_b) or alpha_v2.is_sv(idx_b);
+      //   is_pass = alpha_v1.is_sv(idx_b);
     }
-
     return is_pass;
   };
 
@@ -121,10 +122,9 @@ int Tmy_G::cari_idx_lain(int idx_b, Treturn_update_rho rho, Tmy_kernel *kernel, 
 
   int idx_a = -1;
 
-  auto cek1 = [](int idx_b, int idx_a, Tmy_double Fa, Tmy_double Fb, T_alpha_container alpha, T_alpha_container alpha_v1, T_alpha_container alpha_v2, Tmy_kernel * kernel, Tmy_alpha * my_alpha) -> bool
+  auto cek1 = [](int idx_b, int idx_a, Tmy_double Fa, Tmy_double Fb, T_alpha_container alpha, T_alpha_container alpha_v1, T_alpha_container alpha_v2, Tmy_kernel *kernel, Tmy_alpha *my_alpha) -> bool
   {
-
-    auto sum_alpha_diff_Q = [](T_alpha_container alpha, vector<Tmy_double> diff_Q)->Tmy_double
+    auto sum_alpha_diff_Q = [](T_alpha_container alpha, vector<Tmy_double> diff_Q) -> Tmy_double
     {
       Tmy_double hasil = 0.0;
 
@@ -136,67 +136,92 @@ int Tmy_G::cari_idx_lain(int idx_b, Treturn_update_rho rho, Tmy_kernel *kernel, 
       return hasil;
     };
 
-    auto tambah = [](Treturn_is_pass & v1, Treturn_is_pass & v2, Treturn_is_pass v)->bool
+    auto tambah = [](Treturn_is_pass &v1, Treturn_is_pass &v2, Treturn_is_pass v) -> bool
     {
       bool is_pass = false;
       Treturn_is_pass coba_v1;
       Treturn_is_pass coba_v2;
 
-      if (v.new_alpha_i > 0.0)
+      coba_v1 = v1;
+      coba_v2 = v2;
+
+      if (((v1.new_alpha_i != 0.0) and (v2.new_alpha_i == 0.0)) and ((v1.new_alpha_j == 0.0) and (v2.new_alpha_j != 0.0)))
       {
-        if (v1.is_pass and v2.is_pass) {
-          coba_v2 = v2;
-          coba_v2 = 0.0;
-          coba_v1 = v1;
-          coba_v1 = v.new_alpha_i;
-        } else {
-          if (v2.is_pass) {
-            coba_v1 = v1;
-            coba_v2 = v2;
-            Tmy_double delta_i = v1.new_alpha_i - v.new_alpha_i;
-            coba_v2 = delta_i;
-          } else {
-            if (v1.is_pass) {
-              coba_v1 = v1;
-              coba_v2 = v2;
-              Tmy_double delta_i = v2.new_alpha_i + v.new_alpha_i;
-              coba_v1 = delta_i;
-            }
-          }
-        }
-      } else{
-        if (v.new_alpha_i < 0.0)
+        if ((coba_v1 - coba_v2) != v)
         {
-          if (v1.is_pass and v2.is_pass) {
+          coba_v1.set(0, 0.0);
+          coba_v2.set(1, 0.0);
+        }
+      }
+
+      if ((coba_v1 - coba_v2) != v)
+      {
+        coba_v1 = v1;
+        coba_v2 = v2;
+        if (((v1.new_alpha_i == 0.0) and (v2.new_alpha_i != 0.0)) and ((v1.new_alpha_j != 0.0) and (v2.new_alpha_j == 0.0)))
+        {
+          coba_v1.set(1, 0.0);
+          coba_v2.set(0, 0.0);
+        }
+      }
+
+      if ((coba_v1 - coba_v2) != v)
+      {
+        coba_v1 = v1;
+        coba_v2 = v2;
+        if (((v1.new_alpha_i >= 0.0) and (v2.new_alpha_i == 0.0)) and ((v1.new_alpha_j >= 0.0) and (v2.new_alpha_j == 0.0)))
+        {
+          coba_v1.set(0, abs(v.new_alpha_i));
+          if ((coba_v1 - coba_v2) != v)
+          {
             coba_v1 = v1;
-            coba_v1 = 0.0;
-            coba_v2 = v2;
-            coba_v2 = -1.0 * v.new_alpha_i;
-          } else {
-            if (v1.is_pass) {
-              coba_v1 = v1;
-              coba_v2 = v2;
-              Tmy_double delta_i = v2.new_alpha_i + v.new_alpha_i;
-              coba_v1 = delta_i;
-            } else {
-              if (v2.is_pass) {
-                coba_v1 = v1;
-                coba_v2 = v2;
-                Tmy_double delta_i = v1.new_alpha_i - v.new_alpha_i;
-                coba_v2 = delta_i;
-              }
-            }
+            coba_v1.set(1, abs(v.new_alpha_j));
           }
         }
       }
 
+      if ((coba_v1 - coba_v2) != v)
+      {
+        coba_v1 = v1;
+        coba_v2 = v2;
+        if (((v1.new_alpha_i == 0.0) and (v2.new_alpha_i >= 0.0)) and ((v1.new_alpha_j == 0.0) and (v2.new_alpha_j >= 0.0)))
+        {
+          coba_v2.set(0, abs(v.new_alpha_i));
+          if ((coba_v1 - coba_v2) != v)
+          {
+            coba_v2 = v2;
+            coba_v2.set(1, abs(v.new_alpha_j));
+          }
+        }
+      }
 
-      if ( (coba_v1 - coba_v2) == v )
+      if ((coba_v1 - coba_v2) != v)
+      {
+        coba_v1 = v1;
+        coba_v2 = v2;
+        if (((v1.new_alpha_i != 0.0) and (v2.new_alpha_i == 0.0)) and ((v1.new_alpha_j == 0.0) and (v2.new_alpha_j != 0.0)))
+        {
+        }
+      }
+
+      if ((coba_v1 - coba_v2) == v)
       {
         v1 = coba_v1;
         v2 = coba_v2;
         is_pass = true;
-      } else {
+      }
+      else
+      {
+        cout << endl
+             << "---------------------------------------------------------------------------------------------------------------------------" << endl;
+        cout << "[" << v1.lb << "," << v1.ub << "]" << endl;
+        cout << "[" << v2.lb << "," << v2.ub << "]" << endl;
+        cout << "[" << v.lb << "," << v.ub << "]" << endl;
+        cout << v1.is_pass << " old [" << v1.alpha_i << "," << v1.alpha_j << "] new [" << v1.new_alpha_i << "," << v1.new_alpha_j << "] " << endl;
+        cout << v2.is_pass << " old [" << v2.alpha_i << "," << v2.alpha_j << "] new [" << v2.new_alpha_i << "," << v2.new_alpha_j << "] " << endl;
+        cout << v.is_pass << " old [" << v.alpha_i << "," << v.alpha_j << "] new [" << v.new_alpha_i << "," << v.new_alpha_j << "] " << endl;
+        cout << "---------------------------------------------------------------------------------------------------------------------------" << endl;
+
         v1.new_alpha_i = v1.alpha_i;
         v1.new_alpha_j = v1.alpha_j;
         v2.new_alpha_i = v2.alpha_i;
@@ -206,42 +231,55 @@ int Tmy_G::cari_idx_lain(int idx_b, Treturn_update_rho rho, Tmy_kernel *kernel, 
       return is_pass;
     };
 
-    bool is_pass = false;
+    bool is_pass = true;
 
-    vector<Tmy_double> hsl_eta = kernel->hit_eta(idx_b, idx_a);
-    vector<Tmy_double> hsl_diff = kernel->get_diff_Q(idx_b, idx_a);
-
-    Tmy_double hsl_sum = 0.0;
-    Tmy_double delta = 0.0;
-
-    hsl_sum = sum_alpha_diff_Q(alpha_v1, hsl_diff);
-    delta = hsl_eta[0] * hsl_sum;
-    Treturn_is_pass tmp_v1 = my_alpha->is_pass(idx_b, idx_a, delta, alpha_v1);
-
-    hsl_sum = sum_alpha_diff_Q(alpha_v2, hsl_diff);
-    delta = hsl_eta[0] * hsl_sum;
-    Treturn_is_pass tmp_v2 = my_alpha->is_pass(idx_b, idx_a, delta, alpha_v2);
-
-
-    hsl_sum = sum_alpha_diff_Q(alpha, hsl_diff);
-    delta = hsl_eta[0] * hsl_sum;
-    Treturn_is_pass tmp = my_alpha->is_pass(idx_b, idx_a, delta, alpha);
-
-    is_pass = tmp.is_pass and (tmp_v1.is_pass or tmp_v2.is_pass);
-
+    // is_pass = ((Fa < -1e-3) and ((alpha_v1[idx_a] < alpha_v1.ub()) or (alpha_v2[idx_a] < alpha_v2.ub()))) or ((Fa > 1e-3) and ((alpha_v1[idx_a] > 0.0) or (alpha_v2[idx_a] > 0.0)));
+    //      is_pass = ((Fa < -1e-3) and (alpha_v1[idx_b] < alpha_v1.ub())) or ((Fa > 1e-3) and (alpha_v1[idx_b] > 0.0));
     if (is_pass)
     {
-      if ((tmp_v1 - tmp_v2) != tmp)
+
+      is_pass = alpha_v1.is_sv(idx_b) or alpha_v2.is_sv(idx_b);
+      // is_pass = alpha_v1.is_sv(idx_b);
+
+      if (is_pass)
       {
-        is_pass = tambah(tmp_v1, tmp_v2, tmp);
+        Treturn_is_pass tmp_v1;
+        tmp_v1.is_pass = true;
+        tmp_v1.alpha_i = alpha_v1[idx_b];
+        tmp_v1.alpha_j = alpha_v1[idx_a];
+        tmp_v1.new_alpha_i = alpha_v1[idx_b];
+        tmp_v1.new_alpha_j = alpha_v1[idx_a];
+        tmp_v1.lb = alpha_v1.lb();
+        tmp_v1.ub = alpha_v1.ub();
+
+        Treturn_is_pass tmp_v2;
+        tmp_v2.is_pass = true;
+        tmp_v2.alpha_i = alpha_v2[idx_b];
+        tmp_v2.alpha_j = alpha_v2[idx_a];
+        tmp_v2.new_alpha_i = alpha_v2[idx_b];
+        tmp_v2.new_alpha_j = alpha_v2[idx_a];
+        tmp_v2.lb = alpha_v2.lb();
+        tmp_v2.ub = alpha_v2.ub();
+
+        vector<Tmy_double> hsl_eta = kernel->hit_eta(idx_b, idx_a);
+        vector<Tmy_double> hsl_diff = kernel->get_diff_Q(idx_b, idx_a);
+
+        Tmy_double hsl_sum = sum_alpha_diff_Q(alpha, hsl_diff);
+        Tmy_double delta = hsl_eta[0] * hsl_sum;
+        cout << "delta " << delta << endl;
+        Treturn_is_pass tmp = my_alpha->is_pass(idx_b, idx_a, delta, alpha);
+
+        is_pass = tmp.is_pass; // and (tmp_v1.is_pass or tmp_v2.is_pass)
+
+        if (is_pass)
+        {
+          if ((tmp_v1 - tmp_v2) != tmp)
+          {
+            is_pass = tambah(tmp_v1, tmp_v2, tmp);
+          }
+        }
       }
     }
-
-    if (is_pass) {
-      is_pass = (alpha_v1.is_sv(idx_a) and alpha_v2.is_nol(idx_a)) or (alpha_v1.is_nol(idx_a) and alpha_v2.is_sv(idx_a));
-    }
-
-
 
     return is_pass;
   };
@@ -253,10 +291,9 @@ int Tmy_G::cari_idx_lain(int idx_b, Treturn_update_rho rho, Tmy_kernel *kernel, 
     idx_a = grad.cari(idx_b, rho.rho_v1, rho.rho_v2, alpha, alpha_v1, alpha_v2, kernel, my_alpha, cek1);
   }
 
-  auto cek = [](int idx_b, int idx_a, Tmy_double Fa, Tmy_double Fb, T_alpha_container alpha, T_alpha_container alpha_v1, T_alpha_container alpha_v2, Tmy_kernel * kernel, Tmy_alpha * my_alpha) -> bool
+  auto cek = [](int idx_b, int idx_a, Tmy_double Fa, Tmy_double Fb, T_alpha_container alpha, T_alpha_container alpha_v1, T_alpha_container alpha_v2, Tmy_kernel *kernel, Tmy_alpha *my_alpha) -> bool
   {
-
-    auto sum_alpha_diff_Q = [](T_alpha_container alpha, vector<Tmy_double> diff_Q)->Tmy_double
+    auto sum_alpha_diff_Q = [](T_alpha_container alpha, vector<Tmy_double> diff_Q) -> Tmy_double
     {
       Tmy_double hasil = 0.0;
 
@@ -268,67 +305,92 @@ int Tmy_G::cari_idx_lain(int idx_b, Treturn_update_rho rho, Tmy_kernel *kernel, 
       return hasil;
     };
 
-    auto tambah = [](Treturn_is_pass & v1, Treturn_is_pass & v2, Treturn_is_pass v)->bool
+    auto tambah = [](Treturn_is_pass &v1, Treturn_is_pass &v2, Treturn_is_pass v) -> bool
     {
       bool is_pass = false;
       Treturn_is_pass coba_v1;
       Treturn_is_pass coba_v2;
 
-      if (v.new_alpha_i > 0.0)
+      coba_v1 = v1;
+      coba_v2 = v2;
+
+      if (((v1.new_alpha_i != 0.0) and (v2.new_alpha_i == 0.0)) and ((v1.new_alpha_j == 0.0) and (v2.new_alpha_j != 0.0)))
       {
-        if (v1.is_pass and v2.is_pass) {
-          coba_v2 = v2;
-          coba_v2 = 0.0;
-          coba_v1 = v1;
-          coba_v1 = v.new_alpha_i;
-        } else {
-          if (v2.is_pass) {
-            coba_v1 = v1;
-            coba_v2 = v2;
-            Tmy_double delta_i = v1.new_alpha_i - v.new_alpha_i;
-            coba_v2 = delta_i;
-          } else {
-            if (v1.is_pass) {
-              coba_v1 = v1;
-              coba_v2 = v2;
-              Tmy_double delta_i = v2.new_alpha_i + v.new_alpha_i;
-              coba_v1 = delta_i;
-            }
-          }
-        }
-      } else{
-        if (v.new_alpha_i < 0.0)
+        if ((coba_v1 - coba_v2) != v)
         {
-          if (v1.is_pass and v2.is_pass) {
+          coba_v1.set(0, 0.0);
+          coba_v2.set(1, 0.0);
+        }
+      }
+
+      if ((coba_v1 - coba_v2) != v)
+      {
+        coba_v1 = v1;
+        coba_v2 = v2;
+        if (((v1.new_alpha_i == 0.0) and (v2.new_alpha_i != 0.0)) and ((v1.new_alpha_j != 0.0) and (v2.new_alpha_j == 0.0)))
+        {
+          coba_v1.set(1, 0.0);
+          coba_v2.set(0, 0.0);
+        }
+      }
+
+      if ((coba_v1 - coba_v2) != v)
+      {
+        coba_v1 = v1;
+        coba_v2 = v2;
+        if (((v1.new_alpha_i >= 0.0) and (v2.new_alpha_i == 0.0)) and ((v1.new_alpha_j >= 0.0) and (v2.new_alpha_j == 0.0)))
+        {
+          coba_v1.set(0, abs(v.new_alpha_i));
+          if ((coba_v1 - coba_v2) != v)
+          {
             coba_v1 = v1;
-            coba_v1 = 0.0;
-            coba_v2 = v2;
-            coba_v2 = -1.0 * v.new_alpha_i;
-          } else {
-            if (v1.is_pass) {
-              coba_v1 = v1;
-              coba_v2 = v2;
-              Tmy_double delta_i = v2.new_alpha_i + v.new_alpha_i;
-              coba_v1 = delta_i;
-            } else {
-              if (v2.is_pass) {
-                coba_v1 = v1;
-                coba_v2 = v2;
-                Tmy_double delta_i = v1.new_alpha_i - v.new_alpha_i;
-                coba_v2 = delta_i;
-              }
-            }
+            coba_v1.set(1, abs(v.new_alpha_j));
           }
         }
       }
 
+      if ((coba_v1 - coba_v2) != v)
+      {
+        coba_v1 = v1;
+        coba_v2 = v2;
+        if (((v1.new_alpha_i == 0.0) and (v2.new_alpha_i >= 0.0)) and ((v1.new_alpha_j == 0.0) and (v2.new_alpha_j >= 0.0)))
+        {
+          coba_v2.set(0, abs(v.new_alpha_i));
+          if ((coba_v1 - coba_v2) != v)
+          {
+            coba_v2 = v2;
+            coba_v2.set(1, abs(v.new_alpha_j));
+          }
+        }
+      }
 
-      if ( (coba_v1 - coba_v2) == v )
+      if ((coba_v1 - coba_v2) != v)
+      {
+        coba_v1 = v1;
+        coba_v2 = v2;
+        if (((v1.new_alpha_i >= 0.0) and (v2.new_alpha_i >= 0.0)) and ((v1.new_alpha_j >= 0.0) and (v2.new_alpha_j >= 0.0)))
+        {
+        }
+      }
+
+      if ((coba_v1 - coba_v2) == v)
       {
         v1 = coba_v1;
         v2 = coba_v2;
         is_pass = true;
-      } else {
+      }
+      else
+      {
+        cout << endl
+             << "---------------------------------------------------------------------------------------------------------------------------" << endl;
+        cout << "[" << v1.lb << "," << v1.ub << "]" << endl;
+        cout << "[" << v2.lb << "," << v2.ub << "]" << endl;
+        cout << "[" << v.lb << "," << v.ub << "]" << endl;
+        cout << v1.is_pass << " old [" << v1.alpha_i << "," << v1.alpha_j << "] new [" << v1.new_alpha_i << "," << v1.new_alpha_j << "] " << endl;
+        cout << v2.is_pass << " old [" << v2.alpha_i << "," << v2.alpha_j << "] new [" << v2.new_alpha_i << "," << v2.new_alpha_j << "] " << endl;
+        cout << v.is_pass << " old [" << v.alpha_i << "," << v.alpha_j << "] new [" << v.new_alpha_i << "," << v.new_alpha_j << "] " << endl;
+        cout << "---------------------------------------------------------------------------------------------------------------------------" << endl;
+
         v1.new_alpha_i = v1.alpha_i;
         v1.new_alpha_j = v1.alpha_j;
         v2.new_alpha_i = v2.alpha_i;
@@ -338,36 +400,54 @@ int Tmy_G::cari_idx_lain(int idx_b, Treturn_update_rho rho, Tmy_kernel *kernel, 
       return is_pass;
     };
 
-    bool is_pass = false;
+    bool is_pass = true;
 
-    vector<Tmy_double> hsl_eta = kernel->hit_eta(idx_b, idx_a);
-    vector<Tmy_double> hsl_diff = kernel->get_diff_Q(idx_b, idx_a);
+    // is_pass = ((Fa < -1e-3) and ((alpha_v1[idx_a] < alpha_v1.ub()) or (alpha_v2[idx_a] < alpha_v2.ub()))) or ((Fa > 1e-3) and ((alpha_v1[idx_a] > 0.0) or (alpha_v2[idx_a] > 0.0)));
+    //         is_pass = ((Fa < -1e-3) and (alpha_v1[idx_b] < alpha_v1.ub())) or ((Fa > 1e-3) and (alpha_v1[idx_b] > 0.0));
 
-    Tmy_double hsl_sum = 0.0;
-    Tmy_double delta = 0.0;
-
-    hsl_sum = sum_alpha_diff_Q(alpha_v1, hsl_diff);
-    delta = hsl_eta[0] * hsl_sum;
-    Treturn_is_pass tmp_v1 = my_alpha->is_pass(idx_b, idx_a, delta, alpha_v1);
-
-    hsl_sum = sum_alpha_diff_Q(alpha_v2, hsl_diff);
-    delta = hsl_eta[0] * hsl_sum;
-    Treturn_is_pass tmp_v2 = my_alpha->is_pass(idx_b, idx_a, delta, alpha_v2);
-
-    hsl_sum = sum_alpha_diff_Q(alpha, hsl_diff);
-    delta = hsl_eta[0] * hsl_sum;
-    Treturn_is_pass tmp = my_alpha->is_pass(idx_b, idx_a, delta, alpha);
-
-    is_pass = tmp.is_pass and (tmp_v1.is_pass or tmp_v2.is_pass);
-
+    if (alpha.is_nol(idx_b))
+    {
+      is_pass = !alpha.is_nol(idx_a);
+    }
     if (is_pass)
     {
-      if ((tmp_v1 - tmp_v2) != tmp)
+
+      Treturn_is_pass tmp_v1;
+      tmp_v1.is_pass = true;
+      tmp_v1.alpha_i = alpha_v1[idx_b];
+      tmp_v1.alpha_j = alpha_v1[idx_a];
+      tmp_v1.new_alpha_i = alpha_v1[idx_b];
+      tmp_v1.new_alpha_j = alpha_v1[idx_a];
+      tmp_v1.lb = alpha_v1.lb();
+      tmp_v1.ub = alpha_v1.ub();
+
+      Treturn_is_pass tmp_v2;
+      tmp_v2.is_pass = true;
+      tmp_v2.alpha_i = alpha_v2[idx_b];
+      tmp_v2.alpha_j = alpha_v2[idx_a];
+      tmp_v2.new_alpha_i = alpha_v2[idx_b];
+      tmp_v2.new_alpha_j = alpha_v2[idx_a];
+      tmp_v2.lb = alpha_v2.lb();
+      tmp_v2.ub = alpha_v2.ub();
+
+      vector<Tmy_double> hsl_eta = kernel->hit_eta(idx_b, idx_a);
+      vector<Tmy_double> hsl_diff = kernel->get_diff_Q(idx_b, idx_a);
+
+      Tmy_double hsl_sum = sum_alpha_diff_Q(alpha, hsl_diff);
+      Tmy_double delta = hsl_eta[0] * hsl_sum;
+      cout << "delta " << delta << endl;
+      Treturn_is_pass tmp = my_alpha->is_pass(idx_b, idx_a, delta, alpha);
+
+      is_pass = tmp.is_pass; // and (tmp_v1.is_pass or tmp_v2.is_pass)
+
+      if (is_pass)
       {
-        is_pass = tambah(tmp_v1, tmp_v2, tmp);
+        if ((tmp_v1 - tmp_v2) != tmp)
+        {
+          is_pass = tambah(tmp_v1, tmp_v2, tmp);
+        }
       }
     }
-
 
     return is_pass;
   };
@@ -385,22 +465,32 @@ int Tmy_G::cari_idx_lain(int idx_b, Treturn_update_rho rho, Tmy_kernel *kernel, 
   return idx_a;
 }
 
-bool Tmy_G::cari_idx(int& idx_b, int& idx_a, Treturn_update_rho rho, T_alpha_container alpha, T_alpha_container alpha_v1, T_alpha_container alpha_v2, T_grad_container grad, Tmy_kernel *kernel)
+bool Tmy_G::cari_idx(int &idx_b, int &idx_a, Treturn_update_rho rho, T_alpha_container alpha, T_alpha_container alpha_v1, T_alpha_container alpha_v2, T_grad_container grad, Tmy_kernel *kernel)
 {
   auto cek_filter = [](int idx_b, int idx_a, Tmy_double Fa, Tmy_double Fb, T_alpha_container alpha, T_alpha_container alpha_v1, T_alpha_container alpha_v2) -> bool
   {
     bool is_pass = true;
-    //is_pass = !(alpha_v1[idx_a] >= alpha_v1.ub()) or !(alpha_v2[idx_a] <= alpha_v2.lb());
+    // is_pass = ((Fa < -1e-3) and ((alpha_v1[idx_a] < alpha_v1.ub()) or (alpha_v2[idx_a] < alpha_v2.ub()))) or ((Fa > 1e-3) and ((alpha_v1[idx_a] > 0.0) or (alpha_v2[idx_a] > 0.0)));
     return is_pass;
   };
 
   auto cek_filter1 = [](int idx_b, int idx_a, Tmy_double Fa, Tmy_double Fb, T_alpha_container alpha, T_alpha_container alpha_v1, T_alpha_container alpha_v2) -> bool
   {
     bool is_pass = true;
-    //is_pass = !(alpha_v1[idx_a] <= alpha_v1.lb()) and !(alpha_v2[idx_a] >= alpha_v2.ub());
-    //if (is_pass) {
-    //  is_pass = alpha_v1.is_sv(idx_a) or alpha_v2.is_sv(idx_a);
-    //}
+    // is_pass = ((Fa < -1e-3) and ((alpha_v1[idx_a] < alpha_v1.ub()) or (alpha_v2[idx_a] < alpha_v2.ub()))) or ((Fa > 1e-3) and ((alpha_v1[idx_a] > 0.0) or (alpha_v2[idx_a] > 0.0)));
+    if (is_pass)
+    {
+      if (alpha.is_nol(idx_b))
+      {
+        is_pass = !alpha.is_nol(idx_a);
+      }
+    }
+
+    //   if (is_pass)
+    //   {
+    //   is_pass = alpha_v1.is_sv(idx_b) or alpha_v2.is_sv(idx_b);
+    //     is_pass = alpha_v1.is_sv(idx_b);
+    //   }
     return is_pass;
   };
 
@@ -451,5 +541,4 @@ void Tmy_G::update_G(int idx_b, int idx_a, Treturn_is_pass tmp, Tmy_kernel *kern
   {
     grad[i] = grad[i] + ((data_b[i] * delta_1) + (data_a[i] * delta_2));
   }
-
 }

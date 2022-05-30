@@ -80,7 +80,7 @@ int T_alpha_container::n_sv()
 
 bool T_alpha_container::is_sv(size_t idx)
 {
-	return (((_lb < _alpha.at(idx)) and (_alpha.at(idx) < _ub)) and (_alpha.at(idx)!=0.0));
+	return (((_lb < _alpha.at(idx)) and (_alpha.at(idx) < _ub)) and (abs(_alpha.at(idx)) > 1e-3));
 }
 
 bool T_alpha_container::is_ub(size_t idx)
@@ -95,7 +95,7 @@ bool T_alpha_container::is_lb(size_t idx)
 
 bool T_alpha_container::is_nol(size_t idx)
 {
-	return (_alpha.at(idx) == 0.0);
+	return (abs(_alpha.at(idx)) < 1e-3);
 }
 
 Tmy_double T_alpha_container::ub()

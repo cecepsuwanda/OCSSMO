@@ -20,19 +20,17 @@ public:
   Tmy_double lb;
   Tmy_double ub;
 
-
-
-  bool operator ==(const Treturn_is_pass& rhs) const
+  bool operator==(const Treturn_is_pass &rhs) const
   {
     return ((new_alpha_i == rhs.new_alpha_i) and (new_alpha_j == rhs.new_alpha_j));
   }
 
-  bool operator !=(const Treturn_is_pass& rhs) const
+  bool operator!=(const Treturn_is_pass &rhs) const
   {
     return ((new_alpha_i != rhs.new_alpha_i) or (new_alpha_j != rhs.new_alpha_j));
   }
 
-  Treturn_is_pass operator - (const Treturn_is_pass& rhs)
+  Treturn_is_pass operator-(const Treturn_is_pass &rhs)
   {
     Treturn_is_pass tmp;
     tmp.alpha_i = alpha_i - rhs.alpha_i;
@@ -42,42 +40,51 @@ public:
     return tmp;
   }
 
-  Treturn_is_pass& operator = (const Tmy_double &t)
+  Treturn_is_pass set(int flag, Tmy_double val)
   {
-    Tmy_double tmp_i = this->new_alpha_i - t;
-    Tmy_double tmp_j = this->new_alpha_j + tmp_i;
-    tmp_i = t;
+    // if (is_pass) {
+    if (flag == 0)
+    {
+      Tmy_double tmp_i = this->new_alpha_i - val;
+      Tmy_double tmp_j = this->new_alpha_j + tmp_i;
+      tmp_i = val;
 
-    this->new_alpha_i = limit_alpha(tmp_i);
-    this->new_alpha_j = limit_alpha(tmp_j);
+      this->new_alpha_i = limit_alpha(tmp_i);
+      this->new_alpha_j = limit_alpha(tmp_j);
+    }
+    else
+    {
+      if (flag == 1)
+      {
+        Tmy_double tmp_j = this->new_alpha_j - val;
+        Tmy_double tmp_i = this->new_alpha_i + tmp_j;
+        tmp_j = val;
 
-    return *this;
-  }
+        this->new_alpha_i = limit_alpha(tmp_i);
+        this->new_alpha_j = limit_alpha(tmp_j);
+      }
+    }
+    //}
 
-  Treturn_is_pass& operator = (const double t)
-  {
-    Tmy_double tmp_i = this->new_alpha_i - t;
-    Tmy_double tmp_j = this->new_alpha_j + tmp_i;
-    tmp_i = t;
-
-    this->new_alpha_i = limit_alpha(tmp_i);
-    this->new_alpha_j = limit_alpha(tmp_j);
     return *this;
   }
 
 private:
   Tmy_double limit_alpha(Tmy_double alpha)
   {
-    if (alpha > ub) {      
-       alpha = ub;
-    } else {
-      if (alpha < lb) {        
+    if (alpha > ub)
+    {
+      alpha = ub;
+    }
+    else
+    {
+      if (alpha < lb)
+      {
         alpha = lb;
       }
     }
-    return alpha; 
+    return alpha;
   }
-
 };
 
 class Tmy_alpha
@@ -92,10 +99,8 @@ private:
 public:
   Tmy_alpha(Tconfig *v_config);
   ~Tmy_alpha();
-  void init(int jml_data, T_alpha_container& alpha, T_alpha_container& alpha_v1, T_alpha_container& alpha_v2);
+  void init(int jml_data, T_alpha_container &alpha, T_alpha_container &alpha_v1, T_alpha_container &alpha_v2);
   Treturn_is_pass is_pass(int i, int j, Tmy_double delta, T_alpha_container alpha);
-
 };
-
 
 #endif

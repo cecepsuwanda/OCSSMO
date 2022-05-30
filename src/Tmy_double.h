@@ -48,12 +48,12 @@ class Tmy_double
 
 	friend Tmy_double abs(const Tmy_double& rhs)
 	{
-       return abs(rhs._val); 
+		return abs(rhs._val);
 	}
 
 private:
 	double _val;
-	double _batas = 1e-9;
+	double _batas = 1e-3;
 
 
 
@@ -139,63 +139,70 @@ public:
 	{
 		double tmp  =  rhs._val;
 		double tmp1 =  _val;
-		tmp = tmp1 - tmp;
+		bool stat = AlmostEqualRelative(tmp, tmp1);
+		//tmp = tmp1 - tmp;
 		//(((tmp<0.0) or (tmp>0.0)) and (abs(tmp) > _batas))
-		return (_val != rhs._val);
+		return (!stat);
 	}
 
 	bool operator !=(const double& rhs) const
 	{
 		double tmp  =  rhs;
 		double tmp1 =  _val;
-		tmp = tmp1 - tmp;
+		bool stat = AlmostEqualRelative(tmp, tmp1);
+		//tmp = tmp1 - tmp;
 		//(((tmp < 0.0) or (tmp > 0.0)) and (abs(tmp) > _batas) )
-		return (_val != rhs);
+		return (!stat);
 	}
 
 	bool operator <(const Tmy_double& rhs) const
 	{
 		double tmp  =  rhs._val;
 		double tmp1 =  _val;
-		tmp = tmp1 - tmp;
+		bool stat = AlmostEqualRelative(tmp, tmp1);
+		//tmp = tmp1 - tmp;
 		//(tmp < 0.0)
-		return (_val < rhs._val);
+		return (!stat and tmp1 < tmp);
 	}
 
 	bool operator <(const double& rhs) const
 	{
 		double tmp  =  rhs;
 		double tmp1 =  _val;
-		tmp = tmp1 - tmp;
+		bool stat = AlmostEqualRelative(tmp, tmp1);
+		//tmp = tmp1 - tmp;
 		//(tmp < 0.0)
-		return (_val < rhs);
+		return (!stat and tmp1 < tmp);
 	}
 
 	bool operator >(const Tmy_double& rhs) const
 	{
 		double tmp  =  rhs._val;
 		double tmp1 =  _val;
-		tmp1 = tmp1 - tmp;
+		bool stat = AlmostEqualRelative(tmp, tmp1);
+		//tmp1 = tmp1 - tmp;
 		//(tmp1 > 0.0)
-		return (_val > rhs._val);
+		return (!stat and tmp1 > tmp);
 	}
 
 	bool operator >(const double& rhs) const
 	{
 		double tmp  =  rhs;
 		double tmp1 =  _val;
-		tmp = tmp1 - tmp;
+		bool stat = AlmostEqualRelative(tmp, tmp1);
+		//tmp = tmp1 - tmp;
 		//(tmp > 0.0)
-		return (_val > rhs);
+		return (!stat and tmp1 > tmp);
 	}
 
 	bool operator >=(const Tmy_double& rhs) const
 	{
 		double tmp  =  rhs._val;
 		double tmp1 =  _val;
-		tmp1 = tmp1 - tmp;
+		bool stat = AlmostEqualRelative(tmp, tmp1);
+		//tmp1 = tmp1 - tmp;
 		//((tmp1 > 0.0) or (abs(tmp1) < _batas) )
-		return (_val >= rhs._val);
+		return ((!stat and tmp1 > tmp) or stat);
 	}
 
 	bool operator >=(const double& rhs) const
@@ -203,36 +210,40 @@ public:
 
 		double tmp  =  rhs;
 		double tmp1 =  _val;
-		tmp = tmp1 - tmp;
+		bool stat = AlmostEqualRelative(tmp, tmp1);
+		//tmp = tmp1 - tmp;
 		//((tmp > 0.0) or (abs(tmp) < _batas))
-		return (_val >= rhs);
+		return ((!stat and tmp1 > tmp) or stat);
 	}
 
 	bool operator <=(const Tmy_double& rhs) const
 	{
 		double tmp  =  rhs._val;
 		double tmp1 =  _val;
-		tmp = tmp1 - tmp;
+		bool stat = AlmostEqualRelative(tmp, tmp1);
+		//tmp = tmp1 - tmp;
 		//( (tmp < 0.0) or (abs(tmp) < _batas))
-		return (_val <= rhs._val);
+		return ((!stat and tmp1 < tmp) or stat);
 	}
 
 	bool operator <=(const double& rhs) const
 	{
 		double tmp  =  rhs;
 		double tmp1 =  _val;
-		tmp = tmp1 - tmp;
+		bool stat = AlmostEqualRelative(tmp, tmp1);
+		//tmp = tmp1 - tmp;
 		//((tmp < 0.0) or (abs(tmp) < _batas))
-		return (_val <= rhs);
+		return ((!stat and tmp1 < tmp) or stat);
 	}
 
 	bool operator ==(const Tmy_double& rhs) const
 	{
 		double tmp  =  rhs._val;
 		double tmp1 =  _val;
-		tmp = tmp1 - tmp;
+		bool stat = AlmostEqualRelative(tmp, tmp1);
+		//tmp = tmp1 - tmp;
 		//(abs(tmp) < _batas)
-		return (abs(tmp) < _batas);
+		return stat;
 	}
 
 
@@ -240,9 +251,10 @@ public:
 	{
 		double tmp  =  rhs;
 		double tmp1 =  _val;
-		tmp = tmp1 - tmp;
+		bool stat = AlmostEqualRelative(tmp, tmp1);
+		//tmp = tmp1 - tmp;
 		//(abs(tmp) < _batas) _val == rhs
-		return (abs(tmp) < _batas);
+		return stat;
 	}
 
 

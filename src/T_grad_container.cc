@@ -72,12 +72,14 @@ int T_grad_container::max(Tmy_double rho1, Tmy_double rho2, T_alpha_container al
 	for (int i = 0; i < _idx.size(); ++i)
 	{
 		Tmy_double F = obj(tmp_idx[i], rho1, rho2);
+		Tmy_double dec_F = dec(tmp_idx[i], rho1, rho2);
 		Tmy_double abs_F = abs(F);
-		bool is_pass = f(-1, tmp_idx[i], F, 0.0, alpha, alpha_v1, alpha_v2);
+		bool is_pass = f(-1, tmp_idx[i], dec_F, 0.0, alpha, alpha_v1, alpha_v2);
 		if (is_pass)
 		{
 			if (abs_F >= gmax)
 			{
+				cout << tmp_idx[i] << " max " << F << " " << abs_F << endl;
 				gmax = abs_F;
 				idx_max = tmp_idx[i];
 				mv_idx(tmp_idx[i], 0);
@@ -93,12 +95,14 @@ int T_grad_container::max(int idx_b, Tmy_double rho1, Tmy_double rho2, T_alpha_c
 	int idx_max = -1;
 
 	Tmy_double Fb = obj(idx_b, rho1, rho2);
+	Tmy_double dec_Fb = dec(idx_b, rho1, rho2);
 	vector<int> tmp_idx = _idx;
 	for (int i = 0; i < _idx.size(); ++i)
 	{
 		Tmy_double Fa = obj(tmp_idx[i], rho1, rho2);
+		Tmy_double dec_Fa = dec(tmp_idx[i], rho1, rho2);
 		Tmy_double diff_F = abs(Fb - Fa);
-		bool is_pass = f(idx_b, tmp_idx[i], Fa, Fb, alpha, alpha_v1, alpha_v2);
+		bool is_pass = f(idx_b, tmp_idx[i], dec_Fa, dec_Fb, alpha, alpha_v1, alpha_v2);
 		if (is_pass)
 		{
 			if (diff_F >= gmax)
@@ -108,7 +112,6 @@ int T_grad_container::max(int idx_b, Tmy_double rho1, Tmy_double rho2, T_alpha_c
 				mv_idx(tmp_idx[i], 0);
 			}
 		}
-
 	}
 	return idx_max;
 }
@@ -119,12 +122,14 @@ int T_grad_container::max(int idx_b, Tmy_double rho1, Tmy_double rho2, T_alpha_c
 	int idx_max = -1;
 
 	Tmy_double Fb = obj(idx_b, rho1, rho2);
+	Tmy_double dec_Fb = dec(idx_b, rho1, rho2);
 	vector<int> tmp_idx = _idx;
 	for (int i = 0; i < _idx.size(); ++i)
 	{
 		Tmy_double Fa = obj(tmp_idx[i], rho1, rho2);
+		Tmy_double dec_Fa = dec(tmp_idx[i], rho1, rho2);
 		Tmy_double diff_F = abs(Fb - Fa);
-		bool is_pass = f(idx_b, tmp_idx[i], Fa, Fb, alpha, alpha_v1, alpha_v2, kernel, my_alpha);
+		bool is_pass = f(idx_b, tmp_idx[i], dec_Fa, dec_Fb, alpha, alpha_v1, alpha_v2, kernel, my_alpha);
 		if (is_pass)
 		{
 			if (diff_F >= gmax)
@@ -134,7 +139,6 @@ int T_grad_container::max(int idx_b, Tmy_double rho1, Tmy_double rho2, T_alpha_c
 				mv_idx(tmp_idx[i], 0);
 			}
 		}
-
 	}
 	return idx_max;
 }
@@ -153,7 +157,6 @@ int T_grad_container::cari(int idx_b, Tmy_double rho1, Tmy_double rho2, T_alpha_
 			idx_a = _idx[i];
 			break;
 		}
-
 	}
 
 	return idx_a;
