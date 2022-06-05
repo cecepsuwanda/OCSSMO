@@ -196,7 +196,7 @@ int Tmy_G::cari_idx_lain(int idx_b, Treturn_update_rho rho, Tmy_kernel *kernel, 
 
     if (is_pass)
     {
-      is_pass = !(alpha[0][var_a.idx] <= alpha[0].lb());
+      is_pass = !(alpha[0].is_nol(var_a.idx));
       if (is_pass)
       {
         if (alpha[0].is_nol(var_b.idx))

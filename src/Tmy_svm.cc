@@ -139,7 +139,7 @@ int Tmy_svm::examineExample(int idx_b)
    is_pass = !_my_G.is_kkt(idx_b, _rho, tmp_alpha, _grad);
    if (is_pass)
    {
-      is_pass = !(_alpha[idx_b] >= _alpha.ub());
+      is_pass = !(_alpha[idx_b] >= _alpha.ub()) or !(_alpha[idx_b] <= _alpha.lb());
    }
 
    if (is_pass)

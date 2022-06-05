@@ -2,6 +2,8 @@
 
 T_grad_container::T_grad_container()
 {
+	_cek_kkt = true;
+	_filter_delta = false;
 }
 
 T_grad_container::~T_grad_container()
@@ -85,8 +87,11 @@ int T_grad_container::max(Tmy_double rho1, Tmy_double rho2, vector<T_alpha_conta
 
 		callback_param var_a;
 		bool is_pass = true;
-		is_pass = !_is_kkt[tmp_idx[i]];
-		//   cout << " idx a " << tmp_idx[i] << " is_pass " << is_pass << endl;
+		if (_cek_kkt)
+		{
+			is_pass = !_is_kkt[tmp_idx[i]];
+		}
+		//    cout << " idx a " << tmp_idx[i] << " is_pass " << is_pass << endl;
 		if (is_pass)
 		{
 			is_pass = f(var_b, var_a, alpha);
@@ -242,8 +247,11 @@ int T_grad_container::max(int idx_b, Tmy_double rho1, Tmy_double rho2, vector<T_
 		var_a.grad = Ga;
 
 		bool is_pass = true;
-		is_pass = !_is_kkt[tmp_idx[i]];
-		//  cout << " idx a " << tmp_idx[i] << " is_pass " << is_pass << endl;
+		if (_cek_kkt)
+		{
+			is_pass = !_is_kkt[tmp_idx[i]];
+		}
+		//   cout << " idx a " << tmp_idx[i] << " is_pass " << is_pass << endl;
 		if (is_pass)
 		{
 			is_pass = f(var_b, var_a, alpha);
@@ -266,7 +274,11 @@ int T_grad_container::max(int idx_b, Tmy_double rho1, Tmy_double rho2, vector<T_
 				vector<Tmy_double> hsl_eta = kernel->hit_eta(idx_b, tmp_idx[i]);
 				Tmy_double delta = diff * hsl_eta[0];
 
-				bool is_pass = delta_filter(idx_b, tmp_idx[i], alpha, delta);
+				bool is_pass = true;
+				if (_filter_delta)
+				{
+					is_pass = delta_filter(idx_b, tmp_idx[i], alpha, delta);
+				}
 				if (is_pass)
 				{
 					// cout << " idx_a " << tmp_idx[i] << " delta " << delta << endl;
@@ -320,8 +332,11 @@ int T_grad_container::max(int idx_b, Tmy_double rho1, Tmy_double rho2, vector<T_
 		var_a.grad = Ga;
 
 		bool is_pass = true;
-		is_pass = !_is_kkt[tmp_idx[i]];
-		//   cout << " idx a " << tmp_idx[i] << " is_pass " << is_pass << endl;
+		if (_cek_kkt)
+		{
+			is_pass = !_is_kkt[tmp_idx[i]];
+		}
+		//    cout << " idx a " << tmp_idx[i] << " is_pass " << is_pass << endl;
 		if (is_pass)
 		{
 			is_pass = f(var_b, var_a, alpha, kernel, my_alpha);
@@ -345,8 +360,11 @@ int T_grad_container::max(int idx_b, Tmy_double rho1, Tmy_double rho2, vector<T_
 				vector<Tmy_double> hsl_eta = kernel->hit_eta(idx_b, tmp_idx[i]);
 				Tmy_double delta = diff * hsl_eta[0];
 
-				bool is_pass = delta_filter(idx_b, tmp_idx[i], alpha, delta);
-
+				bool is_pass = true;
+				if (_filter_delta)
+				{
+					is_pass = delta_filter(idx_b, tmp_idx[i], alpha, delta);
+				}
 				if (is_pass)
 				{
 					// cout << " idx_a " << tmp_idx[i] << " delta " << delta << endl;
@@ -399,8 +417,11 @@ int T_grad_container::cari(int idx_b, Tmy_double rho1, Tmy_double rho2, vector<T
 		var_a.grad = Ga;
 
 		bool is_pass = true;
-		is_pass = !_is_kkt[_idx[i]];
-		//   cout << " idx a " << _idx[i] << " is_pass " << is_pass << endl;
+		if (_cek_kkt)
+		{
+			is_pass = !_is_kkt[_idx[i]];
+		}
+		//    cout << " idx a " << _idx[i] << " is_pass " << is_pass << endl;
 		if (is_pass)
 		{
 			is_pass = f(var_b, var_a, alpha, kernel, my_alpha);
@@ -412,8 +433,11 @@ int T_grad_container::cari(int idx_b, Tmy_double rho1, Tmy_double rho2, vector<T
 			vector<Tmy_double> hsl_eta = kernel->hit_eta(idx_b, _idx[i]);
 			Tmy_double delta = diff * hsl_eta[0];
 
-			bool is_pass = delta_filter(idx_b, _idx[i], alpha, delta);
-
+			bool is_pass = true;
+			if (_filter_delta)
+			{
+				is_pass = delta_filter(idx_b, _idx[i], alpha, delta);
+			}
 			if (is_pass)
 			{
 				idx_a = _idx[i];

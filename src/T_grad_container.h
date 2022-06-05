@@ -25,6 +25,8 @@ private:
 	vector<Tmy_double> _grad;
 	vector<int> _idx;
 	vector<bool> _is_kkt;
+	bool _cek_kkt;
+	bool _filter_delta;
 
 	bool delta_filter(int idx_b, int idx_a, vector<T_alpha_container> alpha, Tmy_double delta);
 
