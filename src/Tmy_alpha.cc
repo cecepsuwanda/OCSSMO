@@ -60,6 +60,14 @@ void Tmy_alpha::init(int jml_data, T_alpha_container &alpha, T_alpha_container &
 		// alpha_v1[jml_v1] = _config->eps1 - jml_alpha;
 	}
 
+	int jml_sv = alpha_v1.n_sv();
+
+	if (jml_sv == 0)
+	{
+		alpha_v1[0] = ub_v1 / 4.0;
+		alpha_v1[1] = alpha_v1[1] + (ub_v1 - (ub_v1 / 4.0));
+	}
+
 	int idx = jml_data - 1;
 	int i = 0;
 	while (i < jml_v2)
@@ -75,6 +83,14 @@ void Tmy_alpha::init(int jml_data, T_alpha_container &alpha, T_alpha_container &
 	{
 		alpha_v2[idx + 1] = alpha_v2[idx + 1] + (_config->eps2 - jml_alpha);
 		// alpha_v2[idx] = _config->eps2 - jml_alpha;
+	}
+
+	jml_sv = alpha_v2.n_sv();
+
+	if (jml_sv == 0)
+	{
+		alpha_v2[jml_data - 1] = ub_v2 / 4.0;
+		alpha_v2[jml_data - 2] = alpha_v2[jml_data - 2] + (ub_v2 - (ub_v2 / 4.0));
 	}
 
 	for (int i = 0; i < jml_data; ++i)
@@ -140,6 +156,122 @@ vector<Tmy_double> Tmy_alpha::calculateNewAlpha(int i, int j, Tmy_double delta, 
 	// alpha_b_new = tmp[0];
 	// alpha_a_new = tmp[1];
 	return {alpha[i], alpha[j], alpha_a_new, alpha_b_new};
+}
+
+bool Tmy_alpha::is_pass(Treturn_is_pass &v1, Treturn_is_pass &v2, Treturn_is_pass v)
+{
+	bool is_pass = false;
+	Treturn_is_pass coba_v1;
+	Treturn_is_pass coba_v2;
+
+	coba_v1 = v1;
+	coba_v2 = v2;
+	if ((coba_v1 - coba_v2) != v)
+	{
+		if (((v1.new_alpha_i != 0.0) and (v2.new_alpha_i == 0.0)) and ((v1.new_alpha_j == 0.0) and (v2.new_alpha_j != 0.0)))
+		{
+			if ((coba_v1 - coba_v2) != v)
+			{
+				// cout << " Masuk 1 !!! " << endl;
+				coba_v1.set(0, 0.0);
+				coba_v2.set(1, 0.0);
+			}
+		}
+	}
+
+	if ((coba_v1 - coba_v2) != v)
+	{
+		coba_v1 = v1;
+		coba_v2 = v2;
+		if (((v1.new_alpha_i == 0.0) and (v2.new_alpha_i != 0.0)) and ((v1.new_alpha_j != 0.0) and (v2.new_alpha_j == 0.0)))
+		{
+			// cout << " Masuk 2 !!! " << endl;
+			coba_v1.set(1, 0.0);
+			coba_v2.set(0, 0.0);
+		}
+	}
+
+	if ((coba_v1 - coba_v2) != v)
+	{
+		coba_v1 = v1;
+		coba_v2 = v2;
+		if (((v1.new_alpha_i >= 0.0) and (v2.new_alpha_i == 0.0)) and ((v1.new_alpha_j >= 0.0) and (v2.new_alpha_j == 0.0)))
+		{
+
+			// cout << " Masuk 3 !!! " << endl;
+			coba_v1.set(0, abs(v.new_alpha_i));
+			if ((coba_v1 - coba_v2) != v)
+			{
+				coba_v1 = v1;
+				coba_v1.set(1, abs(v.new_alpha_j));
+			}
+		}
+	}
+
+	if ((coba_v1 - coba_v2) != v)
+	{
+		coba_v1 = v1;
+		coba_v2 = v2;
+		if (((v1.new_alpha_i == 0.0) and (v2.new_alpha_i >= 0.0)) and ((v1.new_alpha_j == 0.0) and (v2.new_alpha_j >= 0.0)))
+		{
+			// cout << " Masuk 4 !!! " << endl;
+			coba_v2.set(0, abs(v.new_alpha_i));
+			if ((coba_v1 - coba_v2) != v)
+			{
+				coba_v2 = v2;
+				coba_v2.set(1, abs(v.new_alpha_j));
+			}
+		}
+	}
+
+	if ((coba_v1 - coba_v2) != v)
+	{
+		coba_v1 = v1;
+		coba_v2 = v2;
+
+		if (v.new_alpha_i < 0.0)
+		{
+			coba_v2.set(0, coba_v2.new_alpha_i + abs(v.new_alpha_i));
+			if ((coba_v1 - coba_v2) != v)
+			{
+				coba_v1 = v1;
+				coba_v2 = v2;
+				coba_v1.set(0, coba_v1.new_alpha_i + (coba_v2.new_alpha_i - abs(v.new_alpha_i)));
+			}
+		}
+		else
+		{
+			if (v.new_alpha_i > 0.0)
+			{
+				coba_v1.set(0, coba_v1.new_alpha_i + v.new_alpha_i);
+				if ((coba_v1 - coba_v2) != v)
+				{
+					coba_v1 = v1;
+					coba_v2 = v2;
+					coba_v2.set(0, coba_v2.new_alpha_i + (coba_v1.new_alpha_i - v.new_alpha_i));
+				}
+			}
+		}
+	}
+
+	if ((coba_v1 - coba_v2) == v)
+	{
+		v1 = coba_v1;
+		v2 = coba_v2;
+		is_pass = true;
+	}
+	else
+	{
+		cout << "v1 " << coba_v1.is_pass << " old [" << coba_v1.alpha_i << "," << coba_v1.alpha_j << "] new [" << coba_v1.new_alpha_i << "," << coba_v1.new_alpha_j << "] " << endl;
+		cout << "v2 " << coba_v2.is_pass << " old [" << coba_v2.alpha_i << "," << coba_v2.alpha_j << "] new [" << coba_v2.new_alpha_i << "," << coba_v2.new_alpha_j << "] " << endl;
+		cout << "v " << v.is_pass << " old [" << v.alpha_i << "," << v.alpha_j << "] new [" << v.new_alpha_i << "," << v.new_alpha_j << "] " << endl;
+		v1.new_alpha_i = v1.alpha_i;
+		v1.new_alpha_j = v1.alpha_j;
+		v2.new_alpha_i = v2.alpha_i;
+		v2.new_alpha_j = v2.alpha_j;
+	}
+
+	return is_pass;
 }
 
 Treturn_is_pass Tmy_alpha::is_pass(int i, int j, Tmy_double delta, T_alpha_container alpha)

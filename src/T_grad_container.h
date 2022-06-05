@@ -7,15 +7,26 @@
 #ifndef Included_T_grad_container_H
 #define Included_T_grad_container_H
 
+struct callback_param
+{
+	int idx = -1;
+	Tmy_double grad = 0.0;
+	Tmy_double obj = 0.0;
+	Tmy_double dec = 0.0;
+};
+
 using namespace std::placeholders;
-using callback_type = std::function<bool(int, int, Tmy_double, Tmy_double, T_alpha_container, T_alpha_container, T_alpha_container)>;
-using callback_type1 = std::function<bool(int, int, Tmy_double, Tmy_double, T_alpha_container, T_alpha_container, T_alpha_container, Tmy_kernel *, Tmy_alpha *)>;
+using callback_type = std::function<bool(callback_param, callback_param, vector<T_alpha_container>)>;
+using callback_type1 = std::function<bool(callback_param, callback_param, vector<T_alpha_container>, Tmy_kernel *, Tmy_alpha *)>;
 
 class T_grad_container
 {
 private:
 	vector<Tmy_double> _grad;
 	vector<int> _idx;
+	vector<bool> _is_kkt;
+
+	bool delta_filter(int idx_b, int idx_a, vector<T_alpha_container> alpha, Tmy_double delta);
 
 public:
 	T_grad_container();
@@ -30,11 +41,12 @@ public:
 
 	void mv_idx(int idx, int flag);
 
-	int max(Tmy_double rho1, Tmy_double rho2, T_alpha_container alpha, T_alpha_container alpha_v1, T_alpha_container alpha_v2, callback_type f);
-	int max(int idx_b, Tmy_double rho1, Tmy_double rho2, T_alpha_container alpha, T_alpha_container alpha_v1, T_alpha_container alpha_v2, Tmy_kernel *kernel, callback_type f);
-	int max(int idx_b, Tmy_double rho1, Tmy_double rho2, T_alpha_container alpha, T_alpha_container alpha_v1, T_alpha_container alpha_v2, Tmy_kernel *kernel, Tmy_alpha *my_alpha, callback_type1 f);
+	int max(Tmy_double rho1, Tmy_double rho2, vector<T_alpha_container> alpha, callback_type f);
+	int max(int idx_b, Tmy_double rho1, Tmy_double rho2, vector<T_alpha_container> alpha, Tmy_kernel *kernel, callback_type f);
+	int max(int idx_b, Tmy_double rho1, Tmy_double rho2, vector<T_alpha_container> alpha, Tmy_kernel *kernel, Tmy_alpha *my_alpha, callback_type1 f);
 
-	int cari(int idx_b, Tmy_double rho1, Tmy_double rho2, T_alpha_container alpha, T_alpha_container alpha_v1, T_alpha_container alpha_v2, Tmy_kernel *kernel, Tmy_alpha *my_alpha, callback_type1 f);
+	int cari(int idx_b, Tmy_double rho1, Tmy_double rho2, vector<T_alpha_container> alpha, Tmy_kernel *kernel, Tmy_alpha *my_alpha, callback_type1 f);
+	void set_kkt(int idx, bool val);
 };
 
 #endif
