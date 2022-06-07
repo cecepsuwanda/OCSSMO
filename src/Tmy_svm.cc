@@ -25,30 +25,36 @@ int Tmy_svm::take_step(int idx_b, int idx_a)
       cout << endl
            << idx_b << "," << idx_a << endl;
 
-      Treturn_is_pass tmp_v1;
-      tmp_v1.is_pass = true;
-      tmp_v1.alpha_i = _alpha_v1[idx_b];
-      tmp_v1.alpha_j = _alpha_v1[idx_a];
-      tmp_v1.new_alpha_i = _alpha_v1[idx_b];
-      tmp_v1.new_alpha_j = _alpha_v1[idx_a];
-      tmp_v1.lb = _alpha_v1.lb();
-      tmp_v1.ub = _alpha_v1.ub();
-
-      Treturn_is_pass tmp_v2;
-      tmp_v2.is_pass = true;
-      tmp_v2.alpha_i = _alpha_v2[idx_b];
-      tmp_v2.alpha_j = _alpha_v2[idx_a];
-      tmp_v2.new_alpha_i = _alpha_v2[idx_b];
-      tmp_v2.new_alpha_j = _alpha_v2[idx_a];
-      tmp_v2.lb = _alpha_v2.lb();
-      tmp_v2.ub = _alpha_v2.ub();
-
       vector<Tmy_double> hsl_eta = _my_kernel->hit_eta(idx_b, idx_a);
       vector<Tmy_double> hsl_diff = _my_kernel->get_diff_Q(idx_b, idx_a);
 
-      Tmy_double hsl_sum = _my_G.sum_alpha_diff_Q(_alpha, hsl_diff);
+      Tmy_double hsl_sum = _my_G.sum_alpha_diff_Q(_alpha_v1, hsl_diff);
+      Tmy_double delta_v1 = hsl_eta[0] * hsl_sum;
+
+      Treturn_is_pass tmp_v1 = _my_alpha->is_pass(idx_b, idx_a, delta_v1, _alpha_v1);
+      // tmp_v1.is_pass = true;
+      // tmp_v1.alpha_i = _alpha_v1[idx_b];
+      // tmp_v1.alpha_j = _alpha_v1[idx_a];
+      // tmp_v1.new_alpha_i = _alpha_v1[idx_b];
+      // tmp_v1.new_alpha_j = _alpha_v1[idx_a];
+      // tmp_v1.lb = _alpha_v1.lb();
+      // tmp_v1.ub = _alpha_v1.ub();
+
+      hsl_sum = _my_G.sum_alpha_diff_Q(_alpha_v2, hsl_diff);
+      Tmy_double delta_v2 = hsl_eta[0] * hsl_sum;
+
+      Treturn_is_pass tmp_v2 = _my_alpha->is_pass(idx_b, idx_a, delta_v2, _alpha_v2);
+      // tmp_v2.is_pass = true;
+      // tmp_v2.alpha_i = _alpha_v2[idx_b];
+      // tmp_v2.alpha_j = _alpha_v2[idx_a];
+      // tmp_v2.new_alpha_i = _alpha_v2[idx_b];
+      // tmp_v2.new_alpha_j = _alpha_v2[idx_a];
+      // tmp_v2.lb = _alpha_v2.lb();
+      // tmp_v2.ub = _alpha_v2.ub();
+
+      hsl_sum = _my_G.sum_alpha_diff_Q(_alpha, hsl_diff);
       Tmy_double delta = hsl_eta[0] * hsl_sum;
-      cout << "delta " << delta << endl;
+      cout << "delta " << delta << " delta v1 " << delta_v1 << " delta v2 " << delta_v2 << endl;
       Treturn_is_pass tmp = _my_alpha->is_pass(idx_b, idx_a, delta, _alpha);
 
       cout << tmp_v1.is_pass << " old [" << tmp_v1.alpha_i << "," << tmp_v1.alpha_j << "] new [" << tmp_v1.new_alpha_i << "," << tmp_v1.new_alpha_j << "] " << endl;
@@ -78,12 +84,12 @@ int Tmy_svm::take_step(int idx_b, int idx_a)
          }
          if (is_pass)
          {
-            //_my_G.update_G(idx_b, idx_a, tmp, _my_kernel, _alpha_v1, _grad_v1);
+            _my_G.update_G(idx_b, idx_a, tmp, _my_kernel, _alpha_v1, _grad_v1);
 
             _alpha_v1[idx_a] = tmp_v1.new_alpha_j;
             _alpha_v1[idx_b] = tmp_v1.new_alpha_i;
 
-            //_my_G.update_G(idx_b, idx_a, tmp, _my_kernel, _alpha_v2, _grad_v2);
+            _my_G.update_G(idx_b, idx_a, tmp, _my_kernel, _alpha_v2, _grad_v2);
 
             _alpha_v2[idx_a] = tmp_v2.new_alpha_j;
             _alpha_v2[idx_b] = tmp_v2.new_alpha_i;
@@ -132,26 +138,44 @@ int Tmy_svm::examineExample(int idx_b)
    tmp_alpha.push_back(_alpha_v1);
    tmp_alpha.push_back(_alpha_v2);
 
+   vector<T_grad_container> tmp_grad;
+   tmp_grad.push_back(_grad);
+   tmp_grad.push_back(_grad_v1);
+   tmp_grad.push_back(_grad_v2);
+
    // cout << " [" << Gb << "," << (Gb-_rho.rho_v1) << "," << (_rho.rho_v2-Gb) << "] " << endl;
 
    bool is_pass = true;
-
    is_pass = !_my_G.is_kkt(idx_b, _rho, tmp_alpha, _grad);
-   if (is_pass)
-   {
-      is_pass = !(_alpha[idx_b] >= _alpha.ub()) or !(_alpha[idx_b] <= _alpha.lb());
-   }
+   //  is_pass = (((Gb - _rho.rho_v1) < 0.0) and (_alpha_v1[idx_b] < _alpha_v1.ub())) or (((Gb - _rho.rho_v1) > 0.0) and (_alpha_v1[idx_b] > _alpha_v1.lb()));
+   //  if (!is_pass)
+   //  {
+   //     is_pass = (((_rho.rho_v2 - Gb) < 0.0) and (_alpha_v2[idx_b] < _alpha_v2.ub())) or (((_rho.rho_v2 - Gb) > 0.0) and (_alpha_v1[idx_b] > _alpha_v1.lb()));
+   //  }
+
+   // is_pass = ((obj < 0.0) and (_alpha_v1[idx_b] < _alpha_v1.ub())) or ((obj > 0.0) and (_alpha_v1[idx_b] > _alpha_v1.lb()));
+   // if (!is_pass)
+   // {
+   //    is_pass = ((obj < 0.0) and (_alpha_v2[idx_b] < _alpha_v2.ub())) or ((obj > 0.0) and (_alpha_v1[idx_b] > _alpha_v1.lb()));
+   // }
+
+   // is_pass = ((obj < 0.0) and ((_alpha[idx_b] < _alpha.ub()) or (_alpha[idx_b] > _alpha.lb()))) or ((obj > 0.0) and ((_alpha[idx_b] > 0.0) or (_alpha[idx_b] < 0.0)));
+
+   // if (is_pass)
+   // {
+   //    is_pass = !(_alpha_v1[idx_b] >= _alpha_v1.ub()) or !(_alpha_v2[idx_b] >= _alpha_v2.ub());
+   // }
 
    if (is_pass)
    {
-      idx_a = _my_G.cari_idx_a(idx_b, _rho, tmp_alpha, _grad, _my_kernel);
+      idx_a = _my_G.cari_idx_a(idx_b, _rho, tmp_alpha, tmp_grad, _my_kernel);
       if (idx_a != -1)
       {
          cout << " idx_b " << idx_b << " idx_a " << idx_a << " " << endl;
          hasil = take_step(idx_b, idx_a);
          if (hasil == 0)
          {
-            idx_a = _my_G.cari_idx_lain(idx_b, _rho, _my_kernel, tmp_alpha, _grad, _my_alpha);
+            idx_a = _my_G.cari_idx_lain(idx_b, _rho, _my_kernel, tmp_alpha, tmp_grad, _my_alpha);
             if (idx_a != -1)
             {
                cout << " idx_b " << idx_b << " idx_a " << idx_a << " ";
@@ -172,7 +196,7 @@ int Tmy_svm::examineExample(int idx_b)
          if (idx_b != -1)
          {
             cout << " idx_b " << idx_b << " idx_a " << idx_a << " " << endl;
-            idx_a = _my_G.cari_idx_lain(idx_b, _rho, _my_kernel, tmp_alpha, _grad, _my_alpha);
+            idx_a = _my_G.cari_idx_lain(idx_b, _rho, _my_kernel, tmp_alpha, tmp_grad, _my_alpha);
             if (idx_a != -1)
             {
                cout << " idx_b " << idx_b << " idx_a " << idx_a << " ";
@@ -200,7 +224,12 @@ int Tmy_svm::examineExample()
    tmp_alpha.push_back(_alpha_v1);
    tmp_alpha.push_back(_alpha_v2);
 
-   bool is_pass = _my_G.cari_idx(idx_b, idx_a, _rho, tmp_alpha, _grad, _my_kernel);
+   vector<T_grad_container> tmp_grad;
+   tmp_grad.push_back(_grad);
+   tmp_grad.push_back(_grad_v1);
+   tmp_grad.push_back(_grad_v2);
+
+   bool is_pass = _my_G.cari_idx(idx_b, idx_a, _rho, tmp_alpha, tmp_grad, _my_kernel);
    if (idx_a != -1)
    {
       cout << " idx_b " << idx_b << " idx_a " << idx_a << " " << endl;
@@ -208,7 +237,7 @@ int Tmy_svm::examineExample()
       if (hasil == 0)
       {
          cout << " cari idx_a lain 1 ";
-         idx_a = _my_G.cari_idx_lain(idx_b, _rho, _my_kernel, tmp_alpha, _grad, _my_alpha);
+         idx_a = _my_G.cari_idx_lain(idx_b, _rho, _my_kernel, tmp_alpha, tmp_grad, _my_alpha);
          if (idx_a != -1)
          {
             cout << " idx_b " << idx_b << " idx_a " << idx_a << " " << endl;
@@ -222,7 +251,7 @@ int Tmy_svm::examineExample()
       {
          cout << " idx_b " << idx_b << " idx_a " << idx_a << " " << endl;
          cout << " cari idx_a lain 2 ";
-         idx_a = _my_G.cari_idx_lain(idx_b, _rho, _my_kernel, tmp_alpha, _grad, _my_alpha);
+         idx_a = _my_G.cari_idx_lain(idx_b, _rho, _my_kernel, tmp_alpha, tmp_grad, _my_alpha);
          if (idx_a != -1)
          {
             cout << " idx_b " << idx_b << " idx_a " << idx_a << " " << endl;
@@ -237,11 +266,12 @@ int Tmy_svm::examineExample()
 
 Treturn_train Tmy_svm::train(Tdataframe &df)
 {
+   cout << " masuk " << endl;
    int jml_data = df.getjmlrow_svm();
    _my_kernel = new Tmy_kernel(df, _config->gamma);
    _my_alpha->init(jml_data, _alpha, _alpha_v1, _alpha_v2);
-   //_my_G.init(jml_data, _my_kernel, _alpha_v1, _grad_v1);
-   //_my_G.init(jml_data, _my_kernel, _alpha_v2, _grad_v2);
+   _my_G.init(jml_data, _my_kernel, _alpha_v1, _grad_v1);
+   _my_G.init(jml_data, _my_kernel, _alpha_v2, _grad_v2);
    _my_G.init(jml_data, _my_kernel, _alpha, _grad);
    vector<T_alpha_container> tmp_alpha;
    tmp_alpha.push_back(_alpha);
@@ -250,14 +280,14 @@ Treturn_train Tmy_svm::train(Tdataframe &df)
    _rho = _my_G.update_rho(_my_kernel, tmp_alpha, _grad);
    _my_G.set_kkt(_rho, tmp_alpha, _grad);
 
-   cout << endl;
+   cout << " masuk " << endl;
    for (int i = 0; i < jml_data; ++i)
    {
       cout << _alpha_v1[i] << setw(15) << _alpha_v2[i] << setw(15) << _alpha[i] << endl;
    }
 
    int iter = 0;
-   int max_iter = max(10000000, jml_data > INT_MAX / 100 ? INT_MAX : 100 * jml_data);
+   int max_iter = 1; // max(10000000, jml_data > INT_MAX / 100 ? INT_MAX : 100 * jml_data);
 
    int is_alpha_changed = 1;
    bool examineAll = true;
@@ -281,17 +311,17 @@ Treturn_train Tmy_svm::train(Tdataframe &df)
             Tmy_double old_rho_v2 = _rho.rho_v2;
             int old_alpha_changed = is_alpha_changed;
 
-            is_alpha_changed += examineExample(idx_b);
+            is_alpha_changed += examineExample();
             // cout << "is_alpha_changed" << is_alpha_changed << endl;
             if (is_alpha_changed != old_alpha_changed)
             {
                cout << " old rho [" << old_rho_v1 << "," << old_rho_v2 << "]" << endl;
                cout << " new rho [" << _rho.rho_v1 << "," << _rho.rho_v2 << "]" << endl;
             }
-            // if (is_alpha_changed != (idx_b + 1))
-            // {
-            //    break;
-            // }
+            if (is_alpha_changed != (idx_b + 1))
+            {
+               break;
+            }
          }
          // if (is_alpha_changed == 0)
          // {
@@ -304,7 +334,7 @@ Treturn_train Tmy_svm::train(Tdataframe &df)
          for (int idx_b = 0; idx_b < jml_data; idx_b++)
          {
             bool is_pass = true;
-            is_pass = !_alpha.is_ub(idx_b) and !_alpha.is_lb(idx_b);
+            // is_pass = (!_alpha_v1.is_ub(idx_b) and !_alpha_v1.is_lb(idx_b)) or (!_alpha_v2.is_ub(idx_b) and !_alpha_v2.is_lb(idx_b));
 
             if (is_pass)
             {
@@ -331,7 +361,7 @@ Treturn_train Tmy_svm::train(Tdataframe &df)
          //    examineAll = !examineAll;
          // }
       }
-      examineAll = !examineAll;
+      // examineAll = !examineAll;
       iter = iter + 1;
    }
    // cetak("\n");
@@ -415,12 +445,12 @@ vector<string> Tmy_svm::test(Tdataframe &df)
       }
 
       sum = (sum - _rho.rho_v1) * (_rho.rho_v2 - sum);
-      if ((sum > 0.0) or (abs(sum) < 1e-3))
+      if (sum >= 0.0)
       {
       }
       else
       {
-         if (sum < -1e-3)
+         if (sum < 0.0)
          {
             hasil[j] = "outside";
          }

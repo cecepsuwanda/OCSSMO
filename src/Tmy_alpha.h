@@ -40,33 +40,30 @@ public:
     return tmp;
   }
 
-  Treturn_is_pass set(int flag, Tmy_double val)
+  void set(int flag, Tmy_double val)
   {
-    // if (is_pass) {
+
     if (flag == 0)
     {
-      Tmy_double tmp_i = this->new_alpha_i - val;
-      Tmy_double tmp_j = this->new_alpha_j + tmp_i;
+      Tmy_double tmp_i = new_alpha_i - val;
+      Tmy_double tmp_j = new_alpha_j + tmp_i;
       tmp_i = val;
 
-      this->new_alpha_i = limit_alpha(tmp_i);
-      this->new_alpha_j = limit_alpha(tmp_j);
+      new_alpha_i = limit_alpha(tmp_i);
+      new_alpha_j = limit_alpha(tmp_j);
     }
     else
     {
       if (flag == 1)
       {
-        Tmy_double tmp_j = this->new_alpha_j - val;
-        Tmy_double tmp_i = this->new_alpha_i + tmp_j;
+        Tmy_double tmp_j = new_alpha_j - val;
+        Tmy_double tmp_i = new_alpha_i + tmp_j;
         tmp_j = val;
 
-        this->new_alpha_i = limit_alpha(tmp_i);
-        this->new_alpha_j = limit_alpha(tmp_j);
+        new_alpha_i = limit_alpha(tmp_i);
+        new_alpha_j = limit_alpha(tmp_j);
       }
     }
-    //}
-
-    return *this;
   }
 
 private:
