@@ -32,25 +32,11 @@ int Tmy_svm::take_step(int idx_b, int idx_a)
       Tmy_double delta_v1 = hsl_eta[0] * hsl_sum;
 
       Treturn_is_pass tmp_v1 = _my_alpha->is_pass(idx_b, idx_a, delta_v1, _alpha_v1);
-      // tmp_v1.is_pass = true;
-      // tmp_v1.alpha_i = _alpha_v1[idx_b];
-      // tmp_v1.alpha_j = _alpha_v1[idx_a];
-      // tmp_v1.new_alpha_i = _alpha_v1[idx_b];
-      // tmp_v1.new_alpha_j = _alpha_v1[idx_a];
-      // tmp_v1.lb = _alpha_v1.lb();
-      // tmp_v1.ub = _alpha_v1.ub();
 
       hsl_sum = _my_G.sum_alpha_diff_Q(_alpha_v2, hsl_diff);
       Tmy_double delta_v2 = hsl_eta[0] * hsl_sum;
 
       Treturn_is_pass tmp_v2 = _my_alpha->is_pass(idx_b, idx_a, delta_v2, _alpha_v2);
-      // tmp_v2.is_pass = true;
-      // tmp_v2.alpha_i = _alpha_v2[idx_b];
-      // tmp_v2.alpha_j = _alpha_v2[idx_a];
-      // tmp_v2.new_alpha_i = _alpha_v2[idx_b];
-      // tmp_v2.new_alpha_j = _alpha_v2[idx_a];
-      // tmp_v2.lb = _alpha_v2.lb();
-      // tmp_v2.ub = _alpha_v2.ub();
 
       hsl_sum = _my_G.sum_alpha_diff_Q(_alpha, hsl_diff);
       Tmy_double delta = hsl_eta[0] * hsl_sum;
@@ -61,7 +47,7 @@ int Tmy_svm::take_step(int idx_b, int idx_a)
       cout << tmp_v2.is_pass << " old [" << tmp_v2.alpha_i << "," << tmp_v2.alpha_j << "] new [" << tmp_v2.new_alpha_i << "," << tmp_v2.new_alpha_j << "] " << endl;
       cout << tmp.is_pass << " old [" << tmp.alpha_i << "," << tmp.alpha_j << "] new [" << tmp.new_alpha_i << "," << tmp.new_alpha_j << "] " << endl;
 
-      bool is_pass = tmp.is_pass; // and (tmp_v1.is_pass or tmp_v2.is_pass)
+      bool is_pass = (tmp_v1.is_pass or tmp_v2.is_pass);
 
       if (is_pass == false)
       {
@@ -69,19 +55,19 @@ int Tmy_svm::take_step(int idx_b, int idx_a)
       }
       else
       {
-         if ((tmp_v1 - tmp_v2) != tmp)
-         {
-            cout << "tak sama !!!" << endl;
-            if (_my_alpha->is_pass(tmp_v1, tmp_v2, tmp) == true)
-            {
-               cout << "solve 1 !!!" << endl;
-            }
-            else
-            {
-               cout << "failed 1 !!!" << endl;
-               is_pass = false;
-            }
-         }
+         // if ((tmp_v1 - tmp_v2) != tmp)
+         // {
+         //    cout << "tak sama !!!" << endl;
+         //    if (_my_alpha->is_pass(tmp_v1, tmp_v2, tmp) == true)
+         //    {
+         //       cout << "solve 1 !!!" << endl;
+         //    }
+         //    else
+         //    {
+         //       cout << "failed 1 !!!" << endl;
+         //       is_pass = false;
+         //    }
+         // }
          if (is_pass)
          {
             _my_G.update_G(idx_b, idx_a, tmp, _my_kernel, _alpha_v1, _grad_v1);

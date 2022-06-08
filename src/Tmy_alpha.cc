@@ -157,10 +157,9 @@ vector<Tmy_double> Tmy_alpha::calculateNewAlpha(int i, int j, Tmy_double delta, 
 	alpha_a_new = tmp[0];
 	Tmy_double alpha_b_new = alpha[j] + (alpha[i] - alpha_a_new);
 	// if(abs(alpha_b_new)<1e-3) alpha_b_new = 0.0;
-
-	// tmp = limit_alpha(alpha_b_new, alpha_a_new, alpha.lb(), alpha.ub(), 1);
-	// alpha_b_new = tmp[0];
-	// alpha_a_new = tmp[1];
+	tmp = limit_alpha(alpha_b_new, alpha_a_new, alpha.lb(), alpha.ub(), 1);
+	alpha_b_new = tmp[0];
+	alpha_a_new = tmp[1];
 	return {alpha[i], alpha[j], alpha_a_new, alpha_b_new};
 }
 
@@ -179,7 +178,7 @@ bool Tmy_alpha::is_pass(Treturn_is_pass &v1, Treturn_is_pass &v2, Treturn_is_pas
 		{
 			if ((coba_v1 - coba_v2) != v)
 			{
-				// cout << " Masuk 1 !!! " << endl;
+				cout << " Masuk 1 !!! " << endl;
 				coba_v1.set(0, 0.0);
 				coba_v2.set(1, 0.0);
 			}
@@ -192,7 +191,7 @@ bool Tmy_alpha::is_pass(Treturn_is_pass &v1, Treturn_is_pass &v2, Treturn_is_pas
 		coba_v2 = v2;
 		if (((v1.new_alpha_i == 0.0) and (v2.new_alpha_i != 0.0)) and ((v1.new_alpha_j != 0.0) and (v2.new_alpha_j == 0.0)))
 		{
-			// cout << " Masuk 2 !!! " << endl;
+			cout << " Masuk 2 !!! " << endl;
 			coba_v1.set(1, 0.0);
 			coba_v2.set(0, 0.0);
 		}
@@ -205,7 +204,7 @@ bool Tmy_alpha::is_pass(Treturn_is_pass &v1, Treturn_is_pass &v2, Treturn_is_pas
 		if (((v1.new_alpha_i >= 0.0) and (v2.new_alpha_i == 0.0)) and ((v1.new_alpha_j >= 0.0) and (v2.new_alpha_j == 0.0)))
 		{
 
-			// cout << " Masuk 3 !!! " << endl;
+			cout << " Masuk 3 !!! " << endl;
 			coba_v1.set(0, abs(v.new_alpha_i));
 			if ((coba_v1 - coba_v2) != v)
 			{
@@ -221,7 +220,7 @@ bool Tmy_alpha::is_pass(Treturn_is_pass &v1, Treturn_is_pass &v2, Treturn_is_pas
 		coba_v2 = v2;
 		if (((v1.new_alpha_i == 0.0) and (v2.new_alpha_i >= 0.0)) and ((v1.new_alpha_j == 0.0) and (v2.new_alpha_j >= 0.0)))
 		{
-			// cout << " Masuk 4 !!! " << endl;
+			cout << " Masuk 4 !!! " << endl;
 			coba_v2.set(0, abs(v.new_alpha_i));
 			if ((coba_v1 - coba_v2) != v)
 			{
@@ -235,31 +234,58 @@ bool Tmy_alpha::is_pass(Treturn_is_pass &v1, Treturn_is_pass &v2, Treturn_is_pas
 	{
 		coba_v1 = v1;
 		coba_v2 = v2;
-
-		if (v.new_alpha_i < 0.0)
+		if (((v1.new_alpha_i == 0.0) and (v2.new_alpha_i != 0.0)) and ((v1.new_alpha_j != 0.0) and (v2.new_alpha_j == 0.0)))
 		{
-			coba_v2.set(0, coba_v2.new_alpha_i + abs(v.new_alpha_i));
+			cout << " Masuk 21 !!! " << endl;
+			coba_v1.set(0, abs(v2.new_alpha_i + v.new_alpha_i));
+		}
+	}
+
+	if ((coba_v1 - coba_v2) != v)
+	{
+		coba_v1 = v1;
+		coba_v2 = v2;
+		if (((v1.new_alpha_i >= 0.0) and (v2.new_alpha_i == 0.0)) and ((v1.new_alpha_j >= 0.0) and (v2.new_alpha_j >= 0.0)))
+		{
+			cout << " Masuk 5 !!! " << endl;
+			coba_v1.set(0, abs(v.new_alpha_i));
 			if ((coba_v1 - coba_v2) != v)
 			{
 				coba_v1 = v1;
-				coba_v2 = v2;
-				coba_v1.set(0, coba_v1.new_alpha_i + (coba_v2.new_alpha_i - abs(v.new_alpha_i)));
-			}
-		}
-		else
-		{
-			if (v.new_alpha_i > 0.0)
-			{
-				coba_v1.set(0, coba_v1.new_alpha_i + v.new_alpha_i);
-				if ((coba_v1 - coba_v2) != v)
-				{
-					coba_v1 = v1;
-					coba_v2 = v2;
-					coba_v2.set(0, coba_v2.new_alpha_i + (coba_v1.new_alpha_i - v.new_alpha_i));
-				}
+				coba_v1.set(1, abs(v.new_alpha_j));
 			}
 		}
 	}
+
+	// if ((coba_v1 - coba_v2) != v)
+	// {
+	// 	coba_v1 = v1;
+	// 	coba_v2 = v2;
+
+	// 	if (v.new_alpha_i < 0.0)
+	// 	{
+	// 		coba_v2.set(0, coba_v2.new_alpha_i + abs(v.new_alpha_i));
+	// 		if ((coba_v1 - coba_v2) != v)
+	// 		{
+	// 			coba_v1 = v1;
+	// 			coba_v2 = v2;
+	// 			coba_v1.set(0, coba_v1.new_alpha_i + (coba_v2.new_alpha_i - abs(v.new_alpha_i)));
+	// 		}
+	// 	}
+	// 	else
+	// 	{
+	// 		if (v.new_alpha_i > 0.0)
+	// 		{
+	// 			coba_v1.set(0, coba_v1.new_alpha_i + v.new_alpha_i);
+	// 			if ((coba_v1 - coba_v2) != v)
+	// 			{
+	// 				coba_v1 = v1;
+	// 				coba_v2 = v2;
+	// 				coba_v2.set(0, coba_v2.new_alpha_i + (coba_v1.new_alpha_i - v.new_alpha_i));
+	// 			}
+	// 		}
+	// 	}
+	// }
 
 	if ((coba_v1 - coba_v2) == v)
 	{
