@@ -4,7 +4,7 @@ Tmy_G::Tmy_G()
 {
   _cek_kkt = false;
   _filter_delta = false;
-  _min_rho = true;
+  _min_rho = false;
 }
 
 Tmy_G::~Tmy_G()
@@ -369,22 +369,23 @@ int Tmy_G::max(Tmy_double rho1, Tmy_double rho2, vector<T_alpha_container> alpha
   Tmy_double gmax = -HUGE_VAL;
   int idx_max = -1;
 
-  for (int i = 0; i < _jml_data; ++i)
+  vector<int> tmp_idx = grad[0].get_rand_idx();
+  for (int i = 0; i < tmp_idx.size(); ++i)
   {
-    Tmy_double dec_F = grad[0].dec(grad[0].rand_idx(i), rho1, rho2);
-    Tmy_double obj_F = grad[0].obj(grad[0].rand_idx(i), rho1, rho2);
+    Tmy_double dec_F = grad[0].dec(tmp_idx[i], rho1, rho2);
+    Tmy_double obj_F = grad[0].obj(tmp_idx[i], rho1, rho2);
 
     callback_param var_b;
-    var_b.idx = grad[0].rand_idx(i);
+    var_b.idx = tmp_idx[i];
     var_b.dec = dec_F;
     var_b.obj = obj_F;
-    var_b.grad = grad[0].rand_grad(i);
+    var_b.grad = grad[0][tmp_idx[i]];
 
     callback_param var_a;
     bool is_pass = true;
     if (_cek_kkt)
     {
-      is_pass = !grad[0].get_kkt(grad[0].rand_idx(i));
+      is_pass = !grad[0].get_kkt(tmp_idx[i]);
     }
     //    cout << " idx a " << tmp_idx[i] << " is_pass " << is_pass << endl;
     if (is_pass)
@@ -394,7 +395,7 @@ int Tmy_G::max(Tmy_double rho1, Tmy_double rho2, vector<T_alpha_container> alpha
 
     if (is_pass)
     {
-      Tmy_double abs_F = abs(grad[0].rand_grad(i));
+      Tmy_double abs_F = abs(grad[0][tmp_idx[i]]);
       if (_min_rho)
       {
         abs_F = abs(obj_F);
@@ -403,8 +404,8 @@ int Tmy_G::max(Tmy_double rho1, Tmy_double rho2, vector<T_alpha_container> alpha
       if (abs_F >= gmax)
       {
         gmax = abs_F;
-        idx_max = grad[0].rand_idx(i);
-        grad[0].mv_idx(grad[0].rand_idx(i), 0);
+        idx_max = tmp_idx[i];
+        grad[0].mv_idx(tmp_idx[i], 0);
       }
     }
   }
@@ -417,7 +418,7 @@ int Tmy_G::max(int idx_b, Tmy_double rho1, Tmy_double rho2, vector<T_alpha_conta
   Tmy_double gmax = -HUGE_VAL, gmax2 = -HUGE_VAL;
   int idx_max = -1;
 
-  Tmy_double Gb = grad[0].rand_grad(idx_b);
+  Tmy_double Gb = grad[0][idx_b];
   Tmy_double dec_Fb = grad[0].dec(idx_b, rho1, rho2);
   Tmy_double obj_Fb = grad[0].obj(idx_b, rho1, rho2);
 
@@ -430,14 +431,15 @@ int Tmy_G::max(int idx_b, Tmy_double rho1, Tmy_double rho2, vector<T_alpha_conta
   Tmy_double Fa = 0.0;
   Tmy_double Fb = 0.0;
 
-  for (int i = 0; i < _jml_data; ++i)
+  vector<int> tmp_idx = grad[0].get_rand_idx();
+  for (int i = 0; i < tmp_idx.size(); ++i)
   {
-    Tmy_double Ga = grad[0].rand_grad(i);
-    Tmy_double dec_Fa = grad[0].dec(grad[0].rand_idx(i), rho1, rho2);
-    Tmy_double obj_Fa = grad[0].obj(grad[0].rand_idx(i), rho1, rho2);
+    Tmy_double Ga = grad[0][tmp_idx[i]];
+    Tmy_double dec_Fa = grad[0].dec(tmp_idx[i], rho1, rho2);
+    Tmy_double obj_Fa = grad[0].obj(tmp_idx[i], rho1, rho2);
 
     callback_param var_a;
-    var_a.idx = grad[0].rand_idx(i);
+    var_a.idx = tmp_idx[i];
     var_a.dec = dec_Fa;
     var_a.obj = obj_Fa;
     var_a.grad = Ga;
@@ -453,7 +455,7 @@ int Tmy_G::max(int idx_b, Tmy_double rho1, Tmy_double rho2, vector<T_alpha_conta
     bool is_pass = true;
     if (_cek_kkt)
     {
-      is_pass = !grad[0].get_kkt(grad[0].rand_idx(i));
+      is_pass = !grad[0].get_kkt(tmp_idx[i]);
     }
     // cout << " idx a " << tmp_idx[i] << " is_pass " << is_pass << endl;
     if (is_pass)
@@ -475,7 +477,7 @@ int Tmy_G::max(int idx_b, Tmy_double rho1, Tmy_double rho2, vector<T_alpha_conta
       if ((abs_diff_F >= gmax2) or !_min_rho)
       {
 
-        vector<Tmy_double> hsl_eta = kernel->hit_eta(idx_b, grad[0].rand_idx(i));
+        vector<Tmy_double> hsl_eta = kernel->hit_eta(idx_b, tmp_idx[i]);
         Tmy_double diff = Ga - Gb;
         Tmy_double delta = diff * hsl_eta[0];
 
@@ -489,14 +491,14 @@ int Tmy_G::max(int idx_b, Tmy_double rho1, Tmy_double rho2, vector<T_alpha_conta
         if (_filter_delta)
         {
 
-          is_pass = delta_filter(idx_b, grad[0].rand_idx(i), alpha, delta);
+          is_pass = delta_filter(idx_b, tmp_idx[i], alpha, delta);
         }
         if (is_pass)
         {
           // cout << " idx_a " << var_a.idx << " delta " << delta << endl;
           gmax2 = abs_diff_F;
-          idx_max = grad[0].rand_idx(i);
-          grad[0].mv_idx(grad[0].rand_idx(i), 0);
+          idx_max = tmp_idx[i];
+          grad[0].mv_idx(tmp_idx[i], 0);
         }
       }
     }
@@ -518,7 +520,7 @@ int Tmy_G::max(int idx_b, Tmy_double rho1, Tmy_double rho2, vector<T_alpha_conta
   Tmy_double gmax = -HUGE_VAL, gmax2 = -HUGE_VAL;
   int idx_max = -1;
 
-  Tmy_double Gb = grad[0].rand_grad(idx_b);
+  Tmy_double Gb = grad[0][idx_b];
   Tmy_double abs_Gb = abs(Gb);
   Tmy_double dec_Fb = grad[0].dec(idx_b, rho1, rho2);
   Tmy_double obj_Fb = grad[0].obj(idx_b, rho1, rho2);
@@ -532,15 +534,16 @@ int Tmy_G::max(int idx_b, Tmy_double rho1, Tmy_double rho2, vector<T_alpha_conta
   Tmy_double Fa = 0.0;
   Tmy_double Fb = 0.0;
 
-  for (int i = 0; i < _jml_data; ++i)
+  vector<int> tmp_idx = grad[0].get_rand_idx();
+  for (int i = 0; i < tmp_idx.size(); ++i)
   {
-    Tmy_double Ga = grad[0].rand_grad(i);
+    Tmy_double Ga = grad[0][tmp_idx[i]];
     Tmy_double abs_Ga = abs(Ga);
-    Tmy_double dec_Fa = grad[0].dec(grad[0].rand_idx(i), rho1, rho2);
-    Tmy_double obj_Fa = grad[0].obj(grad[0].rand_idx(i), rho1, rho2);
+    Tmy_double dec_Fa = grad[0].dec(tmp_idx[i], rho1, rho2);
+    Tmy_double obj_Fa = grad[0].obj(tmp_idx[i], rho1, rho2);
 
     callback_param var_a;
-    var_a.idx = grad[0].rand_idx(i);
+    var_a.idx = tmp_idx[i];
     var_a.dec = dec_Fa;
     var_a.obj = obj_Fa;
     var_a.grad = Ga;
@@ -556,7 +559,7 @@ int Tmy_G::max(int idx_b, Tmy_double rho1, Tmy_double rho2, vector<T_alpha_conta
     bool is_pass = true;
     if (_cek_kkt)
     {
-      is_pass = !grad[0].get_kkt(grad[0].rand_idx(i));
+      is_pass = !grad[0].get_kkt(tmp_idx[i]);
     }
     //    cout << " idx a " << tmp_idx[i] << " is_pass " << is_pass << endl;
     if (is_pass)
@@ -578,7 +581,7 @@ int Tmy_G::max(int idx_b, Tmy_double rho1, Tmy_double rho2, vector<T_alpha_conta
       // cout << " idx_a " << tmp_idx[i] << " abs_diff_obj " << abs_diff_obj << " gmax2 " << gmax2 << endl;
       if ((abs_diff_F >= gmax2) or !_min_rho)
       {
-        vector<Tmy_double> hsl_eta = kernel->hit_eta(idx_b, grad[0].rand_idx(i));
+        vector<Tmy_double> hsl_eta = kernel->hit_eta(idx_b, tmp_idx[i]);
         Tmy_double diff = Ga - Gb;
         Tmy_double delta = diff * hsl_eta[0];
 
@@ -591,14 +594,14 @@ int Tmy_G::max(int idx_b, Tmy_double rho1, Tmy_double rho2, vector<T_alpha_conta
         bool is_pass = true;
         if (_filter_delta)
         {
-          is_pass = delta_filter(idx_b, grad[0].rand_idx(i), alpha, delta);
+          is_pass = delta_filter(idx_b, tmp_idx[i], alpha, delta);
         }
         if (is_pass)
         {
           // cout << " idx_a " << var_a.idx << " delta " << delta << endl;
           gmax2 = abs_diff_F;
-          idx_max = grad[0].rand_idx(i);
-          grad[0].mv_idx(grad[0].rand_idx(i), 0);
+          idx_max = tmp_idx[i];
+          grad[0].mv_idx(tmp_idx[i], 0);
         }
       }
     }
@@ -620,7 +623,7 @@ int Tmy_G::cari(int idx_b, Tmy_double rho1, Tmy_double rho2, vector<T_alpha_cont
   // cout << " Cari 1 " << endl;
   int idx_a = -1;
 
-  Tmy_double Gb = grad[0].rand_grad(idx_b);
+  Tmy_double Gb = grad[0][idx_b];
   Tmy_double abs_Gb = abs(Gb);
   Tmy_double dec_Fb = grad[0].dec(idx_b, rho1, rho2);
   Tmy_double obj_Fb = grad[0].obj(idx_b, rho1, rho2);
@@ -631,15 +634,16 @@ int Tmy_G::cari(int idx_b, Tmy_double rho1, Tmy_double rho2, vector<T_alpha_cont
   var_b.obj = obj_Fb;
   var_b.grad = Gb;
 
-  for (int i = 0; i < _jml_data; ++i)
+  vector<int> tmp_idx = grad[0].get_rand_idx();
+  for (int i = 0; i < tmp_idx.size(); ++i)
   {
-    Tmy_double Ga = grad[0].rand_grad(i);
+    Tmy_double Ga = grad[0][tmp_idx[i]];
     Tmy_double abs_Ga = abs(Ga);
-    Tmy_double dec_Fa = grad[0].dec(grad[0].rand_idx(i), rho1, rho2);
-    Tmy_double obj_Fa = grad[0].obj(grad[0].rand_idx(i), rho1, rho2);
+    Tmy_double dec_Fa = grad[0].dec(tmp_idx[i], rho1, rho2);
+    Tmy_double obj_Fa = grad[0].obj(tmp_idx[i], rho1, rho2);
 
     callback_param var_a;
-    var_a.idx = grad[0].rand_idx(i);
+    var_a.idx = tmp_idx[i];
     var_a.dec = dec_Fa;
     var_a.obj = obj_Fa;
     var_a.grad = Ga;
@@ -647,7 +651,7 @@ int Tmy_G::cari(int idx_b, Tmy_double rho1, Tmy_double rho2, vector<T_alpha_cont
     bool is_pass = true;
     if (_cek_kkt)
     {
-      is_pass = !grad[0].get_kkt(grad[0].rand_idx(i));
+      is_pass = !grad[0].get_kkt(tmp_idx[i]);
     }
     //    cout << " idx a " << _idx[i] << " is_pass " << is_pass << endl;
     if (is_pass)
@@ -657,7 +661,7 @@ int Tmy_G::cari(int idx_b, Tmy_double rho1, Tmy_double rho2, vector<T_alpha_cont
 
     if (is_pass)
     {
-      vector<Tmy_double> hsl_eta = kernel->hit_eta(idx_b, grad[0].rand_idx(i));
+      vector<Tmy_double> hsl_eta = kernel->hit_eta(idx_b, tmp_idx[i]);
       Tmy_double diff = Ga - Gb;
       Tmy_double delta = diff * hsl_eta[0];
 
@@ -670,12 +674,12 @@ int Tmy_G::cari(int idx_b, Tmy_double rho1, Tmy_double rho2, vector<T_alpha_cont
       bool is_pass = true;
       if (_filter_delta)
       {
-        is_pass = delta_filter(idx_b, grad[0].rand_idx(i), alpha, delta);
+        is_pass = delta_filter(idx_b, tmp_idx[i], alpha, delta);
       }
       if (is_pass)
       {
         cout << " idx_a " << var_a.idx << " delta " << delta << endl;
-        idx_a = grad[0].rand_idx(i);
+        idx_a = tmp_idx[i];
         break;
       }
     }

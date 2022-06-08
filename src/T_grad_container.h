@@ -52,9 +52,7 @@ public:
 
 	void set_kkt(int idx, bool val);
 	bool get_kkt(int idx);
-
-	int rand_idx(int idx);
-	Tmy_double rand_grad(int idx);
+	vector<int> get_rand_idx();
 };
 
 #endif

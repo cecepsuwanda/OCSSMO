@@ -492,12 +492,7 @@ bool T_grad_container::get_kkt(int idx)
 	return _is_kkt[idx];
 }
 
-int T_grad_container::rand_idx(int idx)
+vector<int> T_grad_container::get_rand_idx()
 {
-	return _idx[idx];
-}
-
-Tmy_double T_grad_container::rand_grad(int idx)
-{
-	return _grad[_idx[idx]];
+	return _idx;
 }
