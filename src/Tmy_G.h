@@ -45,7 +45,7 @@ private:
 	int max(int idx_b, Tmy_double rho1, Tmy_double rho2, vector<T_alpha_container> alpha, vector<T_grad_container> grad, Tmy_kernel *kernel, Tmy_alpha *my_alpha, callback_type1 f);
 	int cari(int idx_b, Tmy_double rho1, Tmy_double rho2, vector<T_alpha_container> alpha, vector<T_grad_container> grad, Tmy_kernel *kernel, Tmy_alpha *my_alpha, callback_type1 f);
 
-	bool delta_filter(int idx_b, int idx_a, vector<T_alpha_container> alpha, Tmy_double delta);
+	bool delta_filter(int idx_b, int idx_a, vector<T_alpha_container> alpha, vector<Tmy_double> delta);
 
 public:
 	Tmy_G();

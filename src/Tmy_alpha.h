@@ -88,6 +88,7 @@ class Tmy_alpha
 {
 private:
   Tconfig *_config;
+  bool _split;
 
   vector<Tmy_double> calculateBoundaries(int i, int j, T_alpha_container alpha);
   vector<Tmy_double> limit_alpha(Tmy_double alpha_a, Tmy_double alpha_b, Tmy_double Low, Tmy_double High, int flag);

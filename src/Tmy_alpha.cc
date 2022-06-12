@@ -3,6 +3,7 @@
 Tmy_alpha::Tmy_alpha(Tconfig *v_config)
 {
 	_config = v_config;
+	_split = true;
 }
 
 Tmy_alpha::~Tmy_alpha()
@@ -36,17 +37,20 @@ void Tmy_alpha::init(int jml_data, T_alpha_container &alpha, T_alpha_container &
 	tmp = _config->V2 * ((double)jml_data);
 	int jml_v2 = (int)tmp;
 
-	// if ((jml_v1 + jml_v2) > jml_data)
-	// {
-	// 	if (jml_v1 > jml_v2)
-	// 	{
-	// 		jml_v1 = jml_data - jml_v2;
-	// 	}
-	// 	else
-	// 	{
-	// 		jml_v2 = jml_data - jml_v1;
-	// 	}
-	// }
+	if (_split)
+	{
+		if ((jml_v1 + jml_v2) > jml_data)
+		{
+			if (jml_v1 > jml_v2)
+			{
+				jml_v1 = jml_data - jml_v2;
+			}
+			else
+			{
+				jml_v2 = jml_data - jml_v1;
+			}
+		}
+	}
 
 	for (int i = 0; i < jml_v1; ++i)
 	{
@@ -57,47 +61,68 @@ void Tmy_alpha::init(int jml_data, T_alpha_container &alpha, T_alpha_container &
 
 	if (jml_alpha < _config->eps1)
 	{
-		// alpha_v1[jml_v1 - 1] = alpha_v1[jml_v1 - 1] + (_config->eps1 - jml_alpha);
-		alpha_v1[jml_v1] = _config->eps1 - jml_alpha;
+		if (_split)
+		{
+			alpha_v1[jml_v1 - 1] = alpha_v1[jml_v1 - 1] + (_config->eps1 - jml_alpha);
+		}
+		else
+		{
+			alpha_v1[jml_v1] = _config->eps1 - jml_alpha;
+		}
 	}
 
-	// int jml_sv = alpha_v1.n_sv();
+	int jml_sv = alpha_v1.n_sv();
 
-	// if (jml_sv == 0)
-	// {
-	// 	alpha_v1[0] = ub_v1 / 4.0;
-	// 	alpha_v1[1] = alpha_v1[1] + (ub_v1 - (ub_v1 / 4.0));
-	// }
-
-	for (int i = 0; i < jml_v2; ++i)
+	if (jml_sv == 0)
 	{
-		alpha_v2[i] = ub_v2;
+		alpha_v1[0] = ub_v1 / 4.0;
+		alpha_v1[1] = alpha_v1[1] + (ub_v1 - (ub_v1 / 4.0));
 	}
 
-	// int idx = jml_data - 1;
-	// int i = 0;
-	// while (i < jml_v2)
-	// {
-	// 	alpha_v2[idx] = ub_v2;
-	// 	idx--;
-	// 	i++;
-	// }
+	int idx = 0;
+	if (_split)
+	{
+		idx = jml_data - 1;
+		int i = 0;
+		while (i < jml_v2)
+		{
+			alpha_v2[idx] = ub_v2;
+			idx--;
+			i++;
+		}
+	}
+	else
+	{
+		for (int i = 0; i < jml_v2; ++i)
+		{
+			alpha_v2[i] = ub_v2;
+		}
+	}
 
 	jml_alpha = alpha_v2.sum();
 
 	if (jml_alpha < _config->eps2)
 	{
-		// alpha_v2[idx + 1] = alpha_v2[idx + 1] + (_config->eps2 - jml_alpha);
-		alpha_v2[jml_v2] = _config->eps2 - jml_alpha;
+		if (_split)
+		{
+			alpha_v2[idx + 1] = alpha_v2[idx + 1] + (_config->eps2 - jml_alpha);
+		}
+		else
+		{
+			alpha_v2[jml_v2] = _config->eps2 - jml_alpha;
+		}
 	}
 
-	// jml_sv = alpha_v2.n_sv();
+	if (_split)
+	{
+		jml_sv = alpha_v2.n_sv();
 
-	// if (jml_sv == 0)
-	// {
-	// 	alpha_v2[jml_data - 1] = ub_v2 / 4.0;
-	// 	alpha_v2[jml_data - 2] = alpha_v2[jml_data - 2] + (ub_v2 - (ub_v2 / 4.0));
-	// }
+		if (jml_sv == 0)
+		{
+			alpha_v2[jml_data - 1] = ub_v2 / 4.0;
+			alpha_v2[jml_data - 2] = alpha_v2[jml_data - 2] + (ub_v2 - (ub_v2 / 4.0));
+		}
+	}
 
 	for (int i = 0; i < jml_data; ++i)
 	{
@@ -150,16 +175,13 @@ vector<Tmy_double> Tmy_alpha::limit_alpha(Tmy_double alpha_a, Tmy_double alpha_b
 vector<Tmy_double> Tmy_alpha::calculateNewAlpha(int i, int j, Tmy_double delta, Tmy_double Low, Tmy_double High, T_alpha_container alpha)
 {
 	Tmy_double alpha_a_new = alpha[i] + delta;
-	// if(abs(alpha_a_new)<1e-3) alpha_a_new = 0.0;
-
 	// cout<<" alpha_old "<< _alpha.at(i) <<" alpha_a_new "<< alpha_a_new <<endl;
 	vector<Tmy_double> tmp = limit_alpha(alpha_a_new, 0, Low, High, 0);
 	alpha_a_new = tmp[0];
 	Tmy_double alpha_b_new = alpha[j] + (alpha[i] - alpha_a_new);
-	// if(abs(alpha_b_new)<1e-3) alpha_b_new = 0.0;
-	tmp = limit_alpha(alpha_b_new, alpha_a_new, alpha.lb(), alpha.ub(), 1);
-	alpha_b_new = tmp[0];
-	alpha_a_new = tmp[1];
+	// tmp = limit_alpha(alpha_b_new, alpha_a_new, alpha.lb(), alpha.ub(), 1);
+	// alpha_b_new = tmp[0];
+	// alpha_a_new = tmp[1];
 	return {alpha[i], alpha[j], alpha_a_new, alpha_b_new};
 }
 
@@ -172,120 +194,8 @@ bool Tmy_alpha::is_pass(Treturn_is_pass &v1, Treturn_is_pass &v2, Treturn_is_pas
 	coba_v1 = v1;
 	coba_v2 = v2;
 
-	if ((coba_v1 - coba_v2) != v)
-	{
-		if (((v1.new_alpha_i != 0.0) and (v2.new_alpha_i == 0.0)) and ((v1.new_alpha_j == 0.0) and (v2.new_alpha_j != 0.0)))
-		{
-			if ((coba_v1 - coba_v2) != v)
-			{
-				cout << " Masuk 1 !!! " << endl;
-				coba_v1.set(0, 0.0);
-				coba_v2.set(1, 0.0);
-			}
-		}
-	}
-
-	if ((coba_v1 - coba_v2) != v)
-	{
-		coba_v1 = v1;
-		coba_v2 = v2;
-		if (((v1.new_alpha_i == 0.0) and (v2.new_alpha_i != 0.0)) and ((v1.new_alpha_j != 0.0) and (v2.new_alpha_j == 0.0)))
-		{
-			cout << " Masuk 2 !!! " << endl;
-			coba_v1.set(1, 0.0);
-			coba_v2.set(0, 0.0);
-		}
-	}
-
-	if ((coba_v1 - coba_v2) != v)
-	{
-		coba_v1 = v1;
-		coba_v2 = v2;
-		if (((v1.new_alpha_i >= 0.0) and (v2.new_alpha_i == 0.0)) and ((v1.new_alpha_j >= 0.0) and (v2.new_alpha_j == 0.0)))
-		{
-
-			cout << " Masuk 3 !!! " << endl;
-			coba_v1.set(0, abs(v.new_alpha_i));
-			if ((coba_v1 - coba_v2) != v)
-			{
-				coba_v1 = v1;
-				coba_v1.set(1, abs(v.new_alpha_j));
-			}
-		}
-	}
-
-	if ((coba_v1 - coba_v2) != v)
-	{
-		coba_v1 = v1;
-		coba_v2 = v2;
-		if (((v1.new_alpha_i == 0.0) and (v2.new_alpha_i >= 0.0)) and ((v1.new_alpha_j == 0.0) and (v2.new_alpha_j >= 0.0)))
-		{
-			cout << " Masuk 4 !!! " << endl;
-			coba_v2.set(0, abs(v.new_alpha_i));
-			if ((coba_v1 - coba_v2) != v)
-			{
-				coba_v2 = v2;
-				coba_v2.set(1, abs(v.new_alpha_j));
-			}
-		}
-	}
-
-	if ((coba_v1 - coba_v2) != v)
-	{
-		coba_v1 = v1;
-		coba_v2 = v2;
-		if (((v1.new_alpha_i == 0.0) and (v2.new_alpha_i != 0.0)) and ((v1.new_alpha_j != 0.0) and (v2.new_alpha_j == 0.0)))
-		{
-			cout << " Masuk 21 !!! " << endl;
-			coba_v1.set(0, abs(v2.new_alpha_i + v.new_alpha_i));
-		}
-	}
-
-	if ((coba_v1 - coba_v2) != v)
-	{
-		coba_v1 = v1;
-		coba_v2 = v2;
-		if (((v1.new_alpha_i >= 0.0) and (v2.new_alpha_i == 0.0)) and ((v1.new_alpha_j >= 0.0) and (v2.new_alpha_j >= 0.0)))
-		{
-			cout << " Masuk 5 !!! " << endl;
-			coba_v1.set(0, abs(v.new_alpha_i));
-			if ((coba_v1 - coba_v2) != v)
-			{
-				coba_v1 = v1;
-				coba_v1.set(1, abs(v.new_alpha_j));
-			}
-		}
-	}
-
-	// if ((coba_v1 - coba_v2) != v)
-	// {
-	// 	coba_v1 = v1;
-	// 	coba_v2 = v2;
-
-	// 	if (v.new_alpha_i < 0.0)
-	// 	{
-	// 		coba_v2.set(0, coba_v2.new_alpha_i + abs(v.new_alpha_i));
-	// 		if ((coba_v1 - coba_v2) != v)
-	// 		{
-	// 			coba_v1 = v1;
-	// 			coba_v2 = v2;
-	// 			coba_v1.set(0, coba_v1.new_alpha_i + (coba_v2.new_alpha_i - abs(v.new_alpha_i)));
-	// 		}
-	// 	}
-	// 	else
-	// 	{
-	// 		if (v.new_alpha_i > 0.0)
-	// 		{
-	// 			coba_v1.set(0, coba_v1.new_alpha_i + v.new_alpha_i);
-	// 			if ((coba_v1 - coba_v2) != v)
-	// 			{
-	// 				coba_v1 = v1;
-	// 				coba_v2 = v2;
-	// 				coba_v2.set(0, coba_v2.new_alpha_i + (coba_v1.new_alpha_i - v.new_alpha_i));
-	// 			}
-	// 		}
-	// 	}
-	// }
+	v.new_alpha_i = v1.new_alpha_i - v2.new_alpha_i;
+	v.new_alpha_j = v1.new_alpha_j - v2.new_alpha_j;
 
 	if ((coba_v1 - coba_v2) == v)
 	{
@@ -295,9 +205,9 @@ bool Tmy_alpha::is_pass(Treturn_is_pass &v1, Treturn_is_pass &v2, Treturn_is_pas
 	}
 	else
 	{
-		cout << "v1 " << coba_v1.is_pass << " old [" << coba_v1.alpha_i << "," << coba_v1.alpha_j << "] new [" << coba_v1.new_alpha_i << "," << coba_v1.new_alpha_j << "] " << endl;
-		cout << "v2 " << coba_v2.is_pass << " old [" << coba_v2.alpha_i << "," << coba_v2.alpha_j << "] new [" << coba_v2.new_alpha_i << "," << coba_v2.new_alpha_j << "] " << endl;
-		cout << "v " << v.is_pass << " old [" << v.alpha_i << "," << v.alpha_j << "] new [" << v.new_alpha_i << "," << v.new_alpha_j << "] " << endl;
+		// cout << "v1 " << coba_v1.is_pass << " old [" << coba_v1.alpha_i << "," << coba_v1.alpha_j << "] new [" << coba_v1.new_alpha_i << "," << coba_v1.new_alpha_j << "] " << endl;
+		// cout << "v2 " << coba_v2.is_pass << " old [" << coba_v2.alpha_i << "," << coba_v2.alpha_j << "] new [" << coba_v2.new_alpha_i << "," << coba_v2.new_alpha_j << "] " << endl;
+		// cout << "v " << v.is_pass << " old [" << v.alpha_i << "," << v.alpha_j << "] new [" << v.new_alpha_i << "," << v.new_alpha_j << "] " << endl;
 		v1.new_alpha_i = v1.alpha_i;
 		v1.new_alpha_j = v1.alpha_j;
 		v2.new_alpha_i = v2.alpha_i;
