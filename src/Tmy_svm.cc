@@ -52,7 +52,7 @@ int Tmy_svm::take_step(int idx_b, int idx_a)
             delta_v1 = 0.0;
          }
       }
-      delta = ((tmp_v1.alpha_i - tmp_v1.new_alpha_i) - (tmp_v2.alpha_i - tmp_v2.new_alpha_i));
+      delta = ((tmp_v1.new_alpha_i - tmp_v1.alpha_i) - (tmp_v2.new_alpha_i - tmp_v2.alpha_i));
 
       cout << "delta " << delta << " delta v1 " << delta_v1 << " delta v2 " << delta_v2 << endl;
       Treturn_is_pass tmp = _my_alpha->is_pass(idx_b, idx_a, delta, _alpha);
@@ -84,6 +84,7 @@ int Tmy_svm::take_step(int idx_b, int idx_a)
          }
          if (is_pass)
          {
+
             if (tmp_v1.is_pass)
             {
                _my_G.update_G(idx_b, idx_a, tmp_v1, _my_kernel, _alpha_v1, _grad_v1);
@@ -160,12 +161,19 @@ int Tmy_svm::examineExample(int idx_b)
    tmp_grad.push_back(_grad_v2);
 
    bool is_pass = true;
-   // is_pass = !_my_G.is_kkt(idx_b, _rho, tmp_alpha, _grad);
+   is_pass = !_my_G.is_kkt(idx_b, _rho, tmp_alpha, _grad);
 
-   bool kondisi1 = (_alpha[idx_b] < _alpha.ub()) or (_alpha[idx_b] > _alpha.lb());
-   bool kondisi2 = abs(_alpha[idx_b]) > 0.0;
+   Tcek_opt_return hsl_v1 = _grad_v1.cek_opt(_alpha_v1, _my_kernel, _my_alpha);
+   Tcek_opt_return hsl_v2 = _grad_v2.cek_opt(_alpha_v2, _my_kernel, _my_alpha);
 
-   is_pass = ((dec < 0.0) and kondisi1) or ((dec > 0.0) and kondisi2);
+   cout << "v1 idx_b " << hsl_v1.idx_b << " v1 idx_a " << hsl_v1.idx_a << " v1 opt = " << hsl_v1.diff << endl;
+   cout << "v2 idx_b " << hsl_v2.idx_b << " v2 idx_a " << hsl_v2.idx_a << " v2 opt = " << hsl_v2.diff << endl;
+
+   bool kondisi1 = ((Gb < _rho.rho_v1) and (Gb < _rho.rho_v2)) and ((_alpha_v1[idx_b] < _alpha_v1.ub()) or (_alpha_v2[idx_b] > _alpha_v2.lb()));
+   bool kondisi2 = ((Gb > _rho.rho_v1) and (Gb < _rho.rho_v2)) and ((_alpha_v1[idx_b] > _alpha_v1.lb()) or (_alpha_v2[idx_b] > _alpha_v2.lb()));
+   bool kondisi3 = ((Gb > _rho.rho_v1) and (Gb > _rho.rho_v2)) and ((_alpha_v2[idx_b] < _alpha_v2.ub()) or (_alpha_v1[idx_b] > _alpha_v1.lb()));
+   bool kondisi4 = ((Gb > _rho.rho_v1) and (Gb < _rho.rho_v2)) and ((_alpha_v2[idx_b] > _alpha_v2.lb()) or (_alpha_v1[idx_b] > _alpha_v1.lb()));
+   // is_pass = (kondisi1 or kondisi2) or (kondisi3 or kondisi4);
    cout << " idx_b " << idx_b << endl;
    if (is_pass)
    {
@@ -241,10 +249,20 @@ int Tmy_svm::examineExample()
    tmp_grad.push_back(_grad_v1);
    tmp_grad.push_back(_grad_v2);
 
+   // cout << "cek opt v1" << endl;
+   Tcek_opt_return hsl_v1 = _grad_v1.cek_opt(_alpha_v1, _my_kernel, _my_alpha);
+   // cout << "cek opt v2" << endl;
+   Tcek_opt_return hsl_v2 = _grad_v2.cek_opt(_alpha_v2, _my_kernel, _my_alpha);
+
+   cout << "v1 idx_b " << hsl_v1.idx_b << " v1 idx_a " << hsl_v1.idx_a << " v1 opt = " << hsl_v1.diff << endl;
+   cout << "v2 idx_b " << hsl_v2.idx_b << " v2 idx_a " << hsl_v2.idx_a << " v2 opt = " << hsl_v2.diff << endl;
+
    bool is_pass = _my_G.cari_idx(idx_b, idx_a, _rho, tmp_alpha, tmp_grad, _my_kernel);
-   if (idx_a != -1)
+   if (idx_a != -1) // idx_a != -1
    {
       cout << " idx_b " << idx_b << " idx_a " << idx_a << " " << endl;
+      // cout << " idx_b " << hsl_v1.idx_b << " idx_a " << hsl_v1.idx_a << " " << endl;
+      // hasil = take_step(hsl_v1.idx_b, hsl_v1.idx_a);
       hasil = take_step(idx_b, idx_a);
       if (hasil == 0)
       {
@@ -305,7 +323,9 @@ Treturn_train Tmy_svm::train(Tdataframe &df)
    cout << " masuk " << endl;
    for (int i = 0; i < jml_data; ++i)
    {
-      cout << _alpha_v1[i] << setw(15) << _alpha_v2[i] << setw(15) << _alpha[i] << endl;
+      cout << i << setw(15) << _alpha_v1[i] << setw(15) << _alpha_v2[i] << setw(15) << _alpha[i] << setw(15) << _grad[i] << setw(15) << _rho.rho_v1 << setw(15) << _rho.rho_v2 << setw(15) << _grad.get_kkt(i) << endl;
+
+      // cout << _grad_v1[i] << setw(15) << _grad_v2[i] << setw(15) << _grad[i] << setw(15) << _rho.rho_v1 << setw(15) << _rho.rho_v2 << endl;
    }
 
    int iter = 0;
@@ -324,27 +344,27 @@ Treturn_train Tmy_svm::train(Tdataframe &df)
       is_alpha_changed = 0;
       cout << endl
            << "iterasi ke - " << iter << endl;
-      vector<int> tmp_idx = _grad.get_rand_idx();
+      // vector<int> tmp_idx = _grad.get_rand_idx();
       if (examineAll)
       {
-         for (int idx_b = 0; idx_b < jml_data; idx_b++)
+         for (int idx_b = 0; idx_b < jml_data; idx_b++) // jml_data
          {
 
             Tmy_double old_rho_v1 = _rho.rho_v1;
             Tmy_double old_rho_v2 = _rho.rho_v2;
             int old_alpha_changed = is_alpha_changed;
 
-            is_alpha_changed += examineExample();
+            is_alpha_changed += examineExample(idx_b); // tmp_idx[idx_b]
             // cout << "is_alpha_changed" << is_alpha_changed << endl;
             if (is_alpha_changed != old_alpha_changed)
             {
                cout << " old rho [" << old_rho_v1 << "," << old_rho_v2 << "]" << endl;
                cout << " new rho [" << _rho.rho_v1 << "," << _rho.rho_v2 << "]" << endl;
             }
-            if (is_alpha_changed != (idx_b + 1))
-            {
-               break;
-            }
+            // if (is_alpha_changed != (idx_b + 1))
+            // {
+            //    break;
+            // }
          }
          // if (is_alpha_changed == 0)
          // {
@@ -357,7 +377,10 @@ Treturn_train Tmy_svm::train(Tdataframe &df)
          for (int idx_b = 0; idx_b < jml_data; idx_b++)
          {
             bool is_pass = true;
-            is_pass = (!_alpha.is_ub(tmp_idx[idx_b]) and !_alpha.is_lb(tmp_idx[idx_b]));
+
+            bool kondisi1 = ((_alpha_v1[idx_b] != _alpha_v1.lb()) and (_alpha_v1[idx_b] != _alpha_v1.ub())) and (_alpha_v2[idx_b] == _alpha_v2.lb());
+            bool kondisi2 = ((_alpha_v2[idx_b] != _alpha_v2.lb()) and (_alpha_v2[idx_b] != _alpha_v2.ub())) and (_alpha_v1[idx_b] == _alpha_v1.lb());
+            is_pass = kondisi1 or kondisi2;
 
             if (is_pass)
             {
@@ -366,7 +389,7 @@ Treturn_train Tmy_svm::train(Tdataframe &df)
                Tmy_double old_rho_v2 = _rho.rho_v2;
                int old_alpha_changed = is_alpha_changed;
 
-               is_alpha_changed += examineExample(tmp_idx[idx_b]);
+               is_alpha_changed += examineExample(idx_b); // tmp_idx[idx_b]
 
                if (is_alpha_changed != old_alpha_changed)
                {
@@ -381,7 +404,7 @@ Treturn_train Tmy_svm::train(Tdataframe &df)
          }
          // if (is_alpha_changed != 0)
          // {
-         //    examineAll = !examineAll;
+         // examineAll = !examineAll;
          // }
       }
       examineAll = !examineAll;
@@ -392,6 +415,17 @@ Treturn_train Tmy_svm::train(Tdataframe &df)
    // _alpha.nol_kan();
    // _alpha_v1.nol_kan();
    // _alpha_v2.nol_kan();
+
+   // for (int i = 0; i < jml_data; ++i)
+   // {
+   //    _alpha[i] = _alpha_v1[i] - _alpha_v2[i];
+   // }
+
+   // _my_G.init(jml_data, _my_kernel, _alpha_v1, _grad_v1);
+   // _my_G.init(jml_data, _my_kernel, _alpha_v2, _grad_v2);
+   // _my_G.init(jml_data, _my_kernel, _alpha, _grad);
+
+   tmp_alpha.clear();
    tmp_alpha.push_back(_alpha);
    tmp_alpha.push_back(_alpha_v1);
    tmp_alpha.push_back(_alpha_v2);
@@ -401,7 +435,7 @@ Treturn_train Tmy_svm::train(Tdataframe &df)
    cout << endl;
    for (int i = 0; i < jml_data; ++i)
    {
-      cout << _alpha_v1[i] << setw(15) << _alpha_v2[i] << setw(15) << _alpha[i] << endl;
+      cout << i << setw(15) << _alpha_v1[i] << setw(15) << _alpha_v2[i] << setw(15) << _alpha[i] << setw(15) << _grad[i] << setw(15) << _rho.rho_v1 << setw(15) << _rho.rho_v2 << setw(15) << _grad.get_kkt(i) << endl;
    }
 
    tmp_train.jml_iterasi = iter;

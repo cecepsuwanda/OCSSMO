@@ -20,11 +20,11 @@ void Tmy_alpha::init(int jml_data, T_alpha_container &alpha, T_alpha_container &
 	alpha.reserve(jml_data);
 	alpha.assign(jml_data, 0.0);
 
-	alpha_v1.boundaries(0, ub_v1);
+	alpha_v1.boundaries(0.0, ub_v1);
 	alpha_v1.reserve(jml_data);
 	alpha_v1.assign(jml_data, 0.0);
 
-	alpha_v2.boundaries(0, ub_v2);
+	alpha_v2.boundaries(0.0, ub_v2);
 	alpha_v2.reserve(jml_data);
 	alpha_v2.assign(jml_data, 0.0);
 
