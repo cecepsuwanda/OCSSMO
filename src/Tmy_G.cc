@@ -3,7 +3,7 @@
 Tmy_G::Tmy_G()
 {
   _cek_kkt = false;
-  _filter_delta = false;
+  _filter_delta = true;
   _min_rho = true;
 }
 
@@ -182,20 +182,20 @@ int Tmy_G::cari_idx_a(int idx_b, Treturn_update_rho rho, vector<T_alpha_containe
       bool kondisi2 = alpha[2].is_sv(var_a.idx) and (alpha[1][var_a.idx] == alpha[1].lb());
       is_pass = kondisi1 or kondisi2;
 
-      // if (is_pass)
-      // {
-      //   if (alpha[2].is_nol(var_b.idx))
-      //   {
-      //     is_pass = alpha[2].is_nol(var_a.idx);
-      //   }
-      //   else
-      //   {
-      //     if (alpha[1].is_nol(var_b.idx))
-      //     {
-      //       is_pass = alpha[1].is_nol(var_a.idx);
-      //     }
-      //   }
-      // }
+      if (is_pass)
+      {
+        if (alpha[2].is_nol(var_b.idx))
+        {
+          is_pass = alpha[2].is_nol(var_a.idx);
+        }
+        else
+        {
+          if (alpha[1].is_nol(var_b.idx))
+          {
+            is_pass = alpha[1].is_nol(var_a.idx);
+          }
+        }
+      }
     }
     return is_pass;
   };
@@ -215,20 +215,20 @@ int Tmy_G::cari_idx_lain(int idx_b, Treturn_update_rho rho, Tmy_kernel *kernel, 
     bool is_pass = true;
     is_pass = var_b.idx != var_a.idx;
 
-    // if (is_pass)
-    // {
-    //   if (alpha[2].is_nol(var_b.idx))
-    //   {
-    //     is_pass = alpha[2].is_nol(var_a.idx);
-    //   }
-    //   else
-    //   {
-    //     if (alpha[1].is_nol(var_b.idx))
-    //     {
-    //       is_pass = alpha[1].is_nol(var_a.idx);
-    //     }
-    //   }
-    // }
+    if (is_pass)
+    {
+      if (alpha[2].is_nol(var_b.idx))
+      {
+        is_pass = alpha[2].is_nol(var_a.idx);
+      }
+      else
+      {
+        if (alpha[1].is_nol(var_b.idx))
+        {
+          is_pass = alpha[1].is_nol(var_a.idx);
+        }
+      }
+    }
     if (is_pass)
     {
 
@@ -292,20 +292,20 @@ int Tmy_G::cari_idx_lain(int idx_b, Treturn_update_rho rho, Tmy_kernel *kernel, 
     bool is_pass = true;
     is_pass = var_b.idx != var_a.idx;
 
-    // if (is_pass)
-    // {
-    //   if (alpha[2].is_nol(var_b.idx))
-    //   {
-    //     is_pass = alpha[2].is_nol(var_a.idx);
-    //   }
-    //   else
-    //   {
-    //     if (alpha[1].is_nol(var_b.idx))
-    //     {
-    //       is_pass = alpha[1].is_nol(var_a.idx);
-    //     }
-    //   }
-    // }
+    if (is_pass)
+    {
+      if (alpha[2].is_nol(var_b.idx))
+      {
+        is_pass = alpha[2].is_nol(var_a.idx);
+      }
+      else
+      {
+        if (alpha[1].is_nol(var_b.idx))
+        {
+          is_pass = alpha[1].is_nol(var_a.idx);
+        }
+      }
+    }
 
     if (is_pass)
     {
@@ -553,10 +553,10 @@ int Tmy_G::max(int idx_b, Tmy_double rho1, Tmy_double rho2, vector<T_alpha_conta
 
     Tmy_double abs_Fa = abs(Fa);
 
-    if (is_pass)
-    {
-      is_pass = abs(Fb) > abs(Fa);
-    }
+    // if (is_pass)
+    // {
+    //   is_pass = abs(Fb) > abs(Fa);
+    // }
 
     if (is_pass)
     {
@@ -658,10 +658,10 @@ int Tmy_G::max(int idx_b, Tmy_double rho1, Tmy_double rho2, vector<T_alpha_conta
 
     Tmy_double abs_Fa = abs(Fa);
 
-    if (is_pass)
-    {
-      is_pass = abs(Fb) > abs(Fa);
-    }
+    // if (is_pass)
+    // {
+    //   is_pass = abs(Fb) > abs(Fa);
+    // }
 
     if (is_pass)
     {
@@ -762,10 +762,10 @@ int Tmy_G::cari(int idx_b, Tmy_double rho1, Tmy_double rho2, vector<T_alpha_cont
 
     Tmy_double abs_Fa = abs(Fa);
 
-    if (is_pass)
-    {
-      is_pass = abs(Fb) > abs(Fa);
-    }
+    // if (is_pass)
+    // {
+    //   is_pass = abs(Fb) > abs(Fa);
+    // }
 
     if (is_pass)
     {

@@ -161,7 +161,7 @@ int Tmy_svm::examineExample(int idx_b)
    tmp_grad.push_back(_grad_v2);
 
    bool is_pass = true;
-   is_pass = !_my_G.is_kkt(idx_b, _rho, tmp_alpha, _grad);
+   // is_pass = !_my_G.is_kkt(idx_b, _rho, tmp_alpha, _grad);
 
    Tcek_opt_return hsl_v1 = _grad_v1.cek_opt(_alpha_v1, _my_kernel, _my_alpha);
    Tcek_opt_return hsl_v2 = _grad_v2.cek_opt(_alpha_v2, _my_kernel, _my_alpha);
@@ -173,7 +173,7 @@ int Tmy_svm::examineExample(int idx_b)
    bool kondisi2 = ((Gb > _rho.rho_v1) and (Gb < _rho.rho_v2)) and ((_alpha_v1[idx_b] > _alpha_v1.lb()) or (_alpha_v2[idx_b] > _alpha_v2.lb()));
    bool kondisi3 = ((Gb > _rho.rho_v1) and (Gb > _rho.rho_v2)) and ((_alpha_v2[idx_b] < _alpha_v2.ub()) or (_alpha_v1[idx_b] > _alpha_v1.lb()));
    bool kondisi4 = ((Gb > _rho.rho_v1) and (Gb < _rho.rho_v2)) and ((_alpha_v2[idx_b] > _alpha_v2.lb()) or (_alpha_v1[idx_b] > _alpha_v1.lb()));
-   // is_pass = (kondisi1 or kondisi2) or (kondisi3 or kondisi4);
+   is_pass = (kondisi1 or kondisi2) or (kondisi3 or kondisi4);
    cout << " idx_b " << idx_b << endl;
    if (is_pass)
    {
