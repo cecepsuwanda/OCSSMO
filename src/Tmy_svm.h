@@ -7,8 +7,6 @@
 #include "Tmy_alpha.h"
 #include "Tmy_kernel.h"
 #include "Tmy_G.h"
-#include "Tmy_list_G.h"
-#include "Tmy_list_alpha.h"
 #include "Tmy_double.h"
 
 using namespace std;
