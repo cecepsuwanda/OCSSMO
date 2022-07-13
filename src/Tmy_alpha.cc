@@ -123,6 +123,16 @@ void Tmy_alpha::init(int jml_data, T_alpha_container &alpha, T_alpha_container &
 			alpha_v2[jml_data - 2] = alpha_v2[jml_data - 2] + (ub_v2 - (ub_v2 / 4.0));
 		}
 	}
+	else
+	{
+		int jml_sv = alpha_v2.n_sv();
+
+		if (jml_sv == 0)
+		{
+			alpha_v2[0] = ub_v2 / 4.0;
+			alpha_v2[1] = alpha_v2[1] + (ub_v2 - (ub_v2 / 4.0));
+		}
+	}
 
 	for (int i = 0; i < jml_data; ++i)
 	{
@@ -138,10 +148,10 @@ vector<Tmy_double> Tmy_alpha::calculateBoundaries(int i, int j, T_alpha_containe
 	diff = t - alpha.ub();
 	diff1 = t + abs(alpha.lb());
 	vector<Tmy_double> hasil = {alpha.lb(), alpha.ub()};
-	// if (((alpha[i] <= alpha.ub()) and (alpha[i] >= alpha.lb())) and ((alpha[j] <= alpha.ub()) and (alpha[j] >= alpha.lb())))
-	//{
-	hasil = {max(diff, alpha.lb()), min(alpha.ub(), diff1)};
-	//}
+	if (((alpha[i] <= alpha.ub()) and (alpha[i] >= alpha.lb())) and ((alpha[j] <= alpha.ub()) and (alpha[j] >= alpha.lb())))
+	{
+		hasil = {max(diff, alpha.lb()), min(alpha.ub(), diff1)};
+	}
 	return hasil;
 }
 
@@ -175,13 +185,12 @@ vector<Tmy_double> Tmy_alpha::limit_alpha(Tmy_double alpha_a, Tmy_double alpha_b
 vector<Tmy_double> Tmy_alpha::calculateNewAlpha(int i, int j, Tmy_double delta, Tmy_double Low, Tmy_double High, T_alpha_container alpha)
 {
 	Tmy_double alpha_a_new = alpha[i] + delta;
-	// cout<<" alpha_old "<< _alpha.at(i) <<" alpha_a_new "<< alpha_a_new <<endl;
 	vector<Tmy_double> tmp = limit_alpha(alpha_a_new, 0, Low, High, 0);
 	alpha_a_new = tmp[0];
 	Tmy_double alpha_b_new = alpha[j] + (alpha[i] - alpha_a_new);
-	// tmp = limit_alpha(alpha_b_new, alpha_a_new, alpha.lb(), alpha.ub(), 1);
-	// alpha_b_new = tmp[0];
-	// alpha_a_new = tmp[1];
+	tmp = limit_alpha(alpha_b_new, alpha_a_new, alpha.lb(), alpha.ub(), 1);
+	alpha_b_new = tmp[0];
+	alpha_a_new = tmp[1];
 	return {alpha[i], alpha[j], alpha_a_new, alpha_b_new};
 }
 
@@ -194,8 +203,114 @@ bool Tmy_alpha::is_pass(Treturn_is_pass &v1, Treturn_is_pass &v2, Treturn_is_pas
 	coba_v1 = v1;
 	coba_v2 = v2;
 
-	v.new_alpha_i = v1.new_alpha_i - v2.new_alpha_i;
-	v.new_alpha_j = v1.new_alpha_j - v2.new_alpha_j;
+	if ((coba_v2.new_alpha_i == 0.0) and (coba_v2.new_alpha_j == 0.0))
+	{
+		cout << " Masuk 1 " << endl;
+		if ((v.new_alpha_i > 0.0) and (v.new_alpha_j > 0.0))
+		{
+			coba_v1.set(0, v.new_alpha_i);
+		}
+		else
+		{
+		}
+	}
+	else
+	{
+		if ((coba_v1.new_alpha_i == 0.0) and (coba_v1.new_alpha_j == 0.0))
+		{
+			cout << " Masuk 2 " << endl;
+			if ((v.new_alpha_i < 0.0) and (v.new_alpha_j < 0.0))
+			{
+				coba_v2.set(0, abs(v.new_alpha_i));
+			}
+			else
+			{
+			}
+		}
+		else
+		{
+			if ((v.new_alpha_i > 0.0) and (v.new_alpha_j > 0.0))
+			{
+				cout << " Masuk 3 " << endl;
+				coba_v1.set(0, v.new_alpha_i);
+				coba_v2.set(0, 0.0);
+				if ((coba_v1 - coba_v2) != v)
+				{
+					coba_v1 = v1;
+					coba_v2 = v2;
+					coba_v1.set(0, abs(v.new_alpha_i + coba_v2.new_alpha_i));
+				}
+			}
+			else
+			{
+				if ((v.new_alpha_i < 0.0) and (v.new_alpha_j < 0.0))
+				{
+					cout << " Masuk 4 " << endl;
+					coba_v1.set(0, 0.0);
+					coba_v2.set(0, abs(v.new_alpha_i));
+					if ((coba_v1 - coba_v2) != v)
+					{
+						coba_v1 = v1;
+						coba_v2 = v2;
+						coba_v2.set(0, abs(v.new_alpha_i - coba_v1.new_alpha_i));
+					}
+				}
+				else
+				{
+					if ((v.new_alpha_i > 0.0) and (v.new_alpha_j < 0.0))
+					{
+						cout << " Masuk 5 " << endl;
+						coba_v1.set(1, 0.0);
+						coba_v2.set(0, 0.0);
+						if ((coba_v1 - coba_v2) != v)
+						{
+							coba_v2.set(1, abs(v.new_alpha_j));
+						}
+					}
+					else
+					{
+						if ((v.new_alpha_i < 0.0) and (v.new_alpha_j > 0.0))
+						{
+							cout << " Masuk 6 " << endl;
+							coba_v1.set(0, 0.0);
+							coba_v2.set(1, 0.0);
+							if ((coba_v1 - coba_v2) != v)
+							{
+								coba_v2.set(0, abs(v.new_alpha_i));
+							}
+						}
+					}
+				}
+			}
+
+			if ((coba_v1 - coba_v2) != v)
+			{
+				coba_v1 = v1;
+				coba_v2 = v2;
+
+				if ((coba_v1.is_pass == true) and (coba_v2.is_pass == false))
+				{
+					cout << " Masuk 7 " << endl;
+					coba_v2.set(0, abs(v.new_alpha_i - coba_v1.new_alpha_i));
+				}
+				else
+				{
+					if ((coba_v1.is_pass == false) and (coba_v2.is_pass == true))
+					{
+						cout << " Masuk 8 " << endl;
+						coba_v1.set(0, abs(v.new_alpha_i + coba_v2.new_alpha_i));
+					}
+					else
+					{
+						if ((coba_v1.is_pass == true) and (coba_v2.is_pass == true))
+						{
+							cout << " Masuk 9 " << endl;
+												}
+					}
+				}
+			}
+		}
+	}
 
 	if ((coba_v1 - coba_v2) == v)
 	{

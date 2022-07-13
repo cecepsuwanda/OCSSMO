@@ -147,19 +147,13 @@ int main(int argc, char *argv[])
               cout << " V1 = " << i;
               cout << " V2 = " << l;
               cout << " eps2 = " << k;
-              cout << " gamma = " << j;
+              cout << " gamma = " << j << endl;
 
               Tmy_svm my_svm(&config);
               Treturn_train hsl_train = my_svm.train(df_train);
               vector<string> hasil_train = my_svm.test(df_train);
 
-              cout << " iterasi = " << hsl_train.jml_iterasi;
-              cout << " jml kkt = " << hsl_train.n_kkt;
-              cout << " jml all sv = " << hsl_train.n_all_sv;
-              cout << " jml sv = " << hsl_train.n_sv;
-              cout << " jml alpha = " << hsl_train.jml_alpha;
-              cout << " jml alpha v1 = " << hsl_train.jml_alpha_v1;
-              cout << " jml alpha v2 = " << hsl_train.jml_alpha_v2;
+              cout << hsl_train << endl;
               // cout << " is optimum = " << (hsl_train.is_optimum == true ? "Yes" : "No");
 
               // Tconf_metrix conf_metrix_train;

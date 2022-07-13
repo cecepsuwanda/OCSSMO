@@ -20,13 +20,13 @@ class Tmy_double
 	friend Tmy_double operator*(const double &lhs, const Tmy_double &rhs)
 	{
 		double tmp = (lhs * rhs._val);
-		return bulat_nol(tmp, 1e-3, 8);
+		return bulat_nol(tmp, 1e-10, 10);
 	}
 
 	friend Tmy_double operator/(const double &lhs, const Tmy_double &rhs)
 	{
 		double tmp = (lhs / rhs._val);
-		return bulat_nol(tmp, 1e-3, 8);
+		return bulat_nol(tmp, 1e-10, 10);
 	}
 
 	friend Tmy_double operator-(const double &lhs, const Tmy_double &rhs)
@@ -34,7 +34,7 @@ class Tmy_double
 		double tmp = lhs;
 		double tmp1 = rhs._val;
 		tmp = tmp - tmp1;
-		return bulat_nol(tmp, 1e-3, 8);
+		return bulat_nol(tmp, 1e-10, 10);
 	}
 
 	friend double operator+(const double &lhs, const Tmy_double &rhs)
@@ -42,7 +42,7 @@ class Tmy_double
 		double tmp = lhs;
 		double tmp1 = rhs._val;
 		tmp = tmp + tmp1;
-		return bulat_nol(tmp, 1e-3, 8);
+		return bulat_nol(tmp, 1e-10, 10);
 	}
 
 	friend Tmy_double abs(const Tmy_double &rhs)
@@ -83,49 +83,49 @@ public:
 	Tmy_double operator*(const Tmy_double &rhs)
 	{
 		double tmp = _val * rhs._val;
-		return bulat_nol(tmp, 1e-3, 8);
+		return bulat_nol(tmp, 1e-10, 10);
 	}
 
 	Tmy_double operator*(const double &rhs)
 	{
 		double tmp = _val * rhs;
-		return bulat_nol(tmp, 1e-3, 8);
+		return bulat_nol(tmp, 1e-10, 10);
 	}
 
 	Tmy_double operator/(const Tmy_double &rhs)
 	{
 		double tmp = _val / rhs._val;
-		return bulat_nol(tmp, 1e-3, 8);
+		return bulat_nol(tmp, 1e-10, 10);
 	}
 
 	Tmy_double operator/(const double &rhs)
 	{
 		double tmp = _val / rhs;
-		return bulat_nol(tmp, 1e-3, 8);
+		return bulat_nol(tmp, 1e-10, 10);
 	}
 
 	Tmy_double operator+(const Tmy_double &rhs)
 	{
 		double tmp = _val + rhs._val;
-		return bulat_nol(tmp, 1e-3, 8);
+		return bulat_nol(tmp, 1e-10, 10);
 	}
 
 	Tmy_double operator+(const double &rhs)
 	{
 		double tmp = _val + rhs;
-		return bulat_nol(tmp, 1e-3, 8);
+		return bulat_nol(tmp, 1e-10, 10);
 	}
 
 	Tmy_double operator-(const Tmy_double &rhs)
 	{
 		double tmp = _val - rhs._val;
-		return bulat_nol(tmp, 1e-3, 8);
+		return bulat_nol(tmp, 1e-10, 10);
 	}
 
 	Tmy_double operator-(const double &rhs)
 	{
 		double tmp = _val - rhs;
-		return bulat_nol(tmp, 1e-3, 8);
+		return bulat_nol(tmp, 1e-10, 10);
 	}
 
 	bool operator!=(const Tmy_double &rhs) const

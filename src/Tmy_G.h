@@ -15,8 +15,8 @@ using namespace std;
 
 struct Treturn_update_rho
 {
-	Tmy_double rho_v1;
-	Tmy_double rho_v2;
+	Tmy_double rho_v1 = 0.0;
+	Tmy_double rho_v2 = 0.0;
 };
 
 struct callback_param
@@ -25,11 +25,16 @@ struct callback_param
 	Tmy_double grad = 0.0;
 	Tmy_double obj = 0.0;
 	Tmy_double dec = 0.0;
+	Tmy_double rho_v1 = 0.0;
+	Tmy_double rho_v2 = 0.0;
 };
 
 using namespace std::placeholders;
 using callback_type = std::function<bool(callback_param, callback_param, vector<T_alpha_container>, vector<T_grad_container>)>;
 using callback_type1 = std::function<bool(callback_param, callback_param, vector<T_alpha_container>, vector<T_grad_container>, Tmy_kernel *, Tmy_alpha *)>;
+
+using callback_type2 = std::function<bool(callback_param, callback_param, T_alpha_container, T_grad_container, Tmy_kernel *)>;
+using callback_type3 = std::function<bool(callback_param, callback_param, T_alpha_container, T_grad_container, Tmy_kernel *, Tmy_alpha *)>;
 
 class Tmy_G
 {
@@ -47,21 +52,31 @@ private:
 
 	bool delta_filter(int idx_b, int idx_a, vector<T_alpha_container> alpha, vector<Tmy_double> delta);
 
+	int max(Tmy_double rho, T_alpha_container alpha, T_grad_container grad, Tmy_kernel *kernel, callback_type2 f);
+	int max(int idx_b, Tmy_double rho, T_alpha_container alpha, T_grad_container grad, Tmy_kernel *kernel, callback_type2 f);
+	int max(int idx_b, Tmy_double rho, T_alpha_container alpha, T_grad_container grad, Tmy_kernel *kernel, Tmy_alpha *my_alpha, callback_type3 f);
+	int cari(int idx_b, Tmy_double rho, T_alpha_container alpha, T_grad_container grad, Tmy_kernel *kernel, Tmy_alpha *my_alpha, callback_type3 f);
+
 public:
 	Tmy_G();
 	~Tmy_G();
 
 	void init(int jml_data, Tmy_kernel *kernel, T_alpha_container alpha, T_grad_container &grad);
 	Treturn_update_rho update_rho(Tmy_kernel *kernel, vector<T_alpha_container> alpha, T_grad_container grad);
+	Tmy_double update_rho(Tmy_kernel *kernel, T_alpha_container alpha, T_grad_container grad);
 
 	bool is_kkt(int idx, Treturn_update_rho rho, vector<T_alpha_container> alpha, T_grad_container grad);
+	bool is_kkt(int idx, Tmy_double rho, T_alpha_container alpha, T_grad_container grad);
 	void set_kkt(Treturn_update_rho rho, vector<T_alpha_container> alpha, T_grad_container &grad);
+	void set_kkt(Tmy_double rho, T_alpha_container alpha, T_grad_container &grad);
 
 	int cari_idx_a(int idx_b, Treturn_update_rho rho, vector<T_alpha_container> alpha, vector<T_grad_container> grad, Tmy_kernel *kernel);
-
 	int cari_idx_lain(int idx_b, Treturn_update_rho rho, Tmy_kernel *kernel, vector<T_alpha_container> alpha, vector<T_grad_container> grad, Tmy_alpha *my_alpha);
-
 	bool cari_idx(int &idx_b, int &idx_a, Treturn_update_rho rho, vector<T_alpha_container> alpha, vector<T_grad_container> grad, Tmy_kernel *kernel);
+
+	int cari_idx_a(int idx_b, Tmy_double rho, T_alpha_container alpha, T_grad_container grad, Tmy_kernel *kernel);
+	int cari_idx_lain(int idx_b, Tmy_double rho, Tmy_kernel *kernel, T_alpha_container alpha, T_grad_container grad, Tmy_alpha *my_alpha);
+	bool cari_idx(int &idx_b, int &idx_a, Tmy_double rho, T_alpha_container alpha, T_grad_container grad, Tmy_kernel *kernel);
 
 	Tmy_double sum_alpha_diff_Q(T_alpha_container alpha, vector<Tmy_double> diff_Q);
 	void update_G(int idx_b, int idx_a, Treturn_is_pass tmp, Tmy_kernel *kernel, T_alpha_container &alpha, T_grad_container &grad);

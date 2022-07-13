@@ -29,7 +29,6 @@ struct Tconfig
   bool feature_selection = false;
   bool normal_only = false;
 
-
   double gamma = 0.0;
   double V1 = 0.0;
   double eps1 = 1.0;
@@ -41,9 +40,7 @@ struct Tconfig
   int threshold = 0;
 
   bool search_uniqe_val = false;
-
 };
-
 
 struct Tmetric_split_value
 {
@@ -52,7 +49,8 @@ struct Tmetric_split_value
   string split_value = "-1";
 };
 
-class Node {
+class Node
+{
 public:
   int criteriaAttrIndex;
   string attrValue;
@@ -63,9 +61,10 @@ public:
   int opt;
   int idx_svm;
 
-  vector<int > children;
+  vector<int> children;
 
-  Node() {
+  Node()
+  {
     criteriaAttrIndex = -1;
     attrValue = "-1";
     label = "-1";
@@ -82,31 +81,36 @@ static void cetak_stdout(const char *s)
   fflush(stdout);
 }
 
-static void cetak ( const char * format, ... )
+static void cetak(const char *format, ...)
 {
   char buffer[256];
   va_list args;
-  va_start (args, format);
-  vsprintf (buffer, format, args);
-  //perror (buffer);
-  va_end (args);
+  va_start(args, format);
+  vsprintf(buffer, format, args);
+  // perror (buffer);
+  va_end(args);
   cetak_stdout(buffer);
 }
 
 static double bulat_nol(double val, double tolerance, int digit)
 {
-  // const double multiplier = std::pow(10.0, digit);
-  // double tmp = ceil(val * multiplier) / multiplier;
   double tmp = val;
-  // if(abs(tmp)<tolerance)
-  // {
-  //     tmp=0;
-  // }
+
+  if (abs(val) < tolerance)
+  {
+    tmp = 0.0;
+  }
+  else
+  {
+    const double multiplier = std::pow(10.0, digit);
+    tmp = ceil(val * multiplier) / multiplier;
+  }
+
   return tmp;
 }
 
 static bool AlmostEqualRelative(double A, double B,
-                         float maxRelDiff = FLT_EPSILON)
+                                float maxRelDiff = FLT_EPSILON)
 {
   // Calculate the difference.
   double diff = fabs(A - B);

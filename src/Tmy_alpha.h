@@ -51,6 +51,8 @@ public:
 
       new_alpha_i = limit_alpha(tmp_i);
       new_alpha_j = limit_alpha(tmp_j);
+      //  new_alpha_i = tmp_i;
+      // new_alpha_j = tmp_j;
     }
     else
     {
@@ -62,6 +64,23 @@ public:
 
         new_alpha_i = limit_alpha(tmp_i);
         new_alpha_j = limit_alpha(tmp_j);
+        // new_alpha_i = tmp_i;
+        //  new_alpha_j = tmp_j;
+      }
+    }
+  }
+
+  Tmy_double sum(int flag)
+  {
+    if (flag == 0)
+    {
+      return (alpha_i + alpha_j);
+    }
+    else
+    {
+      if (flag == 1)
+      {
+        return (new_alpha_i + new_alpha_j);
       }
     }
   }
