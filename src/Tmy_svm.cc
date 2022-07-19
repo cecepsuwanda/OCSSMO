@@ -30,13 +30,13 @@ bool Tmy_svm::take_step(int idx_b, int idx_a)
 
       Tmy_double hsl_sum = _my_G.sum_alpha_diff_Q(_alpha_v1, hsl_diff);
       Tmy_double delta_v1 = hsl_eta[0] * hsl_sum;
-
       Treturn_is_pass tmp_v1 = _my_alpha->is_pass(idx_b, idx_a, delta_v1, _alpha_v1);
+      tmp_v1.reset();
 
       hsl_sum = _my_G.sum_alpha_diff_Q(_alpha_v2, hsl_diff);
       Tmy_double delta_v2 = hsl_eta[0] * hsl_sum;
-
       Treturn_is_pass tmp_v2 = _my_alpha->is_pass(idx_b, idx_a, delta_v2, _alpha_v2);
+      tmp_v2.reset();
 
       hsl_sum = _my_G.sum_alpha_diff_Q(_alpha, hsl_diff);
       Tmy_double delta = hsl_eta[0] * hsl_sum;
@@ -589,7 +589,7 @@ Treturn_train Tmy_svm::train(Tdataframe &df)
          if (!ulangi)
          {
             jml_out = jml_out + 1;
-            if (jml_out == 10)
+            if (jml_out == jml_data)
             {
                cout << " jml out " << jml_out << endl;
                stop_iter = true;
@@ -616,6 +616,7 @@ Treturn_train Tmy_svm::train(Tdataframe &df)
          }
          else
          {
+            cout << " jml out " << jml_out << endl;
             stop_iter = true;
          }
       }
@@ -649,10 +650,12 @@ Treturn_train Tmy_svm::train(Tdataframe &df)
                                              { return val != 0.0; });
    tmp_train.n_all_sv = _alpha.n_all_sv();
    tmp_train.n_sv = _alpha.n_sv();
+
    tmp_train.n_all_sv_v1 = _alpha_v1.n_all_sv();
-   tmp_train.n_sv_v1 = _alpha_v1.n_sv();
+   tmp_train.n_sv_v1 = _alpha_v1.n_sv() + _alpha_v1.n_sv(_alpha_v2.lb(), _alpha_v2.ub());
+
    tmp_train.n_all_sv_v2 = _alpha_v2.n_all_sv();
-   tmp_train.n_sv_v2 = _alpha_v2.n_sv();
+   tmp_train.n_sv_v2 = _alpha_v2.n_sv() + _alpha_v2.n_sv(_alpha_v1.lb(), _alpha_v1.ub());
 
    tmp_train.rho_v1 = _rho.rho_v1;
    tmp_train.rho_v2 = _rho.rho_v2;

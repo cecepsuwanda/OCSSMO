@@ -19,6 +19,9 @@ public:
   Tmy_double new_alpha_j;
   Tmy_double lb;
   Tmy_double ub;
+  Tmy_double b_new_alpha_i;
+  Tmy_double b_new_alpha_j;
+  bool is_reset = false;
 
   bool operator==(const Treturn_is_pass &rhs) const
   {
@@ -49,10 +52,10 @@ public:
       Tmy_double tmp_j = new_alpha_j + tmp_i;
       tmp_i = val;
 
-      new_alpha_i = limit_alpha(tmp_i);
-      new_alpha_j = limit_alpha(tmp_j);
-      //  new_alpha_i = tmp_i;
-      // new_alpha_j = tmp_j;
+      // new_alpha_i = limit_alpha(tmp_i);
+      // new_alpha_j = limit_alpha(tmp_j);
+      new_alpha_i = tmp_i;
+      new_alpha_j = tmp_j;
     }
     else
     {
@@ -62,10 +65,10 @@ public:
         Tmy_double tmp_i = new_alpha_i + tmp_j;
         tmp_j = val;
 
-        new_alpha_i = limit_alpha(tmp_i);
-        new_alpha_j = limit_alpha(tmp_j);
-        // new_alpha_i = tmp_i;
-        //  new_alpha_j = tmp_j;
+        // new_alpha_i = limit_alpha(tmp_i);
+        // new_alpha_j = limit_alpha(tmp_j);
+        new_alpha_i = tmp_i;
+        new_alpha_j = tmp_j;
       }
     }
   }
@@ -74,15 +77,37 @@ public:
   {
     if (flag == 0)
     {
-      return (alpha_i + alpha_j);
+      return abs(alpha_i + alpha_j);
     }
     else
     {
       if (flag == 1)
       {
-        return (new_alpha_i + new_alpha_j);
+        return abs(new_alpha_i + new_alpha_j);
       }
     }
+  }
+
+  void reset()
+  {
+    if (!is_reset)
+    {
+      new_alpha_i = alpha_i;
+      new_alpha_j = alpha_j;
+      is_reset = true;
+    }
+    else
+    {
+      new_alpha_i = b_new_alpha_i;
+      new_alpha_j = b_new_alpha_j;
+    }
+  }
+
+  void swap()
+  {
+    Tmy_double tmp = new_alpha_i;
+    new_alpha_i = new_alpha_j;
+    new_alpha_j = tmp;
   }
 
 private:

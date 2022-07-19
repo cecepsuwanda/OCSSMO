@@ -25,8 +25,10 @@ public:
 
 	int n_all_sv();
 	int n_sv();
+	int n_sv(Tmy_double lb, Tmy_double ub);
 
 	bool is_sv(size_t idx);
+	bool is_sv(size_t idx, Tmy_double lb, Tmy_double ub);
 	bool is_ub(size_t idx);
 	bool is_lb(size_t idx);
 	bool is_nol(size_t idx);

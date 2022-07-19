@@ -53,6 +53,14 @@ Treturn_update_rho Tmy_G::update_rho(Tmy_kernel *kernel, vector<T_alpha_containe
         jml_G_v1 = jml_G_v1 + grad[i];
         jml_n_v1++;
       }
+      else
+      {
+        if (alpha[1].is_sv(i, alpha[2].lb(), alpha[2].ub()))
+        {
+          jml_G_v1 = jml_G_v1 + grad[i];
+          jml_n_v1++;
+        }
+      }
     }
     if (alpha[1].is_nol(i))
     {
@@ -60,6 +68,14 @@ Treturn_update_rho Tmy_G::update_rho(Tmy_kernel *kernel, vector<T_alpha_containe
       {
         jml_G_v2 = jml_G_v2 + grad[i];
         jml_n_v2++;
+      }
+      else
+      {
+        if (alpha[2].is_sv(i, alpha[1].lb(), alpha[1].ub()))
+        {
+          jml_G_v2 = jml_G_v2 + grad[i];
+          jml_n_v2++;
+        }
       }
     }
   }
@@ -253,9 +269,11 @@ int Tmy_G::cari_idx_lain(int idx_b, Treturn_update_rho rho, Tmy_kernel *kernel, 
 
         Tmy_double delta_v1 = hsl_eta[0] * (grad[1][var_a.idx] - grad[1][var_b.idx]);
         Treturn_is_pass tmp_v1 = my_alpha->is_pass(var_b.idx, var_a.idx, delta_v1, alpha[1]);
+        tmp_v1.reset();
 
         Tmy_double delta_v2 = hsl_eta[0] * (grad[2][var_a.idx] - grad[2][var_b.idx]);
         Treturn_is_pass tmp_v2 = my_alpha->is_pass(var_b.idx, var_a.idx, delta_v2, alpha[2]);
+        tmp_v2.reset();
 
         Tmy_double delta = hsl_eta[0] * (var_a.grad - var_b.grad);
         //  cout << "delta " << delta << endl;
@@ -298,9 +316,11 @@ int Tmy_G::cari_idx_lain(int idx_b, Treturn_update_rho rho, Tmy_kernel *kernel, 
 
       Tmy_double delta_v1 = hsl_eta[0] * (grad[1][var_a.idx] - grad[1][var_b.idx]);
       Treturn_is_pass tmp_v1 = my_alpha->is_pass(var_b.idx, var_a.idx, delta_v1, alpha[1]);
+      tmp_v1.reset();
 
       Tmy_double delta_v2 = hsl_eta[0] * (grad[2][var_a.idx] - grad[2][var_b.idx]);
       Treturn_is_pass tmp_v2 = my_alpha->is_pass(var_b.idx, var_a.idx, delta_v2, alpha[2]);
+      tmp_v2.reset();
 
       Tmy_double delta = hsl_eta[0] * (var_a.grad - var_b.grad);
       // cout << "delta " << delta << endl;

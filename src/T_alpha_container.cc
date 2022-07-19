@@ -78,9 +78,29 @@ int T_alpha_container::n_sv()
 	return n;
 }
 
+int T_alpha_container::n_sv(Tmy_double lb, Tmy_double ub)
+{
+	int n = 0;
+	int i = 0;
+	for (auto it : _alpha)
+	{
+		if (is_sv(i, lb, ub))
+		{
+			n = n + 1;
+		}
+		i = i + 1;
+	}
+	return n;
+}
+
 bool T_alpha_container::is_sv(size_t idx)
 {
 	return (((_lb < _alpha.at(idx)) and (_alpha.at(idx) < _ub)) and (_alpha.at(idx) != 0.0));
+}
+
+bool T_alpha_container::is_sv(size_t idx, Tmy_double lb, Tmy_double ub)
+{
+	return ((_alpha.at(idx) < 0.0) and ((lb < abs(_alpha.at(idx))) and (abs(_alpha.at(idx)) < ub)) and (_alpha.at(idx) != 0.0));
 }
 
 bool T_alpha_container::is_ub(size_t idx)
