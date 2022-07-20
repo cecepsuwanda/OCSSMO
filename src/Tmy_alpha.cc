@@ -205,6 +205,7 @@ bool Tmy_alpha::is_pass(Treturn_is_pass &v1, Treturn_is_pass &v2, Treturn_is_pas
 
 	if ((coba_v2.new_alpha_i == 0.0) and (coba_v2.new_alpha_j == 0.0))
 	{
+		cout << "masuk 1" << endl;
 		coba_v1.swap();
 		if ((coba_v1 - coba_v2) != v)
 		{
@@ -216,18 +217,13 @@ bool Tmy_alpha::is_pass(Treturn_is_pass &v1, Treturn_is_pass &v2, Treturn_is_pas
 					coba_v1.set(0, v.new_alpha_i);
 				}
 			}
-
-			if ((coba_v1 - coba_v2) != v)
-			{
-				coba_v1.reset();
-				coba_v2.reset();
-			}
 		}
 	}
 	else
 	{
 		if ((coba_v1.new_alpha_i == 0.0) and (coba_v1.new_alpha_j == 0.0))
 		{
+			cout << "masuk 2" << endl;
 			coba_v2.swap();
 			if ((coba_v1 - coba_v2) != v)
 			{
@@ -239,122 +235,85 @@ bool Tmy_alpha::is_pass(Treturn_is_pass &v1, Treturn_is_pass &v2, Treturn_is_pas
 						coba_v2.set(0, abs(v.new_alpha_i));
 					}
 				}
-
-				if ((coba_v1 - coba_v2) != v)
-				{
-					coba_v1.reset();
-					coba_v2.reset();
-				}
 			}
 		}
 		else
 		{
+			cout << "masuk 3" << endl;
 			coba_v1.set(1, 0.0);
 			coba_v2.set(0, 0.0);
 			if ((coba_v1 - coba_v2) != v)
 			{
+				cout << "masuk 31" << endl;
 				coba_v1.set(0, 0.0);
 				coba_v2.set(1, 0.0);
 			}
 
 			if ((coba_v1 - coba_v2) != v)
 			{
+				cout << "masuk 32" << endl;
+				if (v.new_alpha_i > 0.0)
+				{
+					coba_v1.set(1, 0.0);
+					coba_v2.set(0, 0.0);
+					if (coba_v1.new_alpha_i > v.new_alpha_i)
+					{
+						coba_v1.set(0, v.new_alpha_i);
+					}
+				}
+				else
+				{
+					if (v.new_alpha_i < 0.0)
+					{
+						coba_v1.set(0, 0.0);
+						coba_v2.set(1, 0.0);
+						if (coba_v2.new_alpha_i > abs(v.new_alpha_i))
+						{
+							coba_v2.set(0, abs(v.new_alpha_i));
+						}
+					}
+				}
+			}
+
+			if ((coba_v1 - coba_v2) != v)
+			{
+				cout << "masuk 33" << endl;
 				if ((coba_v1.is_pass == true) and (coba_v2.is_pass == true))
 				{
-					if (v.new_alpha_i > 0.0)
-					{
-						coba_v1.set(1, 0.0);
-						coba_v2.set(0, 0.0);
-						if (coba_v1.new_alpha_i > v.new_alpha_i)
-						{
-							coba_v1.set(0, v.new_alpha_i);
-						}
-					}
-					else
-					{
-						if (v.new_alpha_i < 0.0)
-						{
-							coba_v1.set(0, 0.0);
-							coba_v2.set(1, 0.0);
-							if (coba_v2.new_alpha_i > abs(v.new_alpha_i))
-							{
-								coba_v2.set(0, abs(v.new_alpha_i));
-							}
-						}
-					}
-
-					if ((coba_v1 - coba_v2) != v)
-					{
-						coba_v1.reset();
-						coba_v2.reset();
-					}
 				}
 				else
 				{
 					if ((coba_v1.is_pass == true) and (coba_v2.is_pass == false))
 					{
-						// coba_v1.reset();
-						// coba_v2 = v2;
-						coba_v1 = v1;
-						coba_v2 = v2;
-						if (v.new_alpha_i > 0.0)
-						{
-						}
-						else
-						{
-							if (v.new_alpha_i < 0.0)
-							{
-							}
-						}
-
 						// coba_v1.set(1, 0.0);
-						Tmy_double tmp = abs(v.new_alpha_i + coba_v2.new_alpha_i);
-						if (coba_v1.new_alpha_i > tmp)
-						{
-							coba_v1.set(0, tmp);
-						}
-
-						if ((coba_v1 - coba_v2) != v)
-						{
-							coba_v1.reset();
-							coba_v2.reset();
-						}
+						// Tmy_double tmp = abs(v.new_alpha_i + coba_v2.new_alpha_i);
+						// if (coba_v1.new_alpha_i > tmp)
+						// {
+						// 	coba_v1.set(0, tmp);
+						// }
 					}
 					else
 					{
 						if ((coba_v1.is_pass == false) and (coba_v2.is_pass == true))
 						{
-							// coba_v2.reset();
-							// coba_v1 = v1;
-							coba_v1 = v1;
-							coba_v2 = v2;
-							if (v.new_alpha_i > 0.0)
-							{
-							}
-							else
-							{
-								if (v.new_alpha_i < 0.0)
-								{
-								}
-							}
-
 							// coba_v2.set(1, 0.0);
-							Tmy_double tmp = abs(v.new_alpha_i - coba_v1.new_alpha_i);
-							if (coba_v2.new_alpha_i > tmp)
-							{
-								coba_v2.set(0, tmp);
-							}
-
-							if ((coba_v1 - coba_v2) != v)
-							{
-								coba_v1.reset();
-								coba_v2.reset();
-							}
+							// Tmy_double tmp = abs(v.new_alpha_i - coba_v1.new_alpha_i);
+							// if (coba_v2.new_alpha_i > tmp)
+							// {
+							// 	coba_v2.set(0, tmp);
+							// }
 						}
 					}
 				}
 			}
 		}
+	}
+
+	if ((coba_v1 - coba_v2) != v)
+	{
+		cout << "masuk 4" << endl;
+		coba_v1.reset();
+		coba_v2.reset();
 	}
 
 	if ((coba_v1 - coba_v2) == v)
