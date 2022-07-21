@@ -26,19 +26,22 @@ bool Tmy_svm::take_step(int idx_b, int idx_a)
            << idx_b << "," << idx_a << endl;
 
       vector<Tmy_double> hsl_eta = _my_kernel->hit_eta(idx_b, idx_a);
-      vector<Tmy_double> hsl_diff = _my_kernel->get_diff_Q(idx_b, idx_a);
+      // vector<Tmy_double> hsl_diff = _my_kernel->get_diff_Q(idx_b, idx_a);
 
-      Tmy_double hsl_sum = _my_G.sum_alpha_diff_Q(_alpha_v1, hsl_diff);
+      // Tmy_double hsl_sum = _my_G.sum_alpha_diff_Q(_alpha_v1, hsl_diff);
+      Tmy_double hsl_sum = (_grad_v1[idx_a] - _grad_v1[idx_b]);
       Tmy_double delta_v1 = hsl_eta[0] * hsl_sum;
       Treturn_is_pass tmp_v1 = _my_alpha->is_pass(idx_b, idx_a, delta_v1, _alpha_v1);
       tmp_v1.reset();
 
-      hsl_sum = _my_G.sum_alpha_diff_Q(_alpha_v2, hsl_diff);
+      // hsl_sum = _my_G.sum_alpha_diff_Q(_alpha_v2, hsl_diff);
+      hsl_sum = (_grad_v2[idx_a] - _grad_v2[idx_b]);
       Tmy_double delta_v2 = hsl_eta[0] * hsl_sum;
       Treturn_is_pass tmp_v2 = _my_alpha->is_pass(idx_b, idx_a, delta_v2, _alpha_v2);
       tmp_v2.reset();
 
-      hsl_sum = _my_G.sum_alpha_diff_Q(_alpha, hsl_diff);
+      // hsl_sum = _my_G.sum_alpha_diff_Q(_alpha, hsl_diff);
+      hsl_sum = (_grad[idx_a] - _grad[idx_b]);
       Tmy_double delta = hsl_eta[0] * hsl_sum;
 
       cout << "delta " << delta << " delta v1 " << delta_v1 << " delta v2 " << delta_v2 << endl;
@@ -210,11 +213,11 @@ int Tmy_svm::examineExample(int idx_b)
 
    // is_pass = !_my_G.is_kkt(idx_b, _rho, tmp_alpha, _grad);
 
-   cout << " idx_b " << idx_b << endl;
+   // cout << " idx_b " << idx_b << endl;
    idx_a = _my_G.cari_idx_a(idx_b, _rho, tmp_alpha, tmp_grad, _my_kernel);
    if (idx_a != -1)
    {
-      cout << " idx_a " << idx_a << " " << endl;
+      // cout << " idx_a " << idx_a << " " << endl;
       bool is_pass = take_step(idx_b, idx_a);
       if (!is_pass)
       {
@@ -228,7 +231,7 @@ int Tmy_svm::examineExample(int idx_b)
          tmp_grad.push_back(_grad);
          tmp_grad.push_back(_grad_v1);
          tmp_grad.push_back(_grad_v2);
-
+         cout << " cari idx_a lain 3 " << endl;
          idx_a = _my_G.cari_idx_lain(idx_b, _rho, _my_kernel, tmp_alpha, tmp_grad, _my_alpha);
          if (idx_a != -1)
          {
@@ -236,14 +239,14 @@ int Tmy_svm::examineExample(int idx_b)
             is_pass = take_step(idx_b, idx_a);
             if (is_pass)
             {
-               cout << "         sukses cari idx_a lain 1 " << endl;
+               cout << "         sukses cari idx_a lain 3 " << endl;
                hasil = 1;
             }
          }
       }
       else
       {
-         cout << "           sukses 1 " << endl;
+         cout << "           sukses 3 " << endl;
          hasil = 1;
       }
    }
@@ -284,7 +287,7 @@ bool Tmy_svm::examineExample()
          tmp_grad.push_back(_grad_v1);
          tmp_grad.push_back(_grad_v2);
 
-         cout << " cari idx_a lain 1 ";
+         cout << " cari idx_a lain 1 " << endl;
          idx_a = _my_G.cari_idx_lain(idx_b, _rho, _my_kernel, tmp_alpha, tmp_grad, _my_alpha);
          if (idx_a != -1)
          {
@@ -314,7 +317,7 @@ bool Tmy_svm::examineExample()
       if (idx_b != -1)
       {
          cout << " idx_b " << idx_b << " idx_a " << idx_a << " " << endl;
-         cout << " cari idx_a lain 2 ";
+         cout << " cari idx_a lain 2 " << endl;
          idx_a = _my_G.cari_idx_lain(idx_b, _rho, _my_kernel, tmp_alpha, tmp_grad, _my_alpha);
          if (idx_a != -1)
          {
@@ -558,7 +561,7 @@ Treturn_train Tmy_svm::train(Tdataframe &df)
    _my_G.set_kkt(_rho_1.rho_v1, _alpha_v1, _grad_v1);
    _my_G.set_kkt(_rho_1.rho_v2, _alpha_v2, _grad_v2);
 
-   int max_iter = jml_data * 100;
+   int max_iter = jml_data * 10;
    int counter = min(jml_data, 1000) + 1;
    bool stop_iter = false;
    int jml_out = 0;
@@ -582,6 +585,7 @@ Treturn_train Tmy_svm::train(Tdataframe &df)
          bool ulangi = true;
          while ((i < counter) and ulangi)
          {
+            cout << " Iter : " << (iter + 1) << endl;
             ulangi = examineExample();
             i = i + 1;
             iter = iter + 1;
@@ -589,7 +593,7 @@ Treturn_train Tmy_svm::train(Tdataframe &df)
          if (!ulangi)
          {
             jml_out = jml_out + 1;
-            if (jml_out == jml_data)
+            if (jml_out == 10)
             {
                cout << " jml out " << jml_out << endl;
                stop_iter = true;
@@ -606,6 +610,7 @@ Treturn_train Tmy_svm::train(Tdataframe &df)
          int jml_pass = 0;
          for (size_t i = 0; i < jml_data; i++)
          {
+            cout << " Iter : " << (iter + 1) << endl;
             jml_pass = jml_pass + examineExample(rand_idx[i]);
             iter = iter + 1;
          }

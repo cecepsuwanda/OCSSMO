@@ -197,15 +197,14 @@ vector<Tmy_double> Tmy_alpha::calculateNewAlpha(int i, int j, Tmy_double delta, 
 bool Tmy_alpha::is_pass(Treturn_is_pass &v1, Treturn_is_pass &v2, Treturn_is_pass v)
 {
 	bool is_pass = false;
-	Treturn_is_pass coba_v1;
-	Treturn_is_pass coba_v2;
+	Treturn_is_pass coba_v1 = v1;
+	Treturn_is_pass coba_v2 = v2;
 
-	coba_v1 = v1;
-	coba_v2 = v2;
+	string msg = "";
 
 	if ((coba_v2.new_alpha_i == 0.0) and (coba_v2.new_alpha_j == 0.0))
 	{
-		cout << "masuk 1" << endl;
+		msg = " masuk 1 ";
 		coba_v1.swap();
 		if ((coba_v1 - coba_v2) != v)
 		{
@@ -223,7 +222,7 @@ bool Tmy_alpha::is_pass(Treturn_is_pass &v1, Treturn_is_pass &v2, Treturn_is_pas
 	{
 		if ((coba_v1.new_alpha_i == 0.0) and (coba_v1.new_alpha_j == 0.0))
 		{
-			cout << "masuk 2" << endl;
+			msg = " masuk 2 ";
 			coba_v2.swap();
 			if ((coba_v1 - coba_v2) != v)
 			{
@@ -239,19 +238,19 @@ bool Tmy_alpha::is_pass(Treturn_is_pass &v1, Treturn_is_pass &v2, Treturn_is_pas
 		}
 		else
 		{
-			cout << "masuk 3" << endl;
+			msg = " masuk 3 ";
 			coba_v1.set(1, 0.0);
 			coba_v2.set(0, 0.0);
 			if ((coba_v1 - coba_v2) != v)
 			{
-				cout << "masuk 31" << endl;
+				msg = msg + " masuk 31 ";
 				coba_v1.set(0, 0.0);
 				coba_v2.set(1, 0.0);
 			}
 
 			if ((coba_v1 - coba_v2) != v)
 			{
-				cout << "masuk 32" << endl;
+				msg = msg + " masuk 32 ";
 				if (v.new_alpha_i > 0.0)
 				{
 					coba_v1.set(1, 0.0);
@@ -277,7 +276,7 @@ bool Tmy_alpha::is_pass(Treturn_is_pass &v1, Treturn_is_pass &v2, Treturn_is_pas
 
 			if ((coba_v1 - coba_v2) != v)
 			{
-				cout << "masuk 33" << endl;
+				msg = msg + " masuk 33 ";
 				if ((coba_v1.is_pass == true) and (coba_v2.is_pass == true))
 				{
 				}
@@ -311,7 +310,7 @@ bool Tmy_alpha::is_pass(Treturn_is_pass &v1, Treturn_is_pass &v2, Treturn_is_pas
 
 	if ((coba_v1 - coba_v2) != v)
 	{
-		cout << "masuk 4" << endl;
+		msg = " masuk 4 ";
 		coba_v1.reset();
 		coba_v2.reset();
 	}
@@ -321,6 +320,11 @@ bool Tmy_alpha::is_pass(Treturn_is_pass &v1, Treturn_is_pass &v2, Treturn_is_pas
 		v1 = coba_v1;
 		v2 = coba_v2;
 		is_pass = true;
+		msg = msg + " solve !!!";
+		// cout << msg << endl;
+		//  cout << "v1 " << coba_v1.is_pass << " old [" << coba_v1.alpha_i << "," << coba_v1.alpha_j << "] new [" << coba_v1.new_alpha_i << "," << coba_v1.new_alpha_j << "] " << endl;
+		//  cout << "v2 " << coba_v2.is_pass << " old [" << coba_v2.alpha_i << "," << coba_v2.alpha_j << "] new [" << coba_v2.new_alpha_i << "," << coba_v2.new_alpha_j << "] " << endl;
+		//  cout << "v " << v.is_pass << " old [" << v.alpha_i << "," << v.alpha_j << "] new [" << v.new_alpha_i << "," << v.new_alpha_j << "] " << endl;
 	}
 	else
 	{
@@ -331,6 +335,8 @@ bool Tmy_alpha::is_pass(Treturn_is_pass &v1, Treturn_is_pass &v2, Treturn_is_pas
 		v1.new_alpha_j = v1.alpha_j;
 		v2.new_alpha_i = v2.alpha_i;
 		v2.new_alpha_j = v2.alpha_j;
+		msg = msg + " failed !!!";
+		// cout << msg << endl;
 	}
 
 	return is_pass;

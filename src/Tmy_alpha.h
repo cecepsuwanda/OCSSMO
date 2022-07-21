@@ -25,7 +25,38 @@ public:
 
   bool operator==(const Treturn_is_pass &rhs) const
   {
-    return ((new_alpha_i == rhs.new_alpha_i) and (new_alpha_j == rhs.new_alpha_j));
+    bool diff_1 = new_alpha_i == rhs.new_alpha_i;
+    bool diff_2 = new_alpha_j == rhs.new_alpha_j;
+
+    if (!diff_1)
+    {
+      bool tmp = ((new_alpha_i > 0.0) and (rhs.new_alpha_i < 0.0) or (new_alpha_i < 0.0) and (rhs.new_alpha_i > 0.0));
+      if (!tmp)
+      {
+        tmp = ((new_alpha_i == 0.0) and (rhs.new_alpha_i != 0.0) or (new_alpha_i != 0.0) and (rhs.new_alpha_i == 0.0));
+      }
+
+      if (!tmp)
+      {
+        // diff_1 = abs(new_alpha_i - rhs.new_alpha_i) < 1e-3;
+      }
+    }
+
+    if (!diff_2)
+    {
+      bool tmp = ((new_alpha_j > 0.0) and (rhs.new_alpha_j < 0.0) or (new_alpha_j < 0.0) and (rhs.new_alpha_j > 0.0));
+      if (!tmp)
+      {
+        tmp = ((new_alpha_j == 0.0) and (rhs.new_alpha_j != 0.0) or (new_alpha_j != 0.0) and (rhs.new_alpha_j == 0.0));
+      }
+
+      if (!tmp)
+      {
+        // diff_2 = abs(new_alpha_j - rhs.new_alpha_j) < 1e-3;
+      }
+    }
+
+    return ((diff_1) and (diff_2));
   }
 
   bool operator!=(const Treturn_is_pass &rhs) const

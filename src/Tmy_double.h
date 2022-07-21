@@ -37,6 +37,14 @@ class Tmy_double
 		return bulat_nol(tmp, 1e-10, 10);
 	}
 
+	friend Tmy_double operator-(const Tmy_double &lhs, const Tmy_double &rhs)
+	{
+		double tmp = lhs._val;
+		double tmp1 = rhs._val;
+		tmp = tmp - tmp1;
+		return bulat_nol(tmp, 1e-10, 10);
+	}
+
 	friend double operator+(const double &lhs, const Tmy_double &rhs)
 	{
 		double tmp = lhs;
