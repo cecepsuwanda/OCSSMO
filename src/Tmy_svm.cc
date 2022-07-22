@@ -194,7 +194,7 @@ bool Tmy_svm::take_step_v(int idx_b, int idx_a, Tmy_double &rho, T_alpha_contain
 
 int Tmy_svm::examineExample(int idx_b)
 {
-   cout << " examine Example 2 " << endl;
+   // cout << " examine Example 2 " << endl;
    int hasil = 0;
    int idx_a = -1;
 
@@ -260,7 +260,7 @@ int Tmy_svm::examineExample(int idx_b)
 
 bool Tmy_svm::examineExample()
 {
-   cout << " examine Example 1 " << endl;
+   // cout << " examine Example 1 " << endl;
    bool hasil = false;
    int idx_a = -1;
    int idx_b = -1;
@@ -590,7 +590,7 @@ Treturn_train Tmy_svm::train(Tdataframe &df)
          bool ulangi = true;
          while ((i < counter) and ulangi)
          {
-            cout << " Iter : " << (iter + 1) << endl;
+            // cout << " Iter : " << (iter + 1) << endl;
             ulangi = examineExample();
             i = i + 1;
             iter = iter + 1;
@@ -615,7 +615,7 @@ Treturn_train Tmy_svm::train(Tdataframe &df)
          int jml_pass = 0;
          for (size_t i = 0; i < jml_data; i++)
          {
-            cout << " Iter : " << (iter + 1) << endl;
+            // cout << " Iter : " << (iter + 1) << endl;
             jml_pass = jml_pass + examineExample(rand_idx[i]);
             iter = iter + 1;
          }

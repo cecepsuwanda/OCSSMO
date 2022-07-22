@@ -295,11 +295,11 @@ int Tmy_G::cari_idx_lain(int idx_b, Treturn_update_rho rho, Tmy_kernel *kernel, 
     return is_pass;
   };
 
-  cout << " max " << endl;
+  // cout << " max " << endl;
   idx_a = max(idx_b, rho.rho_v1, rho.rho_v2, alpha, grad, kernel, my_alpha, cek1);
   if (idx_a == -1)
   {
-    cout << " cari 1 " << endl;
+    // cout << " cari 1 " << endl;
     idx_a = cari(idx_b, rho.rho_v1, rho.rho_v2, alpha, grad, kernel, my_alpha, cek1);
   }
 
@@ -345,7 +345,7 @@ int Tmy_G::cari_idx_lain(int idx_b, Treturn_update_rho rho, Tmy_kernel *kernel, 
 
   if (idx_a == -1)
   {
-    cout << " cari 2 " << endl;
+    // cout << " cari 2 " << endl;
     idx_a = cari(idx_b, rho.rho_v1, rho.rho_v2, alpha, grad, kernel, my_alpha, cek);
   }
 
