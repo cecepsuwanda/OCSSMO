@@ -150,48 +150,6 @@ bool Tmy_svm::take_step(int idx_b, int idx_a)
    }
 }
 
-bool Tmy_svm::take_step_v(int idx_b, int idx_a, Tmy_double &rho, T_alpha_container &alpha, T_grad_container &grad)
-{
-   bool stat = false;
-   if (idx_b == idx_a)
-   {
-   }
-   else
-   {
-      // cout << " take step idx_b " << idx_b << " idx_a " << idx_a << endl;
-      Tmy_double Fa = grad.dec(idx_a, rho);
-      Tmy_double Fb = grad.dec(idx_b, rho);
-      vector<Tmy_double> hsl_eta = _my_kernel->hit_eta(idx_b, idx_a);
-      Tmy_double delta = hsl_eta[0] * (Fa - Fb);
-
-      // cout << " delta " << delta << endl;
-
-      Treturn_is_pass hsl = _my_alpha->is_pass(idx_b, idx_a, delta, alpha);
-
-      // cout << hsl.is_pass << " old [" << hsl.alpha_i << "," << hsl.alpha_j << "] new [" << hsl.new_alpha_i << "," << hsl.new_alpha_j << "] " << endl;
-
-      if (!hsl.is_pass)
-      {
-         // cout << " not pass !!!" << endl;
-      }
-      else
-      {
-         _my_G.update_G(idx_b, idx_a, hsl, _my_kernel, alpha, grad);
-
-         alpha[idx_a] = hsl.new_alpha_j;
-         alpha[idx_b] = hsl.new_alpha_i;
-         grad.mv_idx(idx_a, 1);
-         grad.mv_idx(idx_b, 1);
-
-         rho = _my_G.update_rho(_my_kernel, alpha, grad);
-         _my_G.set_kkt(rho, alpha, grad);
-         stat = true;
-         // cout << " pass !!!" << endl;
-      }
-   }
-   return stat;
-}
-
 int Tmy_svm::examineExample(int idx_b)
 {
    // cout << " examine Example 2 " << endl;
@@ -352,199 +310,6 @@ bool Tmy_svm::examineExample()
    return hasil;
 }
 
-int Tmy_svm::examineExample_v(int idx_b)
-{
-   int tmp_v1 = 0;
-   int idx_a_v1 = _my_G.cari_idx_a(idx_b, _rho_1.rho_v1, _alpha_v1, _grad_v1, _my_kernel);
-   if (idx_a_v1 != -1)
-   {
-      bool is_pass_v1 = take_step_v(idx_b, idx_a_v1, _rho_1.rho_v1, _alpha_v1, _grad_v1);
-      bool is_pass = take_step(idx_b, idx_a_v1);
-      if (!is_pass_v1)
-      {
-         idx_a_v1 = _my_G.cari_idx_lain(idx_b, _rho_1.rho_v1, _my_kernel, _alpha_v1, _grad_v1, _my_alpha);
-         if (idx_a_v1 != -1)
-         {
-            is_pass_v1 = take_step_v(idx_b, idx_a_v1, _rho_1.rho_v1, _alpha_v1, _grad_v1);
-            is_pass = take_step(idx_b, idx_a_v1);
-            if (is_pass_v1)
-            {
-               tmp_v1 = 1;
-            }
-         }
-      }
-      else
-      {
-         tmp_v1 = 1;
-      }
-   }
-
-   int tmp_v2 = 0;
-   int idx_a_v2 = _my_G.cari_idx_a(idx_b, _rho_1.rho_v2, _alpha_v2, _grad_v2, _my_kernel);
-   if (idx_a_v2 != -1)
-   {
-      bool is_pass_v2 = take_step_v(idx_b, idx_a_v2, _rho_1.rho_v2, _alpha_v2, _grad_v2);
-      bool is_pass = take_step(idx_b, idx_a_v2);
-      if (!is_pass_v2)
-      {
-         idx_a_v2 = _my_G.cari_idx_lain(idx_b, _rho_1.rho_v2, _my_kernel, _alpha_v2, _grad_v2, _my_alpha);
-         if (idx_a_v2 != -1)
-         {
-            is_pass_v2 = take_step_v(idx_b, idx_a_v2, _rho_1.rho_v2, _alpha_v2, _grad_v2);
-            is_pass = take_step(idx_b, idx_a_v2);
-            if (is_pass_v2)
-            {
-               tmp_v2 = 1;
-            }
-         }
-      }
-      else
-      {
-         tmp_v2 = 1;
-      }
-   }
-
-   int tmp = 0;
-   if ((tmp_v1 == 1) or (tmp_v2 == 1))
-   {
-      tmp = 1;
-   }
-
-   return tmp;
-}
-
-bool Tmy_svm::examineExample_v()
-{
-   int idx_b_v1 = -1;
-   int idx_a_v1 = -1;
-   bool examineAll_v1 = false;
-   bool is_pass_v1 = _my_G.cari_idx(idx_b_v1, idx_a_v1, _rho_1.rho_v1, _alpha_v1, _grad_v1, _my_kernel);
-   if (idx_a_v1 != -1)
-   {
-      // cout << " idx_b " << idx_b << " idx_a " << idx_a << endl;
-      is_pass_v1 = take_step_v(idx_b_v1, idx_a_v1, _rho_1.rho_v1, _alpha_v1, _grad_v1);
-      bool is_pass = take_step(idx_b_v1, idx_a_v1);
-      if (!is_pass_v1)
-      {
-         idx_a_v1 = _my_G.cari_idx_lain(idx_b_v1, _rho_1.rho_v1, _my_kernel, _alpha_v1, _grad_v1, _my_alpha);
-         if (idx_a_v1 != -1)
-         {
-            is_pass_v1 = take_step_v(idx_b_v1, idx_a_v1, _rho_1.rho_v1, _alpha_v1, _grad_v1);
-            is_pass = take_step(idx_b_v1, idx_a_v1);
-            if (is_pass_v1)
-            {
-               examineAll_v1 = true;
-            }
-            else
-            {
-               cout << "v1 Out 1" << endl;
-            }
-         }
-         else
-         {
-            cout << "v1 Out 2" << endl;
-         }
-      }
-      else
-      {
-         examineAll_v1 = true;
-      }
-   }
-   else
-   {
-      if (idx_b_v1 != -1)
-      {
-         idx_a_v1 = _my_G.cari_idx_lain(idx_b_v1, _rho_1.rho_v1, _my_kernel, _alpha_v1, _grad_v1, _my_alpha);
-         if (idx_a_v1 != -1)
-         {
-            is_pass_v1 = take_step_v(idx_b_v1, idx_a_v1, _rho_1.rho_v1, _alpha_v1, _grad_v1);
-            bool is_pass = take_step(idx_b_v1, idx_a_v1);
-            if (is_pass_v1)
-            {
-               examineAll_v1 = true;
-            }
-            else
-            {
-               cout << "v1 Out 3" << endl;
-            }
-         }
-         else
-         {
-            cout << "v1 Out 4" << endl;
-         }
-      }
-      else
-      {
-         cout << "v1 Out 5" << endl;
-      }
-   }
-
-   int idx_b_v2 = -1;
-   int idx_a_v2 = -1;
-   bool examineAll_v2 = false;
-   bool is_pass_v2 = _my_G.cari_idx(idx_b_v2, idx_a_v2, _rho_1.rho_v2, _alpha_v2, _grad_v2, _my_kernel);
-   if (idx_a_v2 != -1)
-   {
-      // cout << " idx_b " << idx_b << " idx_a " << idx_a << endl;
-      is_pass_v2 = take_step_v(idx_b_v2, idx_a_v2, _rho_1.rho_v2, _alpha_v2, _grad_v2);
-      bool is_pass = take_step(idx_b_v2, idx_a_v2);
-      if (!is_pass_v2)
-      {
-         idx_a_v2 = _my_G.cari_idx_lain(idx_b_v2, _rho_1.rho_v2, _my_kernel, _alpha_v2, _grad_v2, _my_alpha);
-         if (idx_a_v2 != -1)
-         {
-            is_pass_v2 = take_step_v(idx_b_v2, idx_a_v2, _rho_1.rho_v2, _alpha_v2, _grad_v2);
-            is_pass = take_step(idx_b_v2, idx_a_v2);
-            if (is_pass_v2)
-            {
-               examineAll_v2 = true;
-            }
-            else
-            {
-               cout << "v2 Out 1" << endl;
-            }
-         }
-         else
-         {
-            cout << "v2 Out 2" << endl;
-         }
-      }
-      else
-      {
-         examineAll_v2 = true;
-      }
-   }
-   else
-   {
-      if (idx_b_v2 != -1)
-      {
-         idx_a_v2 = _my_G.cari_idx_lain(idx_b_v2, _rho_1.rho_v2, _my_kernel, _alpha_v2, _grad_v2, _my_alpha);
-         if (idx_a_v2 != -1)
-         {
-            is_pass_v2 = take_step_v(idx_b_v2, idx_a_v2, _rho_1.rho_v2, _alpha_v2, _grad_v2);
-            bool is_pass = take_step(idx_b_v2, idx_a_v2);
-            if (is_pass_v2)
-            {
-               examineAll_v2 = true;
-            }
-            else
-            {
-               cout << "v2 Out 3" << endl;
-            }
-         }
-         else
-         {
-            cout << "v2 Out 4" << endl;
-         }
-      }
-      else
-      {
-         cout << "v2 Out 5" << endl;
-      }
-   }
-   return (examineAll_v1 or examineAll_v2);
-}
-
 Treturn_train Tmy_svm::train(Tdataframe &df)
 {
    cout << " masuk " << endl;
@@ -566,7 +331,7 @@ Treturn_train Tmy_svm::train(Tdataframe &df)
    _my_G.set_kkt(_rho_1.rho_v1, _alpha_v1, _grad_v1);
    _my_G.set_kkt(_rho_1.rho_v2, _alpha_v2, _grad_v2);
 
-   int max_iter = jml_data * 10;
+   int max_iter = jml_data * 1000;
    int counter = min(jml_data, 1000) + 1;
    bool stop_iter = false;
    int jml_out = 0;
@@ -598,13 +363,14 @@ Treturn_train Tmy_svm::train(Tdataframe &df)
          if (!ulangi)
          {
             jml_out = jml_out + 1;
-            if (jml_out == 10)
+            if (jml_out == jml_data)
             {
                cout << " jml out " << jml_out << endl;
                stop_iter = true;
             }
             else
             {
+               cout << " jml out " << jml_out << endl;
                examineAll = false;
             }
          }

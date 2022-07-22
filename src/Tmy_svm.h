@@ -89,10 +89,6 @@ public:
    bool examineExample();
    int examineExample(int idx_b);
    bool take_step(int idx_b, int idx_a);
-
-   bool examineExample_v();
-   int examineExample_v(int idx_b);
-   bool take_step_v(int idx_b, int idx_a, Tmy_double &rho, T_alpha_container &alpha, T_grad_container &grad);
 };
 
 #endif
