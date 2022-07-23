@@ -204,9 +204,9 @@ void Tmy_G::set_kkt(Tmy_double rho, T_alpha_container alpha, T_grad_container &g
   }
 }
 
-int Tmy_G::cari_idx_a(int idx_b, Treturn_update_rho rho, vector<T_alpha_container> alpha, vector<T_grad_container> grad, Tmy_kernel *kernel)
+int Tmy_G::cari_idx_a(int idx_b, Treturn_update_rho rho, vector<T_alpha_container> alpha, vector<T_grad_container> grad, Tmy_kernel *kernel, Tmy_alpha *my_alpha)
 {
-  auto cek_filter = [](callback_param var_b, callback_param var_a, vector<T_alpha_container> alpha, vector<T_grad_container> grad) -> bool
+  auto cek_filter = [](callback_param var_b, callback_param var_a, vector<T_alpha_container> alpha, vector<T_grad_container> grad, Tmy_kernel *kernel, Tmy_alpha *my_alpha) -> bool
   {
     bool is_pass = true;
 
@@ -241,10 +241,38 @@ int Tmy_G::cari_idx_a(int idx_b, Treturn_update_rho rho, vector<T_alpha_containe
       }
     }
 
+    if (is_pass)
+    {
+      vector<Tmy_double> hsl_eta = kernel->hit_eta(var_b.idx, var_a.idx);
+
+      Tmy_double delta_v1 = hsl_eta[0] * (grad[1][var_a.idx] - grad[1][var_b.idx]);
+      Treturn_is_pass tmp_v1 = my_alpha->is_pass(var_b.idx, var_a.idx, delta_v1, alpha[1]);
+      tmp_v1.reset();
+
+      Tmy_double delta_v2 = hsl_eta[0] * (grad[2][var_a.idx] - grad[2][var_b.idx]);
+      Treturn_is_pass tmp_v2 = my_alpha->is_pass(var_b.idx, var_a.idx, delta_v2, alpha[2]);
+      tmp_v2.reset();
+
+      Tmy_double delta = hsl_eta[0] * (var_a.grad - var_b.grad);
+      // cout << "delta " << delta << endl;
+
+      Treturn_is_pass tmp = my_alpha->is_pass(var_b.idx, var_a.idx, delta, alpha[0]);
+
+      is_pass = tmp.is_pass; // and (tmp_v1.is_pass or tmp_v2.is_pass);
+
+      if (is_pass)
+      {
+        if ((tmp_v1 - tmp_v2) != tmp)
+        {
+          is_pass = my_alpha->is_pass(tmp_v1, tmp_v2, tmp);
+        }
+      }
+    }
+
     return is_pass;
   };
 
-  int idx_a = max(idx_b, rho.rho_v1, rho.rho_v2, alpha, grad, kernel, cek_filter);
+  int idx_a = max(idx_b, rho.rho_v1, rho.rho_v2, alpha, grad, kernel, my_alpha, cek_filter);
 
   return idx_a;
 }

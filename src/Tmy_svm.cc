@@ -173,7 +173,7 @@ int Tmy_svm::examineExample(int idx_b)
    // is_pass = !_my_G.is_kkt(idx_b, _rho, tmp_alpha, _grad);
 
    // cout << " idx_b " << idx_b << endl;
-   idx_a = _my_G.cari_idx_a(idx_b, _rho, tmp_alpha, tmp_grad, _my_kernel);
+   idx_a = _my_G.cari_idx_a(idx_b, _rho, tmp_alpha, tmp_grad, _my_kernel, _my_alpha);
    if (idx_a != -1)
    {
       // cout << " idx_a " << idx_a << " " << endl;

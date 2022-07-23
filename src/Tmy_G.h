@@ -62,7 +62,7 @@ public:
 	void set_kkt(Treturn_update_rho rho, vector<T_alpha_container> alpha, T_grad_container &grad);
 	void set_kkt(Tmy_double rho, T_alpha_container alpha, T_grad_container &grad);
 
-	int cari_idx_a(int idx_b, Treturn_update_rho rho, vector<T_alpha_container> alpha, vector<T_grad_container> grad, Tmy_kernel *kernel);
+	int cari_idx_a(int idx_b, Treturn_update_rho rho, vector<T_alpha_container> alpha, vector<T_grad_container> grad, Tmy_kernel *kernel, Tmy_alpha *my_alpha);
 	int cari_idx_lain(int idx_b, Treturn_update_rho rho, Tmy_kernel *kernel, vector<T_alpha_container> alpha, vector<T_grad_container> grad, Tmy_alpha *my_alpha);
 	bool cari_idx(int &idx_b, int &idx_a, Treturn_update_rho rho, vector<T_alpha_container> alpha, vector<T_grad_container> grad, Tmy_kernel *kernel, Tmy_alpha *my_alpha);
 
