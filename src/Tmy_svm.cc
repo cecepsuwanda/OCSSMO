@@ -233,7 +233,7 @@ bool Tmy_svm::examineExample()
    tmp_grad.push_back(_grad_v1);
    tmp_grad.push_back(_grad_v2);
 
-   bool is_pass = _my_G.cari_idx(idx_b, idx_a, _rho, tmp_alpha, tmp_grad, _my_kernel);
+   bool is_pass = _my_G.cari_idx(idx_b, idx_a, _rho, tmp_alpha, tmp_grad, _my_kernel, _my_alpha);
    if (idx_a != -1)
    {
       cout << " idx_b " << idx_b << " idx_a " << idx_a << " " << endl;

@@ -102,7 +102,7 @@ int main(int argc, char *argv[])
   for (const auto &file : directory_iterator(config.path_model + "/train"))
   {
     string str = file.path().filename();
-    if ((str == "train_model_1.csv")) // and (str != "train_model_36.csv")
+    if ((str == "train_model_2.csv")) // and (str != "train_model_36.csv")
     {
 
       Tdataframe df_train(&config);

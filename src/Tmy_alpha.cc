@@ -308,11 +308,14 @@ bool Tmy_alpha::is_pass(Treturn_is_pass &v1, Treturn_is_pass &v2, Treturn_is_pas
 		}
 	}
 
-	if ((coba_v1 - coba_v2) != v)
+	if ((coba_v1.is_pass == true) or (coba_v2.is_pass == true))
 	{
-		msg = " masuk 4 ";
-		coba_v1.reset();
-		coba_v2.reset();
+		if ((coba_v1 - coba_v2) != v)
+		{
+			msg = " masuk 4 ";
+			coba_v1.reset();
+			coba_v2.reset();
+		}
 	}
 
 	if ((coba_v1 - coba_v2) == v)

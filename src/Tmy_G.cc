@@ -352,7 +352,7 @@ int Tmy_G::cari_idx_lain(int idx_b, Treturn_update_rho rho, Tmy_kernel *kernel, 
   return idx_a;
 }
 
-bool Tmy_G::cari_idx(int &idx_b, int &idx_a, Treturn_update_rho rho, vector<T_alpha_container> alpha, vector<T_grad_container> grad, Tmy_kernel *kernel)
+bool Tmy_G::cari_idx(int &idx_b, int &idx_a, Treturn_update_rho rho, vector<T_alpha_container> alpha, vector<T_grad_container> grad, Tmy_kernel *kernel, Tmy_alpha *my_alpha)
 {
   auto cek_filter = [](callback_param var_b, callback_param var_a, vector<T_alpha_container> alpha, vector<T_grad_container> grad) -> bool
   {
@@ -378,7 +378,19 @@ bool Tmy_G::cari_idx(int &idx_b, int &idx_a, Treturn_update_rho rho, vector<T_al
     return is_pass;
   };
 
-  auto cek_filter1 = [](callback_param var_b, callback_param var_a, vector<T_alpha_container> alpha, vector<T_grad_container> grad) -> bool
+  // auto cek_filter1 = [](callback_param var_b, callback_param var_a, vector<T_alpha_container> alpha, vector<T_grad_container> grad) -> bool
+  // {
+  //   bool is_pass = true;
+
+  //   if (alpha[0].is_nol(var_b.idx))
+  //   {
+  //     is_pass = !alpha[0].is_nol(var_a.idx);
+  //   }
+
+  //   return is_pass;
+  // };
+
+  auto cek_filter1 = [](callback_param var_b, callback_param var_a, vector<T_alpha_container> alpha, vector<T_grad_container> grad, Tmy_kernel *kernel, Tmy_alpha *my_alpha) -> bool
   {
     bool is_pass = true;
 
@@ -387,13 +399,41 @@ bool Tmy_G::cari_idx(int &idx_b, int &idx_a, Treturn_update_rho rho, vector<T_al
       is_pass = !alpha[0].is_nol(var_a.idx);
     }
 
+    if (is_pass)
+    {
+      vector<Tmy_double> hsl_eta = kernel->hit_eta(var_b.idx, var_a.idx);
+
+      Tmy_double delta_v1 = hsl_eta[0] * (grad[1][var_a.idx] - grad[1][var_b.idx]);
+      Treturn_is_pass tmp_v1 = my_alpha->is_pass(var_b.idx, var_a.idx, delta_v1, alpha[1]);
+      tmp_v1.reset();
+
+      Tmy_double delta_v2 = hsl_eta[0] * (grad[2][var_a.idx] - grad[2][var_b.idx]);
+      Treturn_is_pass tmp_v2 = my_alpha->is_pass(var_b.idx, var_a.idx, delta_v2, alpha[2]);
+      tmp_v2.reset();
+
+      Tmy_double delta = hsl_eta[0] * (var_a.grad - var_b.grad);
+      // cout << "delta " << delta << endl;
+
+      Treturn_is_pass tmp = my_alpha->is_pass(var_b.idx, var_a.idx, delta, alpha[0]);
+
+      is_pass = tmp.is_pass; // and (tmp_v1.is_pass or tmp_v2.is_pass);
+
+      if (is_pass)
+      {
+        if ((tmp_v1 - tmp_v2) != tmp)
+        {
+          is_pass = my_alpha->is_pass(tmp_v1, tmp_v2, tmp);
+        }
+      }
+    }
+
     return is_pass;
   };
 
   idx_b = max(rho.rho_v1, rho.rho_v2, alpha, grad, cek_filter);
   if (idx_b != -1)
   {
-    idx_a = max(idx_b, rho.rho_v1, rho.rho_v2, alpha, grad, kernel, cek_filter1);
+    idx_a = max(idx_b, rho.rho_v1, rho.rho_v2, alpha, grad, kernel, my_alpha, cek_filter1);
   }
 
   return ((idx_b != -1) and (idx_a != -1));
