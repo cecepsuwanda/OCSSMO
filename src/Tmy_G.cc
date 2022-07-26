@@ -549,6 +549,7 @@ int Tmy_G::max(Tmy_double rho1, Tmy_double rho2, vector<T_alpha_container> alpha
 
     if (is_pass)
     {
+      grad[0].mv_idx(rand_idx[i], 0);
       Tmy_double abs_F = abs(obj_F);
       if (abs_F >= gmax)
       {
@@ -622,7 +623,7 @@ int Tmy_G::max(int idx_b, Tmy_double rho1, Tmy_double rho2, vector<T_alpha_conta
 
     if (is_pass)
     {
-
+      grad[0].mv_idx(var_a.idx, 0);
       Tmy_double diff_F = Fb - Fa;
       Tmy_double abs_diff_F = abs(diff_F);
       // cout << " idx_a " << i << " abs_diff_obj " << abs_diff_obj << " gmax2 " << gmax2 << endl;
@@ -723,7 +724,7 @@ int Tmy_G::max(int idx_b, Tmy_double rho1, Tmy_double rho2, vector<T_alpha_conta
 
     if (is_pass)
     {
-
+      grad[0].mv_idx(rand_idx[i], 0);
       Tmy_double diff_F = Fb - Fa;
       Tmy_double abs_diff_F = abs(diff_F);
       // cout << " idx_a " << i << " abs_diff_obj " << abs_diff_obj << " gmax2 " << gmax2 << endl;
