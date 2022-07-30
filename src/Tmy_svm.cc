@@ -81,35 +81,19 @@ bool Tmy_svm::take_step(int idx_b, int idx_a)
          if (is_pass)
          {
 
-            // if (tmp_v1.is_pass)
-            // {
             _my_G.update_G(idx_b, idx_a, tmp_v1, _my_kernel, _alpha_v1, _grad_v1);
 
             _alpha_v1[idx_a] = tmp_v1.new_alpha_j;
             _alpha_v1[idx_b] = tmp_v1.new_alpha_i;
             _grad_v1.mv_idx(idx_a, 1);
             _grad_v1.mv_idx(idx_b, 1);
-            // }
-            // else
-            // {
-            //    tmp_v1.new_alpha_i = tmp_v1.alpha_i;
-            //    tmp_v1.new_alpha_j = tmp_v1.alpha_j;
-            // }
 
-            // if (tmp_v2.is_pass)
-            // {
             _my_G.update_G(idx_b, idx_a, tmp_v2, _my_kernel, _alpha_v2, _grad_v2);
 
             _alpha_v2[idx_a] = tmp_v2.new_alpha_j;
             _alpha_v2[idx_b] = tmp_v2.new_alpha_i;
             _grad_v2.mv_idx(idx_a, 1);
             _grad_v2.mv_idx(idx_b, 1);
-            // }
-            // else
-            // {
-            //    tmp_v2.new_alpha_i = tmp_v2.alpha_i;
-            //    tmp_v2.new_alpha_j = tmp_v2.alpha_j;
-            // }
 
             tmp.new_alpha_j = tmp_v1.new_alpha_j - tmp_v2.new_alpha_j;
             tmp.new_alpha_i = tmp_v1.new_alpha_i - tmp_v2.new_alpha_i;
@@ -137,9 +121,9 @@ bool Tmy_svm::take_step(int idx_b, int idx_a)
             _rho_1.rho_v1 = _my_G.update_rho(_my_kernel, _alpha_v1, _grad_v1);
             _rho_1.rho_v2 = _my_G.update_rho(_my_kernel, _alpha_v2, _grad_v2);
 
-            _my_G.set_kkt(_rho, tmp_alpha, _grad);
-            _my_G.set_kkt(_rho_1.rho_v1, _alpha_v1, _grad_v1);
-            _my_G.set_kkt(_rho_1.rho_v2, _alpha_v2, _grad_v2);
+            // _my_G.set_kkt(_rho, tmp_alpha, _grad);
+            // _my_G.set_kkt(_rho_1.rho_v1, _alpha_v1, _grad_v1);
+            // _my_G.set_kkt(_rho_1.rho_v2, _alpha_v2, _grad_v2);
             return true;
          }
          else
@@ -173,6 +157,7 @@ int Tmy_svm::examineExample(int idx_b)
    // is_pass = !_my_G.is_kkt(idx_b, _rho, tmp_alpha, _grad);
 
    // cout << " idx_b " << idx_b << endl;
+   _my_G.filter_on_off(false);
    idx_a = _my_G.cari_idx_a(idx_b, _rho, tmp_alpha, tmp_grad, _my_kernel, _my_alpha);
    if (idx_a != -1)
    {
@@ -191,6 +176,7 @@ int Tmy_svm::examineExample(int idx_b)
          tmp_grad.push_back(_grad_v1);
          tmp_grad.push_back(_grad_v2);
          cout << " cari idx_a lain 3 " << endl;
+         _my_G.filter_on_off(false);
          idx_a = _my_G.cari_idx_lain(idx_b, _rho, _my_kernel, tmp_alpha, tmp_grad, _my_alpha);
          if (idx_a != -1)
          {
@@ -233,6 +219,7 @@ bool Tmy_svm::examineExample()
    tmp_grad.push_back(_grad_v1);
    tmp_grad.push_back(_grad_v2);
 
+   _my_G.filter_on_off(false);
    bool is_pass = _my_G.cari_idx(idx_b, idx_a, _rho, tmp_alpha, tmp_grad, _my_kernel, _my_alpha);
    if (idx_a != -1)
    {
@@ -251,6 +238,7 @@ bool Tmy_svm::examineExample()
          tmp_grad.push_back(_grad_v2);
 
          cout << " cari idx_a lain 1 " << endl;
+         _my_G.filter_on_off(false);
          idx_a = _my_G.cari_idx_lain(idx_b, _rho, _my_kernel, tmp_alpha, tmp_grad, _my_alpha);
          if (idx_a != -1)
          {
@@ -281,6 +269,7 @@ bool Tmy_svm::examineExample()
       {
          cout << " idx_b " << idx_b << " idx_a " << idx_a << " " << endl;
          cout << " cari idx_a lain 2 " << endl;
+         _my_G.filter_on_off(false);
          idx_a = _my_G.cari_idx_lain(idx_b, _rho, _my_kernel, tmp_alpha, tmp_grad, _my_alpha);
          if (idx_a != -1)
          {
@@ -377,12 +366,11 @@ Treturn_train Tmy_svm::train(Tdataframe &df)
       }
       else
       {
-         vector<int> rand_idx = _grad.get_rand_idx();
          int jml_pass = 0;
          for (size_t i = 0; i < jml_data; i++)
          {
             // cout << " Iter : " << (iter + 1) << endl;
-            jml_pass = jml_pass + examineExample(rand_idx[i]);
+            jml_pass = jml_pass + examineExample(i);
             iter = iter + 1;
          }
 

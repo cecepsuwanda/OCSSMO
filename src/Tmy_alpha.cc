@@ -3,7 +3,7 @@
 Tmy_alpha::Tmy_alpha(Tconfig *v_config)
 {
 	_config = v_config;
-	_split = true;
+	_split = false;
 }
 
 Tmy_alpha::~Tmy_alpha()
@@ -188,9 +188,9 @@ vector<Tmy_double> Tmy_alpha::calculateNewAlpha(int i, int j, Tmy_double delta, 
 	vector<Tmy_double> tmp = limit_alpha(alpha_a_new, 0, Low, High, 0);
 	alpha_a_new = tmp[0];
 	Tmy_double alpha_b_new = alpha[j] + (alpha[i] - alpha_a_new);
-	tmp = limit_alpha(alpha_b_new, alpha_a_new, alpha.lb(), alpha.ub(), 1);
-	alpha_b_new = tmp[0];
-	alpha_a_new = tmp[1];
+	// tmp = limit_alpha(alpha_b_new, alpha_a_new, alpha.lb(), alpha.ub(), 1);
+	// alpha_b_new = tmp[0];
+	// alpha_a_new = tmp[1];
 	return {alpha[i], alpha[j], alpha_a_new, alpha_b_new};
 }
 

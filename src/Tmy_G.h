@@ -53,6 +53,8 @@ public:
 	Tmy_G();
 	~Tmy_G();
 
+	void filter_on_off(bool stat);
+
 	void init(int jml_data, Tmy_kernel *kernel, T_alpha_container alpha, T_grad_container &grad);
 	Treturn_update_rho update_rho(Tmy_kernel *kernel, vector<T_alpha_container> alpha, T_grad_container grad);
 	Tmy_double update_rho(Tmy_kernel *kernel, T_alpha_container alpha, T_grad_container grad);
