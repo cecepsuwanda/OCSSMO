@@ -134,7 +134,75 @@ bool Tmy_svm::take_step(int idx_b, int idx_a)
    }
 }
 
-int Tmy_svm::examineExample(int idx_b)
+int Tmy_svm::examineExample_1(int idx_b)
+{
+   // cout << " examine Example 2 " << endl;
+   int hasil = 0;
+   int idx_a = -1;
+
+   Tmy_double Gb = _grad[idx_b];
+   Tmy_double obj = _grad.obj(idx_b, _rho.rho_v1, _rho.rho_v2);
+   Tmy_double dec = _grad.dec(idx_b, _rho.rho_v1, _rho.rho_v2);
+
+   vector<T_alpha_container> tmp_alpha;
+   tmp_alpha.push_back(_alpha);
+   tmp_alpha.push_back(_alpha_v1);
+   tmp_alpha.push_back(_alpha_v2);
+
+   vector<T_grad_container> tmp_grad;
+   tmp_grad.push_back(_grad);
+   tmp_grad.push_back(_grad_v1);
+   tmp_grad.push_back(_grad_v2);
+
+   // is_pass = !_my_G.is_kkt(idx_b, _rho, tmp_alpha, _grad);
+
+   // cout << " idx_b " << idx_b << endl;
+   _my_G.filter_on_off(false);
+   idx_a = _my_G.cari_idx_a(idx_b, _rho, tmp_alpha, tmp_grad, _my_kernel, _my_alpha);
+   if (idx_a != -1)
+   {
+      // cout << " idx_a " << idx_a << " " << endl;
+      bool is_pass = take_step(idx_b, idx_a);
+      if (!is_pass)
+      {
+
+         vector<T_alpha_container> tmp_alpha;
+         tmp_alpha.push_back(_alpha);
+         tmp_alpha.push_back(_alpha_v1);
+         tmp_alpha.push_back(_alpha_v2);
+
+         vector<T_grad_container> tmp_grad;
+         tmp_grad.push_back(_grad);
+         tmp_grad.push_back(_grad_v1);
+         tmp_grad.push_back(_grad_v2);
+         cout << " cari idx_a lain 3 " << endl;
+         _my_G.filter_on_off(false);
+         idx_a = _my_G.cari_idx_lain(idx_b, _rho, _my_kernel, tmp_alpha, tmp_grad, _my_alpha);
+         if (idx_a != -1)
+         {
+            cout << " idx_b " << idx_b << " idx_a " << idx_a << " ";
+            is_pass = take_step(idx_b, idx_a);
+            if (is_pass)
+            {
+               cout << "         sukses cari idx_a lain 3 " << endl;
+               hasil = 1;
+            }
+            else
+            {
+            }
+         }
+      }
+      else
+      {
+         cout << "           sukses 3 " << endl;
+         hasil = 1;
+      }
+   }
+
+   return hasil;
+}
+
+int Tmy_svm::examineExample_2(int idx_b)
 {
    // cout << " examine Example 2 " << endl;
    int hasil = 0;

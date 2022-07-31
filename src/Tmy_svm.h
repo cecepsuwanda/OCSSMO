@@ -87,7 +87,8 @@ public:
    Treturn_train train(Tdataframe &df);
    vector<string> test(Tdataframe &df);
    bool examineExample();
-   int examineExample(int idx_b);
+   int examineExample_1(int idx_b);
+   int examineExample_2(int idx_b);
    bool take_step(int idx_b, int idx_a);
 };
 

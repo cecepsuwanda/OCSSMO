@@ -209,7 +209,32 @@ void Tmy_G::set_kkt(Tmy_double rho, T_alpha_container alpha, T_grad_container &g
   }
 }
 
-int Tmy_G::cari_idx_a(int idx_b, Treturn_update_rho rho, vector<T_alpha_container> alpha, vector<T_grad_container> grad, Tmy_kernel *kernel, Tmy_alpha *my_alpha)
+int Tmy_G::cari_idx_a_1(int idx_b, Treturn_update_rho rho, vector<T_alpha_container> alpha, vector<T_grad_container> grad, Tmy_kernel *kernel, Tmy_alpha *my_alpha)
+{
+  auto cek_filter = [](callback_param var_b, callback_param var_a, vector<T_alpha_container> alpha, vector<T_grad_container> grad, Tmy_kernel *kernel, Tmy_alpha *my_alpha) -> bool
+  {
+    bool is_pass = true;
+
+    Tmy_double F = var_b.dec;
+    bool stat1 = alpha[0].is_nol(var_b.idx) and (F > 1e-3);
+    bool stat2 = alpha[0].is_sv(var_b.idx) and (alpha[1].is_nol(var_b.idx) or alpha[2].is_nol(var_b.idx)) and (abs(F) <= 1e-3);
+    bool stat3 = (alpha[0].is_ub(var_b.idx) or alpha[0].is_lb(var_b.idx)) and (alpha[1].is_nol(var_b.idx) or alpha[2].is_nol(var_b.idx)) and (F < -1e-3);
+    is_pass = !(stat1 or stat2 or stat3);
+
+    if (is_pass)
+    {
+      is_pass = !alpha[0].is_nol(var_b.idx);
+    }
+
+    return is_pass;
+  };
+
+  int idx_a = max(idx_b, rho.rho_v1, rho.rho_v2, alpha, grad, kernel, my_alpha, cek_filter);
+
+  return idx_a;
+}
+
+int Tmy_G::cari_idx_a_2(int idx_b, Treturn_update_rho rho, vector<T_alpha_container> alpha, vector<T_grad_container> grad, Tmy_kernel *kernel, Tmy_alpha *my_alpha)
 {
   auto cek_filter = [](callback_param var_b, callback_param var_a, vector<T_alpha_container> alpha, vector<T_grad_container> grad, Tmy_kernel *kernel, Tmy_alpha *my_alpha) -> bool
   {
