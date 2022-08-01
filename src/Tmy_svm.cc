@@ -28,24 +28,50 @@ bool Tmy_svm::take_step(int idx_b, int idx_a)
       vector<Tmy_double> hsl_eta = _my_kernel->hit_eta(idx_b, idx_a);
       // vector<Tmy_double> hsl_diff = _my_kernel->get_diff_Q(idx_b, idx_a);
 
-      // Tmy_double hsl_sum = _my_G.sum_alpha_diff_Q(_alpha_v1, hsl_diff);
-      Tmy_double hsl_sum = (_grad_v1[idx_a] - _grad_v1[idx_b]);
-      Tmy_double delta_v1 = hsl_eta[0] * hsl_sum;
-      Treturn_is_pass tmp_v1 = _my_alpha->is_pass(idx_b, idx_a, delta_v1, _alpha_v1);
-      tmp_v1.reset();
+      Treturn_is_pass tmp_v1;
+      Treturn_is_pass tmp_v2;
+      Treturn_is_pass tmp;
 
-      // hsl_sum = _my_G.sum_alpha_diff_Q(_alpha_v2, hsl_diff);
-      hsl_sum = (_grad_v2[idx_a] - _grad_v2[idx_b]);
-      Tmy_double delta_v2 = hsl_eta[0] * hsl_sum;
-      Treturn_is_pass tmp_v2 = _my_alpha->is_pass(idx_b, idx_a, delta_v2, _alpha_v2);
-      tmp_v2.reset();
+      if (hsl_eta[4] < 0.0)
+      {
+         // Tmy_double hsl_sum = _my_G.sum_alpha_diff_Q(_alpha_v1, hsl_diff);
+         Tmy_double hsl_sum = (_grad_v1[idx_a] - _grad_v1[idx_b]);
+         Tmy_double delta_v1 = hsl_eta[0] * hsl_sum;
+         tmp_v1 = _my_alpha->is_pass(idx_b, idx_a, delta_v1, _alpha_v1);
+         tmp_v1.reset();
 
-      // hsl_sum = _my_G.sum_alpha_diff_Q(_alpha, hsl_diff);
-      hsl_sum = (_grad[idx_a] - _grad[idx_b]);
-      Tmy_double delta = hsl_eta[0] * hsl_sum;
+         // hsl_sum = _my_G.sum_alpha_diff_Q(_alpha_v2, hsl_diff);
+         hsl_sum = (_grad_v2[idx_a] - _grad_v2[idx_b]);
+         Tmy_double delta_v2 = hsl_eta[0] * hsl_sum;
+         tmp_v2 = _my_alpha->is_pass(idx_b, idx_a, delta_v2, _alpha_v2);
+         tmp_v2.reset();
 
-      cout << "delta " << delta << " delta v1 " << delta_v1 << " delta v2 " << delta_v2 << endl;
-      Treturn_is_pass tmp = _my_alpha->is_pass(idx_b, idx_a, delta, _alpha);
+         // hsl_sum = _my_G.sum_alpha_diff_Q(_alpha, hsl_diff);
+         hsl_sum = (_grad[idx_a] - _grad[idx_b]);
+         Tmy_double delta = hsl_eta[0] * hsl_sum;
+
+         cout << "delta " << delta << " delta v1 " << delta_v1 << " delta v2 " << delta_v2 << endl;
+         tmp = _my_alpha->is_pass(idx_b, idx_a, delta, _alpha);
+      }
+      else
+      {
+         Tmy_double c1 = hsl_eta[4] / 2.0;
+
+         Tmy_double hsl_sum = (_grad_v1[idx_a] - _grad_v1[idx_b]);
+         Tmy_double c2 = hsl_sum - hsl_eta[4];
+         tmp_v1 = _my_alpha->is_pass(idx_b, idx_a, c1, c2, _alpha_v1);
+         tmp_v1.reset();
+
+         hsl_sum = (_grad_v2[idx_a] - _grad_v2[idx_b]);
+         c2 = hsl_sum - hsl_eta[4];
+         tmp_v2 = _my_alpha->is_pass(idx_b, idx_a, c1, c2, _alpha_v2);
+         tmp_v2.reset();
+
+         hsl_sum = (_grad[idx_a] - _grad[idx_b]);
+         c2 = hsl_sum - hsl_eta[4];
+
+         tmp = _my_alpha->is_pass(idx_b, idx_a, c1, c2, _alpha);
+      }
 
       cout << tmp_v1.is_pass << " old [" << tmp_v1.alpha_i << "," << tmp_v1.alpha_j << "] new [" << tmp_v1.new_alpha_i << "," << tmp_v1.new_alpha_j << "] " << endl;
       cout << tmp_v2.is_pass << " old [" << tmp_v2.alpha_i << "," << tmp_v2.alpha_j << "] new [" << tmp_v2.new_alpha_i << "," << tmp_v2.new_alpha_j << "] " << endl;
@@ -158,7 +184,7 @@ int Tmy_svm::examineExample_1(int idx_b)
 
    // cout << " idx_b " << idx_b << endl;
    _my_G.filter_on_off(false);
-   idx_a = _my_G.cari_idx_a(idx_b, _rho, tmp_alpha, tmp_grad, _my_kernel, _my_alpha);
+   idx_a = _my_G.cari_idx_a_1(idx_b, _rho, tmp_alpha, tmp_grad, _my_kernel, _my_alpha);
    if (idx_a != -1)
    {
       // cout << " idx_a " << idx_a << " " << endl;
@@ -226,7 +252,7 @@ int Tmy_svm::examineExample_2(int idx_b)
 
    // cout << " idx_b " << idx_b << endl;
    _my_G.filter_on_off(false);
-   idx_a = _my_G.cari_idx_a(idx_b, _rho, tmp_alpha, tmp_grad, _my_kernel, _my_alpha);
+   idx_a = _my_G.cari_idx_a_2(idx_b, _rho, tmp_alpha, tmp_grad, _my_kernel, _my_alpha);
    if (idx_a != -1)
    {
       // cout << " idx_a " << idx_a << " " << endl;
@@ -388,11 +414,6 @@ Treturn_train Tmy_svm::train(Tdataframe &df)
    _my_G.set_kkt(_rho_1.rho_v1, _alpha_v1, _grad_v1);
    _my_G.set_kkt(_rho_1.rho_v2, _alpha_v2, _grad_v2);
 
-   int max_iter = jml_data * 1000;
-   int counter = min(jml_data, 1000) + 1;
-   bool stop_iter = false;
-   int jml_out = 0;
-
    cout << " masuk " << endl;
    for (int i = 0; i < jml_data; ++i)
    {
@@ -401,57 +422,31 @@ Treturn_train Tmy_svm::train(Tdataframe &df)
       // cout << _grad_v1[i] << setw(15) << _grad_v2[i] << setw(15) << _grad[i] << setw(15) << _rho.rho_v1 << setw(15) << _rho.rho_v2 << endl;
    }
 
-   int iter = 0;
+   size_t maxiter = 10000;
+   size_t numChanged = 0;
+   size_t iter = 0;
    bool examineAll = true;
-   while ((iter < max_iter) and !stop_iter)
+   while (((numChanged > 0) and (iter < maxiter)) or (iter == 0))
    {
-
+      numChanged = 0;
+      iter = iter + 1;
       if (examineAll)
       {
-         int i = 0;
-         bool ulangi = true;
-         while ((i < counter) and ulangi)
+
+         for (size_t i = 0; i < jml_data; i++)
          {
-            // cout << " Iter : " << (iter + 1) << endl;
-            ulangi = examineExample();
-            i = i + 1;
-            iter = iter + 1;
-         }
-         if (!ulangi)
-         {
-            jml_out = jml_out + 1;
-            if (jml_out == jml_data)
-            {
-               cout << " jml out " << jml_out << endl;
-               stop_iter = true;
-            }
-            else
-            {
-               cout << " jml out " << jml_out << endl;
-               examineAll = false;
-            }
+            numChanged = numChanged + examineExample_1(i);
          }
       }
       else
       {
-         int jml_pass = 0;
          for (size_t i = 0; i < jml_data; i++)
          {
-            // cout << " Iter : " << (iter + 1) << endl;
-            jml_pass = jml_pass + examineExample(i);
-            iter = iter + 1;
-         }
-
-         if (jml_pass > 0)
-         {
-            examineAll = true;
-         }
-         else
-         {
-            cout << " jml out " << jml_out << endl;
-            stop_iter = true;
+            numChanged = numChanged + examineExample_2(i);
          }
       }
+
+      examineAll = !examineAll;
    }
 
    tmp_alpha.clear();

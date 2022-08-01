@@ -145,6 +145,7 @@ public:
   ~Tmy_alpha();
   void init(int jml_data, T_alpha_container &alpha, T_alpha_container &alpha_v1, T_alpha_container &alpha_v2);
   Treturn_is_pass is_pass(int i, int j, Tmy_double delta, T_alpha_container alpha);
+  Treturn_is_pass is_pass(int i, int j, Tmy_double c1, Tmy_double c2, T_alpha_container alpha);
   bool is_pass(Treturn_is_pass &v1, Treturn_is_pass &v2, Treturn_is_pass v);
 };
 

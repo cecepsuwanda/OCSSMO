@@ -1,12 +1,12 @@
 #include "Tmy_kernel.h"
 
-
-Tmy_kernel::Tmy_kernel(Tdataframe &df, double gamma) {
+Tmy_kernel::Tmy_kernel(Tdataframe &df, double gamma)
+{
     _df = &df;
     _gamma = gamma;
     _jml_data = _df->getjmlrow_svm();
 
-    _cache = new Tmy_cache(_jml_data, 100);
+    _cache = new Tmy_cache(_jml_data, 600);
 
     vector<future<Treturn_data>> async_worker;
     for (int i = 0; i < _jml_data; ++i)
@@ -14,10 +14,10 @@ Tmy_kernel::Tmy_kernel(Tdataframe &df, double gamma) {
         vector<string> x_i = _df->goto_rec(i);
         async_worker.push_back(async(std::launch::async, &Tmy_kernel::thread_hit_x_square, i, x_i));
 
-        if ((async_worker.size() % 10 ) == 0)
+        if ((async_worker.size() % 10) == 0)
         {
             Treturn_data hsl;
-            for (future<Treturn_data> & th : async_worker)
+            for (future<Treturn_data> &th : async_worker)
             {
                 hsl = th.get();
                 _x_square[hsl.idx_map] = hsl.data;
@@ -31,7 +31,7 @@ Tmy_kernel::Tmy_kernel(Tdataframe &df, double gamma) {
     if (async_worker.size() > 0)
     {
         Treturn_data hsl;
-        for (future<Treturn_data> & th : async_worker)
+        for (future<Treturn_data> &th : async_worker)
         {
             hsl = th.get();
             _x_square[hsl.idx_map] = hsl.data;
@@ -42,7 +42,8 @@ Tmy_kernel::Tmy_kernel(Tdataframe &df, double gamma) {
     }
 }
 
-Tmy_kernel::~Tmy_kernel() {
+Tmy_kernel::~Tmy_kernel()
+{
     clear_container();
 }
 
@@ -54,7 +55,8 @@ void Tmy_kernel::clear_container()
     _cache->clear_container();
 }
 
-Tmy_double Tmy_kernel::dot(vector<string> x, vector<string> y) {
+Tmy_double Tmy_kernel::dot(vector<string> x, vector<string> y)
+{
     int jml = x.size();
     Tmy_double sum = 0;
     for (int i = 0; i < jml; ++i)
@@ -64,7 +66,8 @@ Tmy_double Tmy_kernel::dot(vector<string> x, vector<string> y) {
     return sum;
 }
 
-Tmy_double Tmy_kernel::kernel_function(int i, int j) {
+Tmy_double Tmy_kernel::kernel_function(int i, int j)
+{
 
     int idx_df = i;
     map<int, int>::iterator it;
@@ -104,7 +107,6 @@ Treturn_data Tmy_kernel::thread_hit_x_square(int idx_map, vector<string> x)
     return {idx_map, -1, hasil};
 }
 
-
 Treturn_data Tmy_kernel::thread_hit_data(int idx_map, int idx_vec, vector<string> x, vector<string> y, Tmy_double _x_square_x, Tmy_double _x_square_y, double gamma)
 {
     int jml = x.size();
@@ -140,7 +142,8 @@ vector<Tmy_double> Tmy_kernel::get_Q(int i)
 {
     Treturn_is_in_head hasil = _cache->is_in_head(i, _jml_data);
 
-    if (hasil.is_pass == false) {
+    if (hasil.is_pass == false)
+    {
         int idx_df = i;
         map<int, int>::iterator it;
         it = _map_swap.find(idx_df);
@@ -154,7 +157,7 @@ vector<Tmy_double> Tmy_kernel::get_Q(int i)
         vector<future<Treturn_data>> async_worker;
         for (int j = hasil.awal; j < _jml_data; ++j)
         {
-            //cetak("*");
+            // cetak("*");
 
             int idx_df = j;
             map<int, int>::iterator it;
@@ -168,10 +171,10 @@ vector<Tmy_double> Tmy_kernel::get_Q(int i)
 
             async_worker.push_back(async(std::launch::async, &Tmy_kernel::thread_hit_data, i, j, x_i, x_j, _x_square[j], _x_square[i], _gamma));
 
-            if ((async_worker.size() % 10 ) == 0)
+            if ((async_worker.size() % 10) == 0)
             {
                 Treturn_data hsl;
-                for (future<Treturn_data> & th : async_worker)
+                for (future<Treturn_data> &th : async_worker)
                 {
                     hsl = th.get();
                     _cache->isi_head(hsl.idx_map, hsl.idx_vec, hsl.data);
@@ -187,7 +190,7 @@ vector<Tmy_double> Tmy_kernel::get_Q(int i)
         if (async_worker.size() > 0)
         {
             Treturn_data hsl;
-            for (future<Treturn_data> & th : async_worker)
+            for (future<Treturn_data> &th : async_worker)
             {
                 hsl = th.get();
                 _cache->isi_head(hsl.idx_map, hsl.idx_vec, hsl.data);
@@ -196,7 +199,6 @@ vector<Tmy_double> Tmy_kernel::get_Q(int i)
             async_worker.clear();
             async_worker.shrink_to_fit();
         }
-
     }
     vector<Tmy_double> data = _cache->get_head(i);
     return data;
@@ -235,20 +237,23 @@ vector<Tmy_double> Tmy_kernel::hit_eta(int i, int j)
     vector<Tmy_double> Q_i = get_Q(i);
     vector<Tmy_double> Q_j = get_Q(j);
 
-    Tmy_double k11 = Q_i[i];//kernel_function(i,i);
-    Tmy_double k12 = Q_i[j];//kernel_function(j,i);
-    Tmy_double k22 = Q_j[j];//kernel_function(j,j);
-    Tmy_double p_eta = k11 + k22 - (2.0 * k12);
+    Tmy_double k11 = Q_i[i]; // kernel_function(i,i);
+    Tmy_double k12 = Q_i[j]; // kernel_function(j,i);
+    Tmy_double k22 = Q_j[j]; // kernel_function(j,j);
+    // Tmy_double p_eta = k11 + k22 - (2.0 * k12);
+    Tmy_double p_eta = (2.0 * k12) - k11 - k22;
 
     Tmy_double eta = 0.0;
     if (p_eta != 0.0)
     {
         eta = 1.0 / p_eta;
-    } else {
-        eta = 1.0 / 1e-12;
     }
-    //cout<<eta<<","<<k11<<","<<k12<<","<<k22<<endl;
-    return {eta, k11, k12, k22};
+    else
+    {
+        // eta = 1.0 / 1e-12;
+    }
+    // cout<<eta<<","<<k11<<","<<k12<<","<<k22<<endl;
+    return {eta, k11, k12, k22, p_eta};
 }
 
 Tmy_double Tmy_kernel::kernel_function_f(vector<string> x, vector<string> y)
@@ -274,9 +279,7 @@ Tmy_double Tmy_kernel::kernel_function_f(vector<string> x, vector<string> y)
         sum3 = sum3 + (stod(x[i]) * stod(y[i]));
     }
 
-
     double tmp = -1.0 * _gamma * (sum1 + sum2 - 2.0 * sum3);
     Tmy_double hasil = exp(tmp);
     return hasil;
 }
-

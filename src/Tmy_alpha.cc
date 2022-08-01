@@ -3,7 +3,7 @@
 Tmy_alpha::Tmy_alpha(Tconfig *v_config)
 {
 	_config = v_config;
-	_split = false;
+	_split = true;
 }
 
 Tmy_alpha::~Tmy_alpha()
@@ -188,9 +188,9 @@ vector<Tmy_double> Tmy_alpha::calculateNewAlpha(int i, int j, Tmy_double delta, 
 	vector<Tmy_double> tmp = limit_alpha(alpha_a_new, 0, Low, High, 0);
 	alpha_a_new = tmp[0];
 	Tmy_double alpha_b_new = alpha[j] + (alpha[i] - alpha_a_new);
-	// tmp = limit_alpha(alpha_b_new, alpha_a_new, alpha.lb(), alpha.ub(), 1);
-	// alpha_b_new = tmp[0];
-	// alpha_a_new = tmp[1];
+	tmp = limit_alpha(alpha_b_new, alpha_a_new, alpha.lb(), alpha.ub(), 1);
+	alpha_b_new = tmp[0];
+	alpha_a_new = tmp[1];
 	return {alpha[i], alpha[j], alpha_a_new, alpha_b_new};
 }
 
@@ -373,8 +373,80 @@ Treturn_is_pass Tmy_alpha::is_pass(int i, int j, Tmy_double delta, T_alpha_conta
 		}
 		else
 		{
-			vector<Tmy_double> hsl = calculateNewAlpha(i, j, delta, Low, High, alpha);
-			Tmy_double alpha_a_old = hsl[0], alpha_b_old = hsl[1], alpha_a_new = hsl[2], alpha_b_new = hsl[3];
+			vector<Tmy_double> hsl = calculateNewAlpha(j, i, delta, Low, High, alpha);
+			Tmy_double alpha_a_old = hsl[1], alpha_b_old = hsl[0], alpha_a_new = hsl[3], alpha_b_new = hsl[2];
+			double diff = alpha_a_new - alpha_a_old;
+			// abs(diff)<10e-5
+			if (abs(diff) < 1e-5)
+			{
+				return tmp;
+			}
+			else
+			{
+				tmp.is_pass = true;
+				tmp.alpha_i = alpha_a_old;
+				tmp.alpha_j = alpha_b_old;
+				tmp.new_alpha_i = alpha_a_new;
+				tmp.new_alpha_j = alpha_b_new;
+				tmp.b_new_alpha_i = alpha_a_new;
+				tmp.b_new_alpha_j = alpha_b_new;
+				// cout<<"alpha_a_new : "<<alpha_a_new<<" alpha_a_old : "<<alpha_a_old<<endl;
+				// cout<<"alpha_b_new : "<<alpha_b_new<<" alpha_b_old : "<<alpha_b_old<<endl;
+				return tmp;
+			}
+		}
+	}
+
+	return tmp;
+}
+
+Treturn_is_pass Tmy_alpha::is_pass(int i, int j, Tmy_double c1, Tmy_double c2, T_alpha_container alpha)
+{
+	Treturn_is_pass tmp;
+	tmp.is_pass = false;
+	tmp.alpha_i = alpha[i];
+	tmp.alpha_j = alpha[j];
+	tmp.new_alpha_i = alpha[i];
+	tmp.new_alpha_j = alpha[j];
+	tmp.lb = alpha.lb();
+	tmp.ub = alpha.ub();
+	tmp.b_new_alpha_i = alpha[i];
+	tmp.b_new_alpha_j = alpha[j];
+
+	if (i == j)
+	{
+		return tmp;
+	}
+	else
+	{
+		vector<Tmy_double> hsl = calculateBoundaries(i, j, alpha);
+		Tmy_double Low = hsl[0], High = hsl[1];
+		// cout <<"Low "<<Low<<" High "<<High<<endl;
+		if (Low == High)
+		{
+			return tmp;
+		}
+		else
+		{
+			c2 = c2 * alpha[j];
+			Tmy_double Lobj = c1 * Low * Low + c2 * Low;
+			Tmy_double Hobj = c1 * High * High + c2 * High;
+
+			Tmy_double delta = 0.0;
+			if (Lobj > Hobj)
+			{
+				delta = Low - alpha[j];
+			}
+			else
+			{
+				if (Lobj < Hobj)
+				{
+					delta = High - alpha[j];
+				}
+			}
+
+			vector<Tmy_double> hsl = calculateNewAlpha(j, i, delta, Low, High, alpha);
+			Tmy_double alpha_a_old = hsl[1], alpha_b_old = hsl[0], alpha_a_new = hsl[3], alpha_b_new = hsl[2];
 			double diff = alpha_a_new - alpha_a_old;
 			// abs(diff)<10e-5
 			if (abs(diff) < 1e-5)
