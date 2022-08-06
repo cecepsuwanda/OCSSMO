@@ -248,7 +248,7 @@ int Tmy_G::cari_idx_a_2(int idx_b, Treturn_update_rho rho, vector<T_alpha_contai
 
     if (is_pass)
     {
-      is_pass = !alpha[0].is_ub(var_b.idx) and !alpha[0].is_lb(var_b.idx);
+      is_pass = !alpha[0].is_nol(var_b.idx);
     }
 
     if (is_pass)

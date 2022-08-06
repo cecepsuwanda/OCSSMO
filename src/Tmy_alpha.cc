@@ -375,7 +375,7 @@ Treturn_is_pass Tmy_alpha::is_pass(int i, int j, Tmy_double delta, T_alpha_conta
 		{
 			vector<Tmy_double> hsl = calculateNewAlpha(j, i, delta, Low, High, alpha);
 			Tmy_double alpha_a_old = hsl[1], alpha_b_old = hsl[0], alpha_a_new = hsl[3], alpha_b_new = hsl[2];
-			double diff = alpha_a_new - alpha_a_old;
+			double diff = alpha_b_new - alpha_b_old;
 			// abs(diff)<10e-5
 			if (abs(diff) < 1e-5)
 			{
@@ -447,7 +447,7 @@ Treturn_is_pass Tmy_alpha::is_pass(int i, int j, Tmy_double c1, Tmy_double c2, T
 
 			vector<Tmy_double> hsl = calculateNewAlpha(j, i, delta, Low, High, alpha);
 			Tmy_double alpha_a_old = hsl[1], alpha_b_old = hsl[0], alpha_a_new = hsl[3], alpha_b_new = hsl[2];
-			double diff = alpha_a_new - alpha_a_old;
+			double diff = alpha_b_new - alpha_b_old;
 			// abs(diff)<10e-5
 			if (abs(diff) < 1e-5)
 			{
