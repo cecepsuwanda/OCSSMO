@@ -3,7 +3,7 @@
 Tmy_alpha::Tmy_alpha(Tconfig *v_config)
 {
 	_config = v_config;
-	_split = true;
+	_split = false;
 }
 
 Tmy_alpha::~Tmy_alpha()
