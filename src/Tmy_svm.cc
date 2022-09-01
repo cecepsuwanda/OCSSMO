@@ -111,15 +111,11 @@ bool Tmy_svm::take_step(int idx_b, int idx_a)
 
             _alpha_v1[idx_a] = tmp_v1.new_alpha_j;
             _alpha_v1[idx_b] = tmp_v1.new_alpha_i;
-            _grad_v1.mv_idx(idx_a, 1);
-            _grad_v1.mv_idx(idx_b, 1);
 
             _my_G.update_G(idx_b, idx_a, tmp_v2, _my_kernel, _alpha_v2, _grad_v2);
 
             _alpha_v2[idx_a] = tmp_v2.new_alpha_j;
             _alpha_v2[idx_b] = tmp_v2.new_alpha_i;
-            _grad_v2.mv_idx(idx_a, 1);
-            _grad_v2.mv_idx(idx_b, 1);
 
             tmp.new_alpha_j = tmp_v1.new_alpha_j - tmp_v2.new_alpha_j;
             tmp.new_alpha_i = tmp_v1.new_alpha_i - tmp_v2.new_alpha_i;
@@ -128,8 +124,6 @@ bool Tmy_svm::take_step(int idx_b, int idx_a)
 
             _alpha[idx_a] = tmp.new_alpha_j;
             _alpha[idx_b] = tmp.new_alpha_i;
-            _grad.mv_idx(idx_a, 1);
-            _grad.mv_idx(idx_b, 1);
 
             vector<T_alpha_container> tmp_alpha;
             tmp_alpha.push_back(_alpha);

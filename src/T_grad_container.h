@@ -11,7 +11,6 @@ class T_grad_container
 {
 private:
 	vector<Tmy_double> _grad;
-	vector<int> _idx;
 	vector<bool> _is_kkt;
 
 	bool delta_filter(int idx_b, int idx_a, T_alpha_container alpha, Tmy_double delta);
@@ -30,11 +29,8 @@ public:
 	Tmy_double obj(size_t idx, Tmy_double rho);
 	Tmy_double dec(size_t idx, Tmy_double rho);
 
-	void mv_idx(int idx, int flag);
-
 	void set_kkt(int idx, bool val);
 	bool get_kkt(int idx);
-	vector<int> get_rand_idx();
 };
 
 #endif
